@@ -176,7 +176,8 @@ export default function TemplateBuilder() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <DndProvider backend={HTML5Backend}>
+      <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
         <img
@@ -430,6 +431,7 @@ export default function TemplateBuilder() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </DndProvider>
   );
 }

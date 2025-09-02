@@ -251,6 +251,16 @@ export default function TemplateBuilder() {
     console.log("Navigate to preview");
   };
 
+  const handleSystemFieldFocus = (fieldKey: string) => {
+    setSystemFieldAlerts(prev => ({ ...prev, [fieldKey]: true }));
+  };
+
+  const handleSystemFieldBlur = (fieldKey: string) => {
+    setTimeout(() => {
+      setSystemFieldAlerts(prev => ({ ...prev, [fieldKey]: false }));
+    }, 3000); // Hide alert after 3 seconds
+  };
+
   // Get available steps that aren't already added
   const getAvailableStepsToAdd = () => {
     return availableSteps.filter(

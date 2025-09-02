@@ -1,152 +1,28 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-
-// Types for API responses
-interface TemplateItem {
-  id: string;
-  name: string;
-  description: string;
-  createdBy: string;
-  templateRules: string;
-  isActive: boolean;
-  createdAtUtc: string;
-}
-
-interface TemplatesResponse {
-  page: number;
-  pageSize: number;
-  total: number;
-  items: TemplateItem[];
-}
-
-interface UserResponse {
-  success: boolean;
-  message: string;
-  data: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    createdAt: string;
-  };
-  errors: string[];
-}
-
-// Mock data based on Figma design
-const mockTemplates: TemplateItem[] = [
-  {
-    id: "1",
-    name: "Template Name",
-    description: "Template description",
-    createdBy: "user1",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-07-14T00:00:00Z"
-  },
-  {
-    id: "2",
-    name: "New Template",
-    description: "New template description",
-    createdBy: "user2",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-06-22T00:00:00Z"
-  },
-  {
-    id: "3",
-    name: "Template_Newname",
-    description: "Template description",
-    createdBy: "user3",
-    templateRules: "Rules",
-    isActive: false,
-    createdAtUtc: "2024-06-18T00:00:00Z"
-  },
-  {
-    id: "4",
-    name: "Template Name 8",
-    description: "Template description",
-    createdBy: "user4",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-05-04T00:00:00Z"
-  },
-  {
-    id: "5",
-    name: "Template Name 2",
-    description: "Template description",
-    createdBy: "user5",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-07-14T00:00:00Z"
-  }
-];
-
-const mockUsers: Record<string, string> = {
-  user1: "Patricia A. Ramirez",
-  user2: "Deloris L. Hall",
-  user3: "Carl H. Smith",
-  user4: "Ryan M. Johnson",
-  user5: "Fannie W. Johnson"
-};
+import { useTemplates, useUsers, formatDate, getStatusInfo } from "@/hooks/useTemplates";
 
 export default function Templates() {
-  const [templates, setTemplates] = useState<TemplateItem[]>(mockTemplates);
-  const [users, setUsers] = useState<Record<string, string>>(mockUsers);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
-  const [totalItems, setTotalItems] = useState(mockTemplates.length);
-  const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // API integration functions (currently using mock data)
-  const fetchTemplates = async (params: {
-    isActive?: boolean;
-    createdBy?: string;
-    search?: string;
-    page?: number;
-    pageSize?: number;
-  }) => {
-    setIsLoading(true);
-    try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`http://localhost:5294/api/form-templates?${new URLSearchParams(params)}`);
-      // const data: TemplatesResponse = await response.json();
-      
-      // For now, filter mock data based on search
-      let filteredTemplates = mockTemplates;
-      if (params.search) {
-        filteredTemplates = mockTemplates.filter(template =>
-          template.name.toLowerCase().includes(params.search!.toLowerCase())
-        );
-      }
-      
-      setTemplates(filteredTemplates);
-      setTotalItems(filteredTemplates.length);
-    } catch (error) {
-      console.error("Error fetching templates:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchUser = async (userId: string) => {
-    try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`http://localhost:5294/api/User/${userId}`);
-      // const data: UserResponse = await response.json();
-      // return `${data.data.firstName} ${data.data.lastName}`;
-      
-      return mockUsers[userId] || "Unknown User";
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      return "Unknown User";
-    }
-  };
+  // Use custom hooks for API integration
+  const { templates, loading: templatesLoading, error: templatesError, totalItems, fetchTemplates } = useTemplates();
+  const { users, fetchMultipleUsers } = useUsers();
 
   useEffect(() => {
     fetchTemplates({ search: searchQuery, page: currentPage, pageSize });
-  }, [searchQuery, currentPage, pageSize]);
+  }, [searchQuery, currentPage, pageSize, fetchTemplates]);
+
+  // Fetch user data for all unique creators when templates change
+  useEffect(() => {
+    if (templates.length > 0) {
+      const uniqueUserIds = [...new Set(templates.map(template => template.createdBy))];
+      fetchMultipleUsers(uniqueUserIds);
+    }
+  }, [templates, fetchMultipleUsers]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-GB", {

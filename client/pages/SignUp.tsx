@@ -90,6 +90,10 @@ export default function SignUp() {
           email: formData.email,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
+          dateOfBirth: formData.dateOfBirth,
+          permanentAddress: formData.permanentAddress,
+          currentAddress: formData.currentAddress,
+          gender: formData.gender,
         }),
       });
 

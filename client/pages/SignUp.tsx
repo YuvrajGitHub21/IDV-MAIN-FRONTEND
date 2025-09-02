@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
@@ -12,6 +12,12 @@ export default function SignUp() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("access")) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -68,7 +74,7 @@ export default function SignUp() {
       });
 
       if (response.ok) {
-        navigate("/login");
+        navigate("/login", { replace: true });
       } else {
         let message = "Registration failed";
         try {
@@ -423,7 +429,7 @@ export default function SignUp() {
             <p className="text-arcon-gray-secondary text-sm font-roboto">
               Already have an account?{" "}
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/login", { replace: true })}
                 className="text-arcon-blue hover:underline font-medium"
               >
                 Log in

@@ -36,7 +36,7 @@ export function NameTemplateDialog({
       onOpenChange(false);
       // Navigate to template builder with the template name
       navigate("/template-builder", {
-        state: { templateName: templateName.trim() }
+        state: { templateName: templateName.trim() },
       });
     }
   };

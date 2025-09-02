@@ -15,6 +15,7 @@ import {
   Plus,
   Trash2,
   GripVertical,
+  Info,
 } from "lucide-react";
 
 interface VerificationStep {
@@ -168,6 +169,16 @@ export default function TemplateBuilder() {
   const [addedFields, setAddedFields] = useState<AddedField[]>([]);
   const [personalInfoExpanded, setPersonalInfoExpanded] = useState(true);
 
+  // System fields state
+  const [systemFieldAlerts, setSystemFieldAlerts] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [systemFieldValues, setSystemFieldValues] = useState({
+    firstName: "Eg: John",
+    lastName: "Eg: Wick",
+    email: "Eg: johnwick@email.com",
+  });
+
   const addVerificationStep = (stepId: string) => {
     const stepToAdd = availableSteps.find((step) => step.id === stepId);
     if (stepToAdd) {
@@ -240,6 +251,16 @@ export default function TemplateBuilder() {
   const handleNext = () => {
     // Navigate to preview step
     console.log("Navigate to preview");
+  };
+
+  const handleSystemFieldFocus = (fieldKey: string) => {
+    setSystemFieldAlerts((prev) => ({ ...prev, [fieldKey]: true }));
+  };
+
+  const handleSystemFieldBlur = (fieldKey: string) => {
+    setTimeout(() => {
+      setSystemFieldAlerts((prev) => ({ ...prev, [fieldKey]: false }));
+    }, 3000); // Hide alert after 3 seconds
   };
 
   // Get available steps that aren't already added
@@ -446,34 +467,119 @@ export default function TemplateBuilder() {
                   {/* Required Fields */}
                   <div className="space-y-4 mb-8">
                     {/* First Name */}
-                    <div className="border border-gray-300 rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-sm text-gray-900">
-                          First Name
-                        </h4>
+                    <div
+                      className={cn(
+                        "rounded-lg border-r border-b border-l bg-white",
+                        systemFieldAlerts.firstName
+                          ? "border-blue-500"
+                          : "border-gray-300",
+                      )}
+                    >
+                      {systemFieldAlerts.firstName && (
+                        <div className="h-2 bg-blue-500 rounded-t-lg"></div>
+                      )}
+                      <div className="p-4">
+                        {systemFieldAlerts.firstName && (
+                          <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
+                            <Info className="w-5 h-5 text-red-500" />
+                            <span className="text-sm text-gray-900 font-medium">
+                              This field is system-required and cannot be
+                              modified.
+                            </span>
+                          </div>
+                        )}
+                        <div className="mb-2">
+                          <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
+                            <span className="text-sm font-semibold text-gray-900">
+                              First Name
+                            </span>
+                          </div>
+                        </div>
+                        <Input
+                          value={systemFieldValues.firstName}
+                          onFocus={() => handleSystemFieldFocus("firstName")}
+                          onBlur={() => handleSystemFieldBlur("firstName")}
+                          className="border-gray-300 text-gray-600"
+                          readOnly
+                        />
                       </div>
-                      <div className="text-sm text-gray-500">Eg: John</div>
                     </div>
 
                     {/* Last Name */}
-                    <div className="border border-gray-300 rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-sm text-gray-900">
-                          Last Name
-                        </h4>
+                    <div
+                      className={cn(
+                        "rounded-lg border-r border-b border-l bg-white",
+                        systemFieldAlerts.lastName
+                          ? "border-blue-500"
+                          : "border-gray-300",
+                      )}
+                    >
+                      {systemFieldAlerts.lastName && (
+                        <div className="h-2 bg-blue-500 rounded-t-lg"></div>
+                      )}
+                      <div className="p-4">
+                        {systemFieldAlerts.lastName && (
+                          <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
+                            <Info className="w-5 h-5 text-red-500" />
+                            <span className="text-sm text-gray-900 font-medium">
+                              This field is system-required and cannot be
+                              modified.
+                            </span>
+                          </div>
+                        )}
+                        <div className="mb-2">
+                          <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
+                            <span className="text-sm font-semibold text-gray-900">
+                              Last Name
+                            </span>
+                          </div>
+                        </div>
+                        <Input
+                          value={systemFieldValues.lastName}
+                          onFocus={() => handleSystemFieldFocus("lastName")}
+                          onBlur={() => handleSystemFieldBlur("lastName")}
+                          className="border-gray-300 text-gray-600"
+                          readOnly
+                        />
                       </div>
-                      <div className="text-sm text-gray-500">Eg: Wick</div>
                     </div>
 
                     {/* Email Address */}
-                    <div className="border border-gray-300 rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-sm text-gray-900">
-                          Email Address
-                        </h4>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Eg: johnwick@email.com
+                    <div
+                      className={cn(
+                        "rounded-lg border-r border-b border-l bg-white",
+                        systemFieldAlerts.email
+                          ? "border-blue-500"
+                          : "border-gray-300",
+                      )}
+                    >
+                      {systemFieldAlerts.email && (
+                        <div className="h-2 bg-blue-500 rounded-t-lg"></div>
+                      )}
+                      <div className="p-4">
+                        {systemFieldAlerts.email && (
+                          <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
+                            <Info className="w-5 h-5 text-red-500" />
+                            <span className="text-sm text-gray-900 font-medium">
+                              This field is system-required and cannot be
+                              modified.
+                            </span>
+                          </div>
+                        )}
+                        <div className="mb-2">
+                          <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
+                            <span className="text-sm font-semibold text-gray-900">
+                              Email Address
+                            </span>
+                          </div>
+                        </div>
+                        <Input
+                          value={systemFieldValues.email}
+                          onFocus={() => handleSystemFieldFocus("email")}
+                          onBlur={() => handleSystemFieldBlur("email")}
+                          className="border-gray-300 text-gray-600"
+                          readOnly
+                        />
                       </div>
                     </div>
                   </div>
@@ -495,7 +601,7 @@ export default function TemplateBuilder() {
                         {addedFields.map((field) => (
                           <div
                             key={field.id}
-                            className="border border-blue-300 rounded-lg p-5 bg-blue-50"
+                            className="border border-gray-300 rounded-lg p-5 bg-white"
                           >
                             <div className="flex items-center justify-between mb-3">
                               <Label className="font-semibold text-sm text-gray-900">
@@ -510,18 +616,8 @@ export default function TemplateBuilder() {
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
-                            <Input
-                              value={field.value}
-                              onChange={(e) =>
-                                updateFieldValue(field.id, e.target.value)
-                              }
-                              placeholder={field.placeholder}
-                              className="bg-white border-gray-300"
-                            />
-                            <div className="text-xs text-gray-500 mt-1">
-                              {field.placeholder.includes("Required")
-                                ? "Required"
-                                : "Optional"}
+                            <div className="text-sm text-gray-500">
+                              {field.placeholder}
                             </div>
                           </div>
                         ))}

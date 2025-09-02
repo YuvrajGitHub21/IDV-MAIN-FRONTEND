@@ -8,6 +8,10 @@ export default function SignUp() {
     email: "",
     password: "",
     confirmPassword: "",
+    dateOfBirth: "",
+    permanentAddress: "",
+    currentAddress: "",
+    gender: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);

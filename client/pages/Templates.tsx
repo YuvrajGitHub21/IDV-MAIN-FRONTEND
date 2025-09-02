@@ -514,7 +514,7 @@ export default function Templates() {
                             {template.name}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
-                            {getInviteesAvatars()}
+                            <InviteesAvatarGroup />
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
                             {formatDate(template.createdAtUtc)}

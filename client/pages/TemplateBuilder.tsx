@@ -148,6 +148,16 @@ export default function TemplateBuilder() {
     setVerificationSteps(prev => prev.filter(step => step.id !== stepId));
   };
 
+  const moveStep = useCallback((dragIndex: number, hoverIndex: number) => {
+    setVerificationSteps(prev => {
+      const draggedStep = prev[dragIndex];
+      const newSteps = [...prev];
+      newSteps.splice(dragIndex, 1);
+      newSteps.splice(hoverIndex, 0, draggedStep);
+      return newSteps;
+    });
+  }, []);
+
   const toggleOptionalField = (fieldId: string) => {
     setOptionalFields(prev =>
       prev.map(field =>

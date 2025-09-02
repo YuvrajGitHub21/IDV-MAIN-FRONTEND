@@ -27,6 +27,7 @@ export function NameTemplateDialog({
   onCancel,
 }: NameTemplateDialogProps) {
   const [templateName, setTemplateName] = useState("");
+  const navigate = useNavigate();
 
   const handleSave = () => {
     if (templateName.trim()) {

@@ -360,133 +360,290 @@ export default function SignUp() {
             </div>
           </div>
 
-          {/* Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-5 sm:space-y-6 md:space-y-7"
-          >
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                First Name
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  placeholder="Enter your first name"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.firstName
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
-              </div>
-              {errors.firstName && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.firstName}
-                </p>
-              )}
-            </div>
+          {/* Form Content */}
+          <div className="space-y-5 sm:space-y-6 md:space-y-7">
+            {currentStep === 1 ? (
+              // Step 1: Personal Information
+              <>
+                <div>
+                  <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+                    First Name
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      placeholder="Enter your first name"
+                      className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                        errors.firstName
+                          ? "border-red-500"
+                          : "border-arcon-gray-border"
+                      } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                    />
+                  </div>
+                  {errors.firstName && (
+                    <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                      {errors.firstName}
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                Last Name
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  placeholder="Enter your last name"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.lastName
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
-              </div>
-              {errors.lastName && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.lastName}
-                </p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+                    Last Name
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      placeholder="Enter your last name"
+                      className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                        errors.lastName
+                          ? "border-red-500"
+                          : "border-arcon-gray-border"
+                      } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                    />
+                  </div>
+                  {errors.lastName && (
+                    <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                      {errors.lastName}
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                Email Address
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email address"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.email ? "border-red-500" : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.email}
-                </p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="Enter your email address"
+                      className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                        errors.email ? "border-red-500" : "border-arcon-gray-border"
+                      } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                      {errors.email}
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Enter your password"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.password
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
-              </div>
-              {errors.password && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.password}
-                </p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      placeholder="Enter your password"
+                      className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                        errors.password
+                          ? "border-red-500"
+                          : "border-arcon-gray-border"
+                      } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                    />
+                  </div>
+                  {errors.password && (
+                    <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  placeholder="Re-enter your password"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.confirmPassword
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
+                <div>
+                  <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      placeholder="Re-enter your password"
+                      className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                        errors.confirmPassword
+                          ? "border-red-500"
+                          : "border-arcon-gray-border"
+                      } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                    />
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              // Step 2: Document Verification
+              <div className="space-y-6">
+                {/* User Upload Options */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-base font-bold text-arcon-gray-heading mb-2 font-roboto">
+                      User Upload Options
+                    </h4>
+                    <p className="text-sm text-arcon-gray-secondary font-roboto">
+                      Select how users are allowed to submit documents during the process.
+                    </p>
+                  </div>
+
+                  <div className="bg-arcon-panel rounded-lg p-4 space-y-4">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="upload-device"
+                        checked={documentData.allowUploadFromDevice}
+                        onCheckedChange={(checked) =>
+                          setDocumentData((prev) => ({
+                            ...prev,
+                            allowUploadFromDevice: checked === true,
+                          }))
+                        }
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <Label
+                          htmlFor="upload-device"
+                          className="text-sm font-medium text-arcon-gray-heading font-roboto block mb-1"
+                        >
+                          Allow Upload from Device
+                        </Label>
+                        <p className="text-sm text-arcon-gray-secondary font-roboto">
+                          Let users upload existing documents directly from their device.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        id="capture-webcam"
+                        checked={documentData.allowCaptureWebcam}
+                        onCheckedChange={(checked) =>
+                          setDocumentData((prev) => ({
+                            ...prev,
+                            allowCaptureWebcam: checked === true,
+                          }))
+                        }
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <Label
+                          htmlFor="capture-webcam"
+                          className="text-sm font-medium text-arcon-gray-heading font-roboto block mb-1"
+                        >
+                          Allow Capture via Webcam
+                        </Label>
+                        <p className="text-sm text-arcon-gray-secondary font-roboto">
+                          Enable webcam access to allow users to capture documents in real time.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Document Handling */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-base font-bold text-arcon-gray-heading mb-2 font-roboto">
+                      Unreadable Document Handling
+                    </h4>
+                    <p className="text-sm text-arcon-gray-secondary font-roboto">
+                      Choose what action the system should take if a submitted document is not clear.
+                    </p>
+                  </div>
+
+                  <div className="bg-arcon-panel rounded-lg p-4">
+                    <RadioGroup
+                      value={documentData.documentHandling}
+                      onValueChange={(value) =>
+                        setDocumentData((prev) => ({
+                          ...prev,
+                          documentHandling: value,
+                        }))
+                      }
+                    >
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-3">
+                          <RadioGroupItem value="reject" id="reject" className="mt-0.5" />
+                          <div className="flex-1">
+                            <Label
+                              htmlFor="reject"
+                              className="text-sm font-medium text-arcon-gray-heading font-roboto block mb-1"
+                            >
+                              Reject Immediately
+                            </Label>
+                            <p className="text-sm text-arcon-gray-secondary font-roboto">
+                              Skip retry and reject unclear documents without further attempts.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <RadioGroupItem value="retry" id="retry" className="mt-0.5" />
+                          <div className="flex-1">
+                            <Label
+                              htmlFor="retry"
+                              className="text-sm font-medium text-arcon-gray-heading font-roboto block mb-1"
+                            >
+                              Allow Retries Before Rejection
+                            </Label>
+                            <p className="text-sm text-arcon-gray-secondary font-roboto">
+                              Let users reattempt uploading the document before it's finally rejected.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+
+                {/* Supported Documents */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-base font-bold text-arcon-gray-heading mb-2 font-roboto">
+                      Supported Documents
+                    </h4>
+                    <p className="text-sm text-arcon-gray-secondary font-roboto">
+                      Select which document types are accepted for verification.
+                    </p>
+                  </div>
+
+                  <div className="bg-arcon-panel rounded-lg p-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      {documentTypes.map((docType) => (
+                        <div key={docType} className="flex items-center gap-2">
+                          <Checkbox
+                            id={docType}
+                            checked={documentData.selectedDocuments.includes(docType)}
+                            onCheckedChange={() => toggleDocument(docType)}
+                          />
+                          <Label
+                            htmlFor={docType}
+                            className="text-sm font-medium text-arcon-gray-primary font-roboto cursor-pointer"
+                          >
+                            {docType}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              {errors.confirmPassword && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
+            )}
 
             {errors.submit && (
               <div className="text-red-500 text-xs sm:text-sm text-center font-roboto">
@@ -494,14 +651,32 @@ export default function SignUp() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-[48px] sm:h-[52px] bg-arcon-blue text-white font-bold text-sm sm:text-base rounded font-roboto hover:bg-arcon-blue/90 focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? "Signing up..." : "Sign up"}
-            </button>
-          </form>
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              {currentStep === 2 && (
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  className="flex-1 h-[48px] sm:h-[52px] border border-arcon-gray-border text-arcon-gray-primary font-bold text-sm sm:text-base rounded font-roboto hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:ring-offset-2 transition-colors"
+                >
+                  Previous
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={isLoading}
+                className="flex-1 h-[48px] sm:h-[52px] bg-arcon-blue text-white font-bold text-sm sm:text-base rounded font-roboto hover:bg-arcon-blue/90 focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading
+                  ? "Processing..."
+                  : currentStep === 1
+                    ? "Next"
+                    : "Complete Sign Up"
+                }
+              </button>
+            </div>
+          </div>
 
           <div className="text-center mt-6">
             <p className="text-arcon-gray-secondary text-xs sm:text-sm font-roboto">

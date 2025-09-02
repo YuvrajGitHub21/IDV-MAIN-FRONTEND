@@ -556,7 +556,7 @@ export default function SignUp() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-arcon-blue text-white font-bold text-base rounded font-roboto hover:bg-arcon-blue/90 focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full h-[48px] sm:h-[52px] bg-arcon-blue text-white font-bold text-sm sm:text-base rounded font-roboto hover:bg-arcon-blue/90 focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? "Signing up..." : "Sign up"}
             </button>

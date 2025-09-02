@@ -48,10 +48,10 @@ export function NameTemplateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent 
+      <DialogContent
         className={cn(
           "max-w-[520px] w-full p-0 gap-0 bg-white rounded-lg border shadow-lg",
-          "font-roboto"
+          "font-roboto",
         )}
         onInteractOutside={(e) => e.preventDefault()}
       >
@@ -76,7 +76,7 @@ export function NameTemplateDialog({
         <div className="px-5 py-5 bg-white">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label 
+              <Label
                 htmlFor="template-name"
                 className="text-sm font-medium text-gray-900 leading-[18px]"
               >
@@ -90,7 +90,7 @@ export function NameTemplateDialog({
                 className={cn(
                   "h-[38px] px-3 py-2 text-sm border border-gray-300 rounded",
                   "focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                  "placeholder:text-gray-500"
+                  "placeholder:text-gray-500",
                 )}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -112,7 +112,7 @@ export function NameTemplateDialog({
             onClick={handleCancel}
             className={cn(
               "h-8 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50",
-              "rounded border-0"
+              "rounded border-0",
             )}
           >
             Cancel
@@ -122,7 +122,7 @@ export function NameTemplateDialog({
             disabled={!templateName.trim()}
             className={cn(
               "h-8 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700",
-              "rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              "rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
             Save & Continue

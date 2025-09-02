@@ -6,6 +6,9 @@ import {
   formatDate,
   getStatusInfo,
 } from "@/hooks/useTemplates";
+import { AddNewTemplateDropdown } from "@/components/arcon/AddNewTemplateDropdown";
+import { TemplateActionsDropdown } from "@/components/arcon/TemplateActionsDropdown";
+import { InviteesAvatarGroup } from "@/components/arcon/InviteesAvatarGroup";
 
 export default function Templates() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -87,44 +90,20 @@ export default function Templates() {
     );
   };
 
-  const getInviteesAvatars = () => {
-    const avatarColors = [
-      "bg-pink-200",
-      "bg-blue-200",
-      "bg-purple-200",
-      "bg-orange-200",
-      "bg-teal-200",
-      "bg-yellow-200",
-    ];
+  // Handle template actions
+  const handleCreateNewTemplate = () => {
+    console.log("Create new template");
+    // Add your create new template logic here
+  };
 
-    return (
-      <div className="flex -space-x-1">
-        <div
-          className={cn(
-            "w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium",
-            avatarColors[0],
-          )}
-        >
-          OP
-        </div>
-        <div
-          className={cn(
-            "w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium",
-            avatarColors[1],
-          )}
-        >
-          VS
-        </div>
-        <div
-          className={cn(
-            "w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium",
-            avatarColors[2],
-          )}
-        >
-          +{Math.floor(Math.random() * 8) + 1}
-        </div>
-      </div>
-    );
+  const handleChooseTemplate = () => {
+    console.log("Choose template");
+    // Add your choose template logic here
+  };
+
+  const handleTemplateAction = (action: string, templateId: string) => {
+    console.log(`Action: ${action} for template: ${templateId}`);
+    // Add your template action logic here
   };
 
   return (
@@ -441,20 +420,10 @@ export default function Templates() {
                 </div>
 
                 {/* Add New Button */}
-                <div className="flex">
-                  <button className="bg-blue-600 text-white px-3 py-1.5 text-sm font-medium rounded-l hover:bg-blue-700">
-                    Add New
-                  </button>
-                  <button className="bg-blue-600 border-l border-blue-500 text-white px-2 py-1.5 rounded-r hover:bg-blue-700">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M7 10l5 5 5-5z" />
-                    </svg>
-                  </button>
-                </div>
+                <AddNewTemplateDropdown
+                  onCreateNew={handleCreateNewTemplate}
+                  onChooseTemplate={handleChooseTemplate}
+                />
               </div>
             </div>
           </div>
@@ -545,7 +514,7 @@ export default function Templates() {
                             {template.name}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
-                            {getInviteesAvatars()}
+                            <InviteesAvatarGroup />
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
                             {formatDate(template.createdAtUtc)}
@@ -560,15 +529,35 @@ export default function Templates() {
                             {formatDate(template.createdAtUtc)}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
-                            <button className="p-1 rounded-full hover:bg-gray-100">
-                              <svg
-                                className="w-4 h-4 text-gray-400"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                              </svg>
-                            </button>
+                            <TemplateActionsDropdown
+                              onPreview={() =>
+                                handleTemplateAction("preview", template.id)
+                              }
+                              onSendInvite={() =>
+                                handleTemplateAction("sendInvite", template.id)
+                              }
+                              onGenerateLink={() =>
+                                handleTemplateAction(
+                                  "generateLink",
+                                  template.id,
+                                )
+                              }
+                              onDownload={() =>
+                                handleTemplateAction("download", template.id)
+                              }
+                              onRename={() =>
+                                handleTemplateAction("rename", template.id)
+                              }
+                              onClone={() =>
+                                handleTemplateAction("clone", template.id)
+                              }
+                              onEdit={() =>
+                                handleTemplateAction("edit", template.id)
+                              }
+                              onDelete={() =>
+                                handleTemplateAction("delete", template.id)
+                              }
+                            />
                           </td>
                         </tr>
                       ))
@@ -609,19 +598,36 @@ export default function Templates() {
                             {formatDate(template.createdAtUtc)}
                           </p>
                           <div className="mt-2 flex items-center gap-3">
-                            {getInviteesAvatars()}
+                            <InviteesAvatarGroup />
                             {getStatusBadge(template.isActive)}
                           </div>
                         </div>
-                        <button className="p-1 rounded-full hover:bg-gray-100">
-                          <svg
-                            className="w-5 h-5 text-gray-400"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                          </svg>
-                        </button>
+                        <TemplateActionsDropdown
+                          onPreview={() =>
+                            handleTemplateAction("preview", template.id)
+                          }
+                          onSendInvite={() =>
+                            handleTemplateAction("sendInvite", template.id)
+                          }
+                          onGenerateLink={() =>
+                            handleTemplateAction("generateLink", template.id)
+                          }
+                          onDownload={() =>
+                            handleTemplateAction("download", template.id)
+                          }
+                          onRename={() =>
+                            handleTemplateAction("rename", template.id)
+                          }
+                          onClone={() =>
+                            handleTemplateAction("clone", template.id)
+                          }
+                          onEdit={() =>
+                            handleTemplateAction("edit", template.id)
+                          }
+                          onDelete={() =>
+                            handleTemplateAction("delete", template.id)
+                          }
+                        />
                       </div>
                     </div>
                   ))

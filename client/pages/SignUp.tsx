@@ -1,13 +1,24 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 export default function SignUp() {
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
+  });
+  const [documentData, setDocumentData] = useState({
+    allowUploadFromDevice: false,
+    allowCaptureWebcam: false,
+    documentHandling: "",
+    selectedCountries: ["India"],
+    selectedDocuments: [] as string[],
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);

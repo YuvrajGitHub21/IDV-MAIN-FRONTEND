@@ -65,17 +65,18 @@ const defaultUsers: User[] = [
   },
 ];
 
-export function UserListDropdown({ users = defaultUsers, children }: UserListDropdownProps) {
+export function UserListDropdown({
+  users = defaultUsers,
+  children,
+}: UserListDropdownProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {children}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="start" 
+      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
         className={cn(
           "w-[280px] p-2 bg-white rounded border shadow-lg",
-          "font-roboto max-h-[400px] overflow-y-auto"
+          "font-roboto max-h-[400px] overflow-y-auto",
         )}
       >
         <div className="space-y-1">
@@ -84,14 +85,14 @@ export function UserListDropdown({ users = defaultUsers, children }: UserListDro
               key={user.id}
               className={cn(
                 "flex items-center gap-2 px-2 py-2.5 hover:bg-gray-50 rounded cursor-pointer",
-                "transition-colors"
+                "transition-colors",
               )}
             >
               <Avatar className="w-8 h-8">
-                <AvatarFallback 
+                <AvatarFallback
                   className={cn(
                     "text-xs font-medium text-gray-600 border border-white",
-                    user.avatarColor
+                    user.avatarColor,
                   )}
                 >
                   {user.initials}

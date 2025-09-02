@@ -530,14 +530,33 @@ export default function Templates() {
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
                             <TemplateActionsDropdown
-                              onPreview={() => handleTemplateAction("preview", template.id)}
-                              onSendInvite={() => handleTemplateAction("sendInvite", template.id)}
-                              onGenerateLink={() => handleTemplateAction("generateLink", template.id)}
-                              onDownload={() => handleTemplateAction("download", template.id)}
-                              onRename={() => handleTemplateAction("rename", template.id)}
-                              onClone={() => handleTemplateAction("clone", template.id)}
-                              onEdit={() => handleTemplateAction("edit", template.id)}
-                              onDelete={() => handleTemplateAction("delete", template.id)}
+                              onPreview={() =>
+                                handleTemplateAction("preview", template.id)
+                              }
+                              onSendInvite={() =>
+                                handleTemplateAction("sendInvite", template.id)
+                              }
+                              onGenerateLink={() =>
+                                handleTemplateAction(
+                                  "generateLink",
+                                  template.id,
+                                )
+                              }
+                              onDownload={() =>
+                                handleTemplateAction("download", template.id)
+                              }
+                              onRename={() =>
+                                handleTemplateAction("rename", template.id)
+                              }
+                              onClone={() =>
+                                handleTemplateAction("clone", template.id)
+                              }
+                              onEdit={() =>
+                                handleTemplateAction("edit", template.id)
+                              }
+                              onDelete={() =>
+                                handleTemplateAction("delete", template.id)
+                              }
                             />
                           </td>
                         </tr>
@@ -584,14 +603,30 @@ export default function Templates() {
                           </div>
                         </div>
                         <TemplateActionsDropdown
-                          onPreview={() => handleTemplateAction("preview", template.id)}
-                          onSendInvite={() => handleTemplateAction("sendInvite", template.id)}
-                          onGenerateLink={() => handleTemplateAction("generateLink", template.id)}
-                          onDownload={() => handleTemplateAction("download", template.id)}
-                          onRename={() => handleTemplateAction("rename", template.id)}
-                          onClone={() => handleTemplateAction("clone", template.id)}
-                          onEdit={() => handleTemplateAction("edit", template.id)}
-                          onDelete={() => handleTemplateAction("delete", template.id)}
+                          onPreview={() =>
+                            handleTemplateAction("preview", template.id)
+                          }
+                          onSendInvite={() =>
+                            handleTemplateAction("sendInvite", template.id)
+                          }
+                          onGenerateLink={() =>
+                            handleTemplateAction("generateLink", template.id)
+                          }
+                          onDownload={() =>
+                            handleTemplateAction("download", template.id)
+                          }
+                          onRename={() =>
+                            handleTemplateAction("rename", template.id)
+                          }
+                          onClone={() =>
+                            handleTemplateAction("clone", template.id)
+                          }
+                          onEdit={() =>
+                            handleTemplateAction("edit", template.id)
+                          }
+                          onDelete={() =>
+                            handleTemplateAction("delete", template.id)
+                          }
                         />
                       </div>
                     </div>

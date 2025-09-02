@@ -21,7 +21,7 @@ export function AddNewTemplateDropdown({
   return (
     <DropdownMenu>
       <div className="flex">
-        <Button 
+        <Button
           className="bg-blue-600 text-white px-3 py-1.5 text-sm font-medium rounded-l hover:bg-blue-700"
           onClick={onCreateNew}
         >
@@ -33,26 +33,26 @@ export function AddNewTemplateDropdown({
           </Button>
         </DropdownMenuTrigger>
       </div>
-      <DropdownMenuContent 
-        align="end" 
+      <DropdownMenuContent
+        align="end"
         className={cn(
           "w-[230px] p-2 bg-white rounded border shadow-lg",
-          "font-roboto"
+          "font-roboto",
         )}
       >
-        <DropdownMenuItem 
+        <DropdownMenuItem
           className={cn(
             "flex items-center px-2 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onCreateNew}
         >
           Create New Template
         </DropdownMenuItem>
-        <DropdownMenuItem 
+        <DropdownMenuItem
           className={cn(
             "flex items-center px-2 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onChooseTemplate}
         >

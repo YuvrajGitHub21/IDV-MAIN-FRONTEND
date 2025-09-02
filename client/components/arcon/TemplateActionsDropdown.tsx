@@ -7,16 +7,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { 
-  Eye, 
-  Send, 
-  Link, 
-  Download, 
-  Edit3, 
-  Copy, 
-  Edit, 
+import {
+  Eye,
+  Send,
+  Link,
+  Download,
+  Edit3,
+  Copy,
+  Edit,
   Trash2,
-  MoreVertical 
+  MoreVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,104 +44,104 @@ export function TemplateActionsDropdown({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
           className="p-1 h-8 w-8 rounded-full hover:bg-gray-100"
         >
           <MoreVertical className="w-4 h-4 text-gray-400" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align="end" 
+      <DropdownMenuContent
+        align="end"
         className={cn(
           "w-[250px] p-2 bg-white rounded border shadow-lg",
-          "font-roboto"
+          "font-roboto",
         )}
       >
-        <DropdownMenuItem 
+        <DropdownMenuItem
           className={cn(
             "flex items-center gap-2 px-1.5 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onPreview}
         >
           <Eye className="w-4 h-4" />
           Preview
         </DropdownMenuItem>
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           className={cn(
             "flex items-center gap-2 px-1.5 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onSendInvite}
         >
           <Send className="w-4 h-4" />
           Send Invite
         </DropdownMenuItem>
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           className={cn(
             "flex items-center gap-2 px-1.5 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onGenerateLink}
         >
           <Link className="w-4 h-4" />
           Generate Link
         </DropdownMenuItem>
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           className={cn(
             "flex items-center gap-2 px-1.5 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onDownload}
         >
           <Download className="w-4 h-4" />
           Download
         </DropdownMenuItem>
-        
+
         <DropdownMenuSeparator className="my-1 bg-gray-200" />
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           className={cn(
             "flex items-center gap-2 px-1.5 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onRename}
         >
           <Edit3 className="w-4 h-4" />
           Rename
         </DropdownMenuItem>
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           className={cn(
             "flex items-center gap-2 px-1.5 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onClone}
         >
           <Copy className="w-4 h-4" />
           Clone
         </DropdownMenuItem>
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           className={cn(
             "flex items-center gap-2 px-1.5 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onEdit}
         >
           <Edit className="w-4 h-4" />
           Edit
         </DropdownMenuItem>
-        
-        <DropdownMenuItem 
+
+        <DropdownMenuItem
           className={cn(
             "flex items-center gap-2 px-1.5 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
-            "font-medium"
+            "font-medium",
           )}
           onClick={onDelete}
         >

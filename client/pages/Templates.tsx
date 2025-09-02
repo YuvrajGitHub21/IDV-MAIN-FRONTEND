@@ -579,19 +579,20 @@ export default function Templates() {
                             {formatDate(template.createdAtUtc)}
                           </p>
                           <div className="mt-2 flex items-center gap-3">
-                            {getInviteesAvatars()}
+                            <InviteesAvatarGroup />
                             {getStatusBadge(template.isActive)}
                           </div>
                         </div>
-                        <button className="p-1 rounded-full hover:bg-gray-100">
-                          <svg
-                            className="w-5 h-5 text-gray-400"
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                          </svg>
-                        </button>
+                        <TemplateActionsDropdown
+                          onPreview={() => handleTemplateAction("preview", template.id)}
+                          onSendInvite={() => handleTemplateAction("sendInvite", template.id)}
+                          onGenerateLink={() => handleTemplateAction("generateLink", template.id)}
+                          onDownload={() => handleTemplateAction("download", template.id)}
+                          onRename={() => handleTemplateAction("rename", template.id)}
+                          onClone={() => handleTemplateAction("clone", template.id)}
+                          onEdit={() => handleTemplateAction("edit", template.id)}
+                          onDelete={() => handleTemplateAction("delete", template.id)}
+                        />
                       </div>
                     </div>
                   ))

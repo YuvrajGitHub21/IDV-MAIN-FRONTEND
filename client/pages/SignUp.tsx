@@ -322,7 +322,7 @@ export default function SignUp() {
                   value={formData.firstName}
                   onChange={handleInputChange}
                   placeholder="Enter your first name"
-                  className={`w-full h-[54px] px-3 py-4 border rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
                     errors.firstName
                       ? "border-red-500"
                       : "border-arcon-gray-border"

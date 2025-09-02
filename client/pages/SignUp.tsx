@@ -420,7 +420,7 @@ export default function SignUp() {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   placeholder="Re-enter your password"
-                  className={`w-full h-[54px] px-3 py-4 border rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
                     errors.confirmPassword
                       ? "border-red-500"
                       : "border-arcon-gray-border"
@@ -430,6 +430,111 @@ export default function SignUp() {
               {errors.confirmPassword && (
                 <p className="text-red-500 text-sm mt-1 font-roboto">
                   {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+                Date Of Birth
+              </label>
+              <div className="relative">
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleInputChange}
+                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                    errors.dateOfBirth
+                      ? "border-red-500"
+                      : "border-arcon-gray-border"
+                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                />
+              </div>
+              {errors.dateOfBirth && (
+                <p className="text-red-500 text-sm mt-1 font-roboto">
+                  {errors.dateOfBirth}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+                Permanent Address
+              </label>
+              <div className="relative">
+                <textarea
+                  name="permanentAddress"
+                  value={formData.permanentAddress}
+                  onChange={handleInputChange}
+                  placeholder="Enter your permanent address"
+                  rows={3}
+                  className={`w-full px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary resize-none ${
+                    errors.permanentAddress
+                      ? "border-red-500"
+                      : "border-arcon-gray-border"
+                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                />
+              </div>
+              {errors.permanentAddress && (
+                <p className="text-red-500 text-sm mt-1 font-roboto">
+                  {errors.permanentAddress}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+                Current Address
+              </label>
+              <div className="relative">
+                <textarea
+                  name="currentAddress"
+                  value={formData.currentAddress}
+                  onChange={handleInputChange}
+                  placeholder="Enter your current address"
+                  rows={3}
+                  className={`w-full px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary resize-none ${
+                    errors.currentAddress
+                      ? "border-red-500"
+                      : "border-arcon-gray-border"
+                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                />
+              </div>
+              {errors.currentAddress && (
+                <p className="text-red-500 text-sm mt-1 font-roboto">
+                  {errors.currentAddress}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+                Gender
+              </label>
+              <div className="relative">
+                <select
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base ${
+                    formData.gender ? "text-arcon-gray-primary" : "text-arcon-gray-secondary"
+                  } ${
+                    errors.gender
+                      ? "border-red-500"
+                      : "border-arcon-gray-border"
+                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent bg-white`}
+                >
+                  <option value="" disabled>Select gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                  <option value="prefer-not-to-say">Prefer not to say</option>
+                </select>
+              </div>
+              {errors.gender && (
+                <p className="text-red-500 text-sm mt-1 font-roboto">
+                  {errors.gender}
                 </p>
               )}
             </div>

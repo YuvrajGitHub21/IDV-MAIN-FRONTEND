@@ -86,7 +86,7 @@ export default function DocumentVerification() {
         </div>
 
         {/* Page Title and Actions */}
-        <div className="flex items-center justify-between px-4 py-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2 gap-3">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -96,22 +96,23 @@ export default function DocumentVerification() {
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-xl font-bold text-[#172B4D]">New Template</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-[#172B4D]">New Template</h1>
           </div>
-          
-          <div className="flex items-center gap-1">
+
+          <div className="flex items-center gap-1 overflow-x-auto">
             <Button
               variant="outline"
               size="sm"
-              className="h-8 px-2 text-xs border-gray-300"
+              className="h-8 px-2 text-xs border-gray-300 whitespace-nowrap"
             >
               <div className="w-4 h-4 rounded border border-gray-300 mr-2"></div>
-              Mark As Complete
+              <span className="hidden sm:inline">Mark As Complete</span>
+              <span className="sm:hidden">Complete</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="h-8 px-2 text-xs border-[#0073EA] text-[#0073EA] hover:bg-blue-50"
+              className="h-8 px-2 text-xs border-[#0073EA] text-[#0073EA] hover:bg-blue-50 whitespace-nowrap"
               onClick={handlePreview}
             >
               <Eye className="w-4 h-4 mr-1" />
@@ -119,7 +120,7 @@ export default function DocumentVerification() {
             </Button>
             <Button
               size="sm"
-              className="h-8 px-2 text-xs bg-[#0073EA] hover:bg-blue-700"
+              className="h-8 px-2 text-xs bg-[#0073EA] hover:bg-blue-700 whitespace-nowrap"
               onClick={handleSave}
             >
               <Save className="w-4 h-4 mr-1" />

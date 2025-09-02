@@ -275,17 +275,17 @@ export default function DocumentVerification() {
               {/* Document Verification Content */}
               <div className="px-4 lg:px-9 pb-4 lg:pb-6 space-y-4 lg:space-y-6">
                 {/* User Upload Options */}
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   <div>
-                    <h4 className="text-base font-bold text-[#172B4D] leading-3 mb-2">
+                    <h4 className="text-sm lg:text-base font-bold text-[#172B4D] leading-tight mb-2">
                       User Upload Options
                     </h4>
-                    <p className="text-[13px] text-[#172B4D] leading-5">
+                    <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
                       Select how users are allowed to submit documents during the process.
                     </p>
                   </div>
 
-                  <div className="bg-[#F6F7FB] rounded p-6 space-y-5">
+                  <div className="bg-[#F6F7FB] rounded p-4 lg:p-6 space-y-4 lg:space-y-5">
                     {/* Upload from Device */}
                     <div className="pb-5 border-b border-[#D0D4E4]">
                       <div className="flex items-start gap-2">

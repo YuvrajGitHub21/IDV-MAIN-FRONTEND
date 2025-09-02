@@ -167,6 +167,7 @@ export default function Templates() {
       <div className="flex">
         {/* Sidebar */}
         <aside
+          ref={sidebarRef}
           className={cn(
             "fixed inset-y-0 left-0 z-50 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
             sidebarOpen

@@ -41,10 +41,4 @@ const App = () => (
   </QueryClientProvider>
 );
 
-// Create root only once and render
-const container = document.getElementById("root");
-if (container && !container.hasAttribute('data-react-root')) {
-  container.setAttribute('data-react-root', 'true');
-  const root = createRoot(container);
-  root.render(<App />);
-}
+export default App;

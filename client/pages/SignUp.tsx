@@ -563,7 +563,7 @@ export default function SignUp() {
           </form>
 
           <div className="text-center mt-6">
-            <p className="text-arcon-gray-secondary text-sm font-roboto">
+            <p className="text-arcon-gray-secondary text-xs sm:text-sm font-roboto">
               Already have an account?{" "}
               <button
                 onClick={() => navigate("/login", { replace: true })}

@@ -37,13 +37,13 @@ export function AddNewTemplateDropdown({
       <DropdownMenu>
         <div className="flex">
           <Button
-            className="bg-blue-600 text-white px-3 py-1.5 text-sm font-medium rounded-l hover:bg-blue-700"
+            className="bg-blue-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-blue-700"
             onClick={handleCreateNewClick}
           >
             Add New
           </Button>
           <DropdownMenuTrigger asChild>
-            <Button className="bg-blue-600 border-l border-blue-500 text-white px-2 py-1.5 rounded-r hover:bg-blue-700">
+            <Button className="bg-blue-600 border-l border-blue-500 text-white px-2 py-1.5 hover:bg-blue-700">
               <ChevronDown className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>

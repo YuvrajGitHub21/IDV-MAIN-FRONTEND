@@ -21,7 +21,9 @@ export default function DocumentVerification() {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
-  const [selectedCountries, setSelectedCountries] = useState<string[]>(["India"]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([
+    "India",
+  ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
   const handlePrevious = () => {
@@ -41,22 +43,22 @@ export default function DocumentVerification() {
   };
 
   const toggleDocument = (docType: string) => {
-    setSelectedDocuments(prev =>
+    setSelectedDocuments((prev) =>
       prev.includes(docType)
-        ? prev.filter(d => d !== docType)
-        : [...prev, docType]
+        ? prev.filter((d) => d !== docType)
+        : [...prev, docType],
     );
   };
 
   const removeCountry = (country: string) => {
-    setSelectedCountries(prev => prev.filter(c => c !== country));
+    setSelectedCountries((prev) => prev.filter((c) => c !== country));
   };
 
   const documentTypes = [
     "Aadhar Card",
-    "Pan Card", 
+    "Pan Card",
     "Driving License",
-    "Passport"
+    "Passport",
   ];
 
   return (
@@ -96,7 +98,9 @@ export default function DocumentVerification() {
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-lg sm:text-xl font-bold text-[#172B4D]">New Template</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-[#172B4D]">
+              New Template
+            </h1>
           </div>
 
           <div className="flex items-center gap-1 overflow-x-auto">
@@ -157,9 +161,13 @@ export default function DocumentVerification() {
           {/* Step 2 - Inactive */}
           <div className="flex flex-col items-center gap-1.5">
             <div className="flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 rounded-full border border-[#D0D4E4] bg-white">
-              <span className="text-gray-600 font-bold text-xs sm:text-sm">2</span>
+              <span className="text-gray-600 font-bold text-xs sm:text-sm">
+                2
+              </span>
             </div>
-            <span className="text-xs sm:text-sm text-gray-600 text-center">Preview</span>
+            <span className="text-xs sm:text-sm text-gray-600 text-center">
+              Preview
+            </span>
           </div>
         </div>
 
@@ -185,7 +193,8 @@ export default function DocumentVerification() {
                   Build your process
                 </h2>
                 <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Create a flow by adding required information fields and verification steps for your users.
+                  Create a flow by adding required information fields and
+                  verification steps for your users.
                 </p>
               </div>
 
@@ -196,7 +205,8 @@ export default function DocumentVerification() {
                     Personal Information
                   </h3>
                   <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Set up fields to collect basic user details like name, contact.
+                    Set up fields to collect basic user details like name,
+                    contact.
                   </p>
                 </div>
               </div>
@@ -232,7 +242,8 @@ export default function DocumentVerification() {
                     Biometric Verification
                   </h3>
                   <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Set selfie retries, liveness threshold, and biometric storage
+                    Set selfie retries, liveness threshold, and biometric
+                    storage
                   </p>
                 </div>
               </div>
@@ -252,11 +263,14 @@ export default function DocumentVerification() {
             <div className="border border-[#D0D4E4] rounded">
               <div className="p-3 flex items-center gap-2">
                 <Minus className="w-4 lg:w-[18px] h-4 lg:h-[18px] text-[#323238]" />
-                <h3 className="text-sm lg:text-base font-bold text-[#172B4D]">Personal Information</h3>
+                <h3 className="text-sm lg:text-base font-bold text-[#172B4D]">
+                  Personal Information
+                </h3>
               </div>
               <div className="px-4 lg:px-9 pb-3">
                 <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Set up fields to collect basic user details like name, contact.
+                  Set up fields to collect basic user details like name,
+                  contact.
                 </p>
               </div>
             </div>
@@ -265,11 +279,14 @@ export default function DocumentVerification() {
             <div className="border border-[#D0D4E4] rounded">
               <div className="p-3 flex items-center gap-2">
                 <Minus className="w-4 lg:w-[18px] h-4 lg:h-[18px] text-[#323238]" />
-                <h3 className="text-sm lg:text-base font-bold text-[#172B4D]">Document Verification</h3>
+                <h3 className="text-sm lg:text-base font-bold text-[#172B4D]">
+                  Document Verification
+                </h3>
               </div>
               <div className="px-4 lg:px-9 pb-3">
                 <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Define how users can submit ID documents and what happens if files are unclear.
+                  Define how users can submit ID documents and what happens if
+                  files are unclear.
                 </p>
               </div>
 
@@ -282,7 +299,8 @@ export default function DocumentVerification() {
                       User Upload Options
                     </h4>
                     <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
-                      Select how users are allowed to submit documents during the process.
+                      Select how users are allowed to submit documents during
+                      the process.
                     </p>
                   </div>
 
@@ -304,7 +322,8 @@ export default function DocumentVerification() {
                             Allow Upload from Device
                           </Label>
                           <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                            Let users upload existing documents directly from their device.
+                            Let users upload existing documents directly from
+                            their device.
                           </p>
                         </div>
                       </div>
@@ -327,7 +346,8 @@ export default function DocumentVerification() {
                             Allow Capture via Webcam
                           </Label>
                           <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                            Enable webcam access to allow users to capture documents in real time.
+                            Enable webcam access to allow users to capture
+                            documents in real time.
                           </p>
                         </div>
                       </div>
@@ -342,17 +362,25 @@ export default function DocumentVerification() {
                       Unreadable Document Handling
                     </h4>
                     <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
-                      Choose what action the system should take if a submitted document is not clear or unreadable.
+                      Choose what action the system should take if a submitted
+                      document is not clear or unreadable.
                     </p>
                   </div>
 
                   <div className="bg-[#F6F7FB] rounded p-4 lg:p-6">
-                    <RadioGroup value={documentHandling} onValueChange={setDocumentHandling}>
+                    <RadioGroup
+                      value={documentHandling}
+                      onValueChange={setDocumentHandling}
+                    >
                       <div className="space-y-4 lg:space-y-5">
                         {/* Reject Immediately */}
                         <div className="pb-4 lg:pb-5 border-b border-[#D0D4E4]">
                           <div className="flex items-start gap-2">
-                            <RadioGroupItem value="reject" id="reject" className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]" />
+                            <RadioGroupItem
+                              value="reject"
+                              id="reject"
+                              className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
+                            />
                             <div className="flex-1 min-w-0">
                               <Label
                                 htmlFor="reject"
@@ -361,7 +389,8 @@ export default function DocumentVerification() {
                                 Reject Immediately
                               </Label>
                               <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                                Skip retry and reject unclear documents without further attempts.
+                                Skip retry and reject unclear documents without
+                                further attempts.
                               </p>
                             </div>
                           </div>
@@ -370,7 +399,11 @@ export default function DocumentVerification() {
                         {/* Allow Retries */}
                         <div>
                           <div className="flex items-start gap-2">
-                            <RadioGroupItem value="retry" id="retry" className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]" />
+                            <RadioGroupItem
+                              value="retry"
+                              id="retry"
+                              className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
+                            />
                             <div className="flex-1 min-w-0">
                               <Label
                                 htmlFor="retry"
@@ -379,7 +412,8 @@ export default function DocumentVerification() {
                                 Allow Retries Before Rejection
                               </Label>
                               <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                                Let users reattempt uploading the document before it's finally rejected.
+                                Let users reattempt uploading the document
+                                before it's finally rejected.
                               </p>
                             </div>
                           </div>
@@ -421,7 +455,9 @@ export default function DocumentVerification() {
                     {selectedCountries.map((country) => (
                       <div key={country} className="bg-white rounded p-3">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm lg:text-[14px] font-medium text-black">{country}</span>
+                          <span className="text-sm lg:text-[14px] font-medium text-black">
+                            {country}
+                          </span>
                           <Button
                             variant="ghost"
                             size="sm"

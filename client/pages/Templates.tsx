@@ -91,9 +91,10 @@ export default function Templates() {
   };
 
   // Handle template actions
-  const handleCreateNewTemplate = () => {
-    console.log("Create new template");
+  const handleCreateNewTemplate = (templateName: string) => {
+    console.log("Create new template with name:", templateName);
     // Add your create new template logic here
+    // For example: navigate to template builder with the template name
   };
 
   const handleChooseTemplate = () => {

@@ -169,6 +169,14 @@ export default function TemplateBuilder() {
   const [addedFields, setAddedFields] = useState<AddedField[]>([]);
   const [personalInfoExpanded, setPersonalInfoExpanded] = useState(true);
 
+  // System fields state
+  const [systemFieldAlerts, setSystemFieldAlerts] = useState<{[key: string]: boolean}>({});
+  const [systemFieldValues, setSystemFieldValues] = useState({
+    firstName: "Eg: John",
+    lastName: "Eg: Wick",
+    email: "Eg: johnwick@email.com"
+  });
+
   const addVerificationStep = (stepId: string) => {
     const stepToAdd = availableSteps.find((step) => step.id === stepId);
     if (stepToAdd) {

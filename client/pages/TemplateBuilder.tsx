@@ -578,7 +578,7 @@ export default function TemplateBuilder() {
                         {addedFields.map((field) => (
                           <div
                             key={field.id}
-                            className="border border-blue-300 rounded-lg p-5 bg-blue-50"
+                            className="border border-gray-300 rounded-lg p-5 bg-white"
                           >
                             <div className="flex items-center justify-between mb-3">
                               <Label className="font-semibold text-sm text-gray-900">

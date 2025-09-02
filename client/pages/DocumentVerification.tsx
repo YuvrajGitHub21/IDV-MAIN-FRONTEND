@@ -246,15 +246,15 @@ export default function DocumentVerification() {
 
         {/* Main Content Area */}
         <div className="flex-1 p-4 lg:pl-2 bg-white overflow-auto">
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             {/* Personal Information Accordion */}
             <div className="border border-[#D0D4E4] rounded">
               <div className="p-3 flex items-center gap-2">
-                <Minus className="w-[18px] h-[18px] text-[#323238]" />
-                <h3 className="text-base font-bold text-[#172B4D]">Personal Information</h3>
+                <Minus className="w-4 lg:w-[18px] h-4 lg:h-[18px] text-[#323238]" />
+                <h3 className="text-sm lg:text-base font-bold text-[#172B4D]">Personal Information</h3>
               </div>
-              <div className="px-9 pb-3">
-                <p className="text-[13px] text-[#505258] leading-5">
+              <div className="px-4 lg:px-9 pb-3">
+                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                   Set up fields to collect basic user details like name, contact.
                 </p>
               </div>
@@ -263,17 +263,17 @@ export default function DocumentVerification() {
             {/* Document Verification Accordion - Expanded */}
             <div className="border border-[#D0D4E4] rounded">
               <div className="p-3 flex items-center gap-2">
-                <Minus className="w-[18px] h-[18px] text-[#323238]" />
-                <h3 className="text-base font-bold text-[#172B4D]">Document Verification</h3>
+                <Minus className="w-4 lg:w-[18px] h-4 lg:h-[18px] text-[#323238]" />
+                <h3 className="text-sm lg:text-base font-bold text-[#172B4D]">Document Verification</h3>
               </div>
-              <div className="px-9 pb-3">
-                <p className="text-[13px] text-[#505258] leading-5">
+              <div className="px-4 lg:px-9 pb-3">
+                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                   Define how users can submit ID documents and what happens if files are unclear.
                 </p>
               </div>
 
               {/* Document Verification Content */}
-              <div className="px-9 pb-6 space-y-6">
+              <div className="px-4 lg:px-9 pb-4 lg:pb-6 space-y-4 lg:space-y-6">
                 {/* User Upload Options */}
                 <div className="space-y-4">
                   <div>

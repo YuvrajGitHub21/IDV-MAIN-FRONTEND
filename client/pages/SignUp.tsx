@@ -63,11 +63,20 @@ export default function SignUp() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleNext = () => {
+    if (currentStep === 1) {
+      if (!validateForm()) return;
+      setCurrentStep(2);
+    } else {
+      handleSubmit();
+    }
+  };
 
-    if (!validateForm()) return;
+  const handlePrevious = () => {
+    setCurrentStep(1);
+  };
 
+  const handleSubmit = async () => {
     setIsLoading(true);
     setErrors({});
 
@@ -81,6 +90,7 @@ export default function SignUp() {
           email: formData.email,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
+          documentVerification: documentData,
         }),
       });
 
@@ -108,6 +118,22 @@ export default function SignUp() {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
+
+  const toggleDocument = (docType: string) => {
+    setDocumentData((prev) => ({
+      ...prev,
+      selectedDocuments: prev.selectedDocuments.includes(docType)
+        ? prev.selectedDocuments.filter((d) => d !== docType)
+        : [...prev.selectedDocuments, docType],
+    }));
+  };
+
+  const documentTypes = [
+    "Aadhar Card",
+    "Pan Card",
+    "Driving License",
+    "Passport",
+  ];
 
   return (
     <div className="w-full min-h-screen bg-white flex flex-col lg:flex-row overflow-hidden">

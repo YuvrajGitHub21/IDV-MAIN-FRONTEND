@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   useTemplates,
@@ -16,6 +17,7 @@ export default function Templates() {
   const [pageSize, setPageSize] = useState(12);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Use custom hooks for API integration
   const {
@@ -105,6 +107,16 @@ export default function Templates() {
   const handleTemplateAction = (action: string, templateId: string) => {
     console.log(`Action: ${action} for template: ${templateId}`);
     // Add your template action logic here
+  };
+
+  const handleLogout = () => {
+    // Clear authentication tokens and user data from localStorage
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("user");
+
+    // Navigate to login page
+    navigate("/login", { replace: true });
   };
 
   return (
@@ -345,6 +357,30 @@ export default function Templates() {
                 <span className="text-xs font-semibold mt-1">Users</span>
               </div>
             </nav>
+
+            {/* Logout */}
+            <div
+              className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+              onClick={handleLogout}
+            >
+              <svg
+                className="w-5 h-5"
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8.25 19.25H4.58333C4.17935 19.25 3.79185 19.0893 3.50429 18.8017C3.21673 18.5141 3.05556 18.1267 3.05556 17.7222V4.27778C3.05556 3.87326 3.21673 3.48587 3.50429 3.19831C3.79185 2.91075 4.17935 2.75 4.58333 2.75H8.25M15.5833 15.5833L19.25 11.9167M19.25 11.9167L15.5833 8.25M19.25 11.9167H8.25"
+                  stroke="#676879"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-xs font-semibold mt-1">Logout</span>
+            </div>
 
             {/* Help */}
             <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">

@@ -8,10 +8,6 @@ export default function SignUp() {
     email: "",
     password: "",
     confirmPassword: "",
-    dateOfBirth: "",
-    permanentAddress: "",
-    currentAddress: "",
-    gender: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -52,22 +48,6 @@ export default function SignUp() {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
-    if (!formData.dateOfBirth) {
-      newErrors.dateOfBirth = "Date of birth is required";
-    }
-
-    if (!formData.permanentAddress.trim()) {
-      newErrors.permanentAddress = "Permanent address is required";
-    }
-
-    if (!formData.currentAddress.trim()) {
-      newErrors.currentAddress = "Current address is required";
-    }
-
-    if (!formData.gender) {
-      newErrors.gender = "Please select your gender";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -90,10 +70,6 @@ export default function SignUp() {
           email: formData.email,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
-          dateOfBirth: formData.dateOfBirth,
-          permanentAddress: formData.permanentAddress,
-          currentAddress: formData.currentAddress,
-          gender: formData.gender,
         }),
       });
 
@@ -114,11 +90,7 @@ export default function SignUp() {
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -316,7 +288,7 @@ export default function SignUp() {
           {/* Form */}
           <form
             onSubmit={handleSubmit}
-            className="space-y-4 sm:space-y-5 md:space-y-6"
+            className="space-y-5 sm:space-y-6 md:space-y-7"
           >
             <div>
               <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
@@ -437,115 +409,6 @@ export default function SignUp() {
               {errors.confirmPassword && (
                 <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.confirmPassword}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                Date Of Birth
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  name="dateOfBirth"
-                  value={formData.dateOfBirth}
-                  onChange={handleInputChange}
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.dateOfBirth
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
-              </div>
-              {errors.dateOfBirth && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.dateOfBirth}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                Permanent Address
-              </label>
-              <div className="relative">
-                <textarea
-                  name="permanentAddress"
-                  value={formData.permanentAddress}
-                  onChange={handleInputChange}
-                  placeholder="Enter your permanent address"
-                  rows={3}
-                  className={`w-full min-h-[72px] sm:min-h-[84px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary resize-none ${
-                    errors.permanentAddress
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
-              </div>
-              {errors.permanentAddress && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.permanentAddress}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                Current Address
-              </label>
-              <div className="relative">
-                <textarea
-                  name="currentAddress"
-                  value={formData.currentAddress}
-                  onChange={handleInputChange}
-                  placeholder="Enter your current address"
-                  rows={3}
-                  className={`w-full min-h-[72px] sm:min-h-[84px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary resize-none ${
-                    errors.currentAddress
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
-              </div>
-              {errors.currentAddress && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.currentAddress}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
-                Gender
-              </label>
-              <div className="relative">
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleInputChange}
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base ${
-                    formData.gender
-                      ? "text-arcon-gray-primary"
-                      : "text-arcon-gray-secondary"
-                  } ${
-                    errors.gender
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent bg-white`}
-                >
-                  <option value="" disabled>
-                    Select gender
-                  </option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                  <option value="prefer-not-to-say">Prefer not to say</option>
-                </select>
-              </div>
-              {errors.gender && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.gender}
                 </p>
               )}
             </div>

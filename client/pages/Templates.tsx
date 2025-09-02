@@ -6,6 +6,9 @@ import {
   formatDate,
   getStatusInfo,
 } from "@/hooks/useTemplates";
+import { AddNewTemplateDropdown } from "@/components/arcon/AddNewTemplateDropdown";
+import { TemplateActionsDropdown } from "@/components/arcon/TemplateActionsDropdown";
+import { InviteesAvatarGroup } from "@/components/arcon/InviteesAvatarGroup";
 
 export default function Templates() {
   const [searchQuery, setSearchQuery] = useState("");

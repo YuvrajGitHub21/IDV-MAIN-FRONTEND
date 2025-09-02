@@ -222,30 +222,57 @@ export default function Templates() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {templates.map((template) => (
-                      <tr key={template.id} className="hover:bg-gray-50">
-                        <td className="px-2 py-2 text-sm text-gray-900">{template.name}</td>
-                        <td className="px-2 py-2 text-sm text-gray-900">{getInviteesAvatars()}</td>
-                        <td className="px-2 py-2 text-sm text-gray-900">{formatDate(template.createdAtUtc)}</td>
-                        <td className="px-2 py-2 text-sm text-gray-900">{users[template.createdBy] || "Unknown User"}</td>
-                        <td className="px-2 py-2 text-sm">{getStatusBadge(template.isActive)}</td>
-                        <td className="px-2 py-2 text-sm text-gray-900">{formatDate(template.createdAtUtc)}</td>
-                        <td className="px-2 py-2 text-sm text-gray-900">
-                          <button className="p-1 rounded-full hover:bg-gray-100">
-                            <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                            </svg>
-                          </button>
+                    {templatesLoading ? (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                            <span className="ml-2 text-sm text-gray-600">Loading templates...</span>
+                          </div>
                         </td>
                       </tr>
-                    ))}
+                    ) : templates.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                          No templates found
+                        </td>
+                      </tr>
+                    ) : (
+                      templates.map((template) => (
+                        <tr key={template.id} className="hover:bg-gray-50">
+                          <td className="px-2 py-2 text-sm text-gray-900">{template.name}</td>
+                          <td className="px-2 py-2 text-sm text-gray-900">{getInviteesAvatars()}</td>
+                          <td className="px-2 py-2 text-sm text-gray-900">{formatDate(template.createdAtUtc)}</td>
+                          <td className="px-2 py-2 text-sm text-gray-900">{users[template.createdBy] || "Unknown User"}</td>
+                          <td className="px-2 py-2 text-sm">{getStatusBadge(template.isActive)}</td>
+                          <td className="px-2 py-2 text-sm text-gray-900">{formatDate(template.createdAtUtc)}</td>
+                          <td className="px-2 py-2 text-sm text-gray-900">
+                            <button className="p-1 rounded-full hover:bg-gray-100">
+                              <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile Cards */}
               <div className="lg:hidden space-y-3 p-3">
-                {templates.map((template) => (
+                {templatesLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                    <span className="ml-2 text-sm text-gray-600">Loading templates...</span>
+                  </div>
+                ) : templates.length === 0 ? (
+                  <div className="text-center py-8 text-sm text-gray-500">
+                    No templates found
+                  </div>
+                ) : (
+                  templates.map((template) => (
                   <div key={template.id} className="bg-white border border-gray-200 rounded-lg p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -268,7 +295,8 @@ export default function Templates() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 

@@ -170,11 +170,13 @@ export default function TemplateBuilder() {
   const [personalInfoExpanded, setPersonalInfoExpanded] = useState(true);
 
   // System fields state
-  const [systemFieldAlerts, setSystemFieldAlerts] = useState<{[key: string]: boolean}>({});
+  const [systemFieldAlerts, setSystemFieldAlerts] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [systemFieldValues, setSystemFieldValues] = useState({
     firstName: "Eg: John",
     lastName: "Eg: Wick",
-    email: "Eg: johnwick@email.com"
+    email: "Eg: johnwick@email.com",
   });
 
   const addVerificationStep = (stepId: string) => {
@@ -252,12 +254,12 @@ export default function TemplateBuilder() {
   };
 
   const handleSystemFieldFocus = (fieldKey: string) => {
-    setSystemFieldAlerts(prev => ({ ...prev, [fieldKey]: true }));
+    setSystemFieldAlerts((prev) => ({ ...prev, [fieldKey]: true }));
   };
 
   const handleSystemFieldBlur = (fieldKey: string) => {
     setTimeout(() => {
-      setSystemFieldAlerts(prev => ({ ...prev, [fieldKey]: false }));
+      setSystemFieldAlerts((prev) => ({ ...prev, [fieldKey]: false }));
     }, 3000); // Hide alert after 3 seconds
   };
 
@@ -465,10 +467,14 @@ export default function TemplateBuilder() {
                   {/* Required Fields */}
                   <div className="space-y-4 mb-8">
                     {/* First Name */}
-                    <div className={cn(
-                      "rounded-lg border-r border-b border-l bg-white",
-                      systemFieldAlerts.firstName ? "border-blue-500" : "border-gray-300"
-                    )}>
+                    <div
+                      className={cn(
+                        "rounded-lg border-r border-b border-l bg-white",
+                        systemFieldAlerts.firstName
+                          ? "border-blue-500"
+                          : "border-gray-300",
+                      )}
+                    >
                       {systemFieldAlerts.firstName && (
                         <div className="h-2 bg-blue-500 rounded-t-lg"></div>
                       )}
@@ -477,13 +483,16 @@ export default function TemplateBuilder() {
                           <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
                             <Info className="w-5 h-5 text-red-500" />
                             <span className="text-sm text-gray-900 font-medium">
-                              This field is system-required and cannot be modified.
+                              This field is system-required and cannot be
+                              modified.
                             </span>
                           </div>
                         )}
                         <div className="mb-2">
                           <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                            <span className="text-sm font-semibold text-gray-900">First Name</span>
+                            <span className="text-sm font-semibold text-gray-900">
+                              First Name
+                            </span>
                           </div>
                         </div>
                         <Input
@@ -497,10 +506,14 @@ export default function TemplateBuilder() {
                     </div>
 
                     {/* Last Name */}
-                    <div className={cn(
-                      "rounded-lg border-r border-b border-l bg-white",
-                      systemFieldAlerts.lastName ? "border-blue-500" : "border-gray-300"
-                    )}>
+                    <div
+                      className={cn(
+                        "rounded-lg border-r border-b border-l bg-white",
+                        systemFieldAlerts.lastName
+                          ? "border-blue-500"
+                          : "border-gray-300",
+                      )}
+                    >
                       {systemFieldAlerts.lastName && (
                         <div className="h-2 bg-blue-500 rounded-t-lg"></div>
                       )}
@@ -509,13 +522,16 @@ export default function TemplateBuilder() {
                           <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
                             <Info className="w-5 h-5 text-red-500" />
                             <span className="text-sm text-gray-900 font-medium">
-                              This field is system-required and cannot be modified.
+                              This field is system-required and cannot be
+                              modified.
                             </span>
                           </div>
                         )}
                         <div className="mb-2">
                           <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                            <span className="text-sm font-semibold text-gray-900">Last Name</span>
+                            <span className="text-sm font-semibold text-gray-900">
+                              Last Name
+                            </span>
                           </div>
                         </div>
                         <Input
@@ -529,10 +545,14 @@ export default function TemplateBuilder() {
                     </div>
 
                     {/* Email Address */}
-                    <div className={cn(
-                      "rounded-lg border-r border-b border-l bg-white",
-                      systemFieldAlerts.email ? "border-blue-500" : "border-gray-300"
-                    )}>
+                    <div
+                      className={cn(
+                        "rounded-lg border-r border-b border-l bg-white",
+                        systemFieldAlerts.email
+                          ? "border-blue-500"
+                          : "border-gray-300",
+                      )}
+                    >
                       {systemFieldAlerts.email && (
                         <div className="h-2 bg-blue-500 rounded-t-lg"></div>
                       )}
@@ -541,13 +561,16 @@ export default function TemplateBuilder() {
                           <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
                             <Info className="w-5 h-5 text-red-500" />
                             <span className="text-sm text-gray-900 font-medium">
-                              This field is system-required and cannot be modified.
+                              This field is system-required and cannot be
+                              modified.
                             </span>
                           </div>
                         )}
                         <div className="mb-2">
                           <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                            <span className="text-sm font-semibold text-gray-900">Email Address</span>
+                            <span className="text-sm font-semibold text-gray-900">
+                              Email Address
+                            </span>
                           </div>
                         </div>
                         <Input

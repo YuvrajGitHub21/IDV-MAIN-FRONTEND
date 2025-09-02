@@ -34,6 +34,10 @@ export function NameTemplateDialog({
       onSave?.(templateName.trim());
       setTemplateName("");
       onOpenChange(false);
+      // Navigate to template builder with the template name
+      navigate("/template-builder", {
+        state: { templateName: templateName.trim() }
+      });
     }
   };
 

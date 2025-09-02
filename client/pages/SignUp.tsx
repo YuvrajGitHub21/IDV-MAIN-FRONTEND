@@ -439,7 +439,7 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Date Of Birth
               </label>
               <div className="relative">
@@ -448,7 +448,7 @@ export default function SignUp() {
                   name="dateOfBirth"
                   value={formData.dateOfBirth}
                   onChange={handleInputChange}
-                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.dateOfBirth
                       ? "border-red-500"
                       : "border-arcon-gray-border"
@@ -463,7 +463,7 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Permanent Address
               </label>
               <div className="relative">
@@ -473,7 +473,7 @@ export default function SignUp() {
                   onChange={handleInputChange}
                   placeholder="Enter your permanent address"
                   rows={3}
-                  className={`w-full px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary resize-none ${
+                  className={`w-full min-h-[72px] sm:min-h-[84px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary resize-none ${
                     errors.permanentAddress
                       ? "border-red-500"
                       : "border-arcon-gray-border"
@@ -488,7 +488,7 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Current Address
               </label>
               <div className="relative">
@@ -498,7 +498,7 @@ export default function SignUp() {
                   onChange={handleInputChange}
                   placeholder="Enter your current address"
                   rows={3}
-                  className={`w-full px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary resize-none ${
+                  className={`w-full min-h-[72px] sm:min-h-[84px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary resize-none ${
                     errors.currentAddress
                       ? "border-red-500"
                       : "border-arcon-gray-border"
@@ -513,7 +513,7 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Gender
               </label>
               <div className="relative">
@@ -521,7 +521,7 @@ export default function SignUp() {
                   name="gender"
                   value={formData.gender}
                   onChange={handleInputChange}
-                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base ${
+                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base ${
                     formData.gender
                       ? "text-arcon-gray-primary"
                       : "text-arcon-gray-secondary"

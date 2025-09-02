@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,9 +8,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NameTemplateDialog } from "./NameTemplateDialog";
 
 interface AddNewTemplateDropdownProps {
-  onCreateNew?: () => void;
+  onCreateNew?: (templateName: string) => void;
   onChooseTemplate?: () => void;
 }
 
@@ -18,6 +19,19 @@ export function AddNewTemplateDropdown({
   onCreateNew,
   onChooseTemplate,
 }: AddNewTemplateDropdownProps) {
+  const [showNameDialog, setShowNameDialog] = useState(false);
+
+  const handleCreateNewClick = () => {
+    setShowNameDialog(true);
+  };
+
+  const handleCreateNewFromDropdown = () => {
+    setShowNameDialog(true);
+  };
+
+  const handleSaveTemplate = (templateName: string) => {
+    onCreateNew?.(templateName);
+  };
   return (
     <DropdownMenu>
       <div className="flex">

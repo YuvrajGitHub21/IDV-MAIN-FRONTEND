@@ -24,28 +24,13 @@ export default function Templates() {
     }
   }, [templates, fetchMultipleUsers]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric"
-    });
-  };
-
   const getStatusBadge = (isActive: boolean) => {
-    if (isActive) {
-      return (
-        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
-          Completed
-        </span>
-      );
-    } else {
-      return (
-        <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-          In Progress
-        </span>
-      );
-    }
+    const { label, className } = getStatusInfo(isActive);
+    return (
+      <span className={cn("inline-flex items-center px-2 py-1 rounded text-xs font-medium", className)}>
+        {label}
+      </span>
+    );
   };
 
   const getInviteesAvatars = () => {

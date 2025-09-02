@@ -593,18 +593,8 @@ export default function TemplateBuilder() {
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
-                            <Input
-                              value={field.value}
-                              onChange={(e) =>
-                                updateFieldValue(field.id, e.target.value)
-                              }
-                              placeholder={field.placeholder}
-                              className="bg-white border-gray-300"
-                            />
-                            <div className="text-xs text-gray-500 mt-1">
-                              {field.placeholder.includes("Required")
-                                ? "Required"
-                                : "Optional"}
+                            <div className="text-sm text-gray-500">
+                              {field.placeholder}
                             </div>
                           </div>
                         ))}

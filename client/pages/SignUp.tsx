@@ -320,18 +320,19 @@ export default function SignUp() {
             <p className="text-arcon-gray-secondary text-sm font-roboto mb-4">
               {currentStep === 1
                 ? "Create your account with email and password."
-                : "Set up document verification preferences."
-              }
+                : "Set up document verification preferences."}
             </p>
 
             {/* Step Progress */}
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="flex flex-col items-center gap-1.5">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                  currentStep === 1
-                    ? "border-arcon-blue bg-arcon-blue"
-                    : "border-arcon-blue bg-arcon-blue"
-                }`}>
+                <div
+                  className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+                    currentStep === 1
+                      ? "border-arcon-blue bg-arcon-blue"
+                      : "border-arcon-blue bg-arcon-blue"
+                  }`}
+                >
                   <span className="text-white font-bold text-sm">1</span>
                 </div>
                 <span className="text-xs font-medium text-arcon-gray-primary">
@@ -342,18 +343,30 @@ export default function SignUp() {
               <div className="w-16 h-px bg-arcon-gray-border"></div>
 
               <div className="flex flex-col items-center gap-1.5">
-                <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                  currentStep === 2
-                    ? "border-arcon-blue bg-arcon-blue"
-                    : "border-arcon-gray-border bg-white"
-                }`}>
-                  <span className={`font-bold text-sm ${
-                    currentStep === 2 ? "text-white" : "text-arcon-gray-secondary"
-                  }`}>2</span>
+                <div
+                  className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+                    currentStep === 2
+                      ? "border-arcon-blue bg-arcon-blue"
+                      : "border-arcon-gray-border bg-white"
+                  }`}
+                >
+                  <span
+                    className={`font-bold text-sm ${
+                      currentStep === 2
+                        ? "text-white"
+                        : "text-arcon-gray-secondary"
+                    }`}
+                  >
+                    2
+                  </span>
                 </div>
-                <span className={`text-xs font-medium ${
-                  currentStep === 2 ? "text-arcon-gray-primary" : "text-arcon-gray-secondary"
-                }`}>
+                <span
+                  className={`text-xs font-medium ${
+                    currentStep === 2
+                      ? "text-arcon-gray-primary"
+                      : "text-arcon-gray-secondary"
+                  }`}
+                >
                   Documents
                 </span>
               </div>
@@ -427,7 +440,9 @@ export default function SignUp() {
                       onChange={handleInputChange}
                       placeholder="Enter your email address"
                       className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                        errors.email ? "border-red-500" : "border-arcon-gray-border"
+                        errors.email
+                          ? "border-red-500"
+                          : "border-arcon-gray-border"
                       } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                     />
                   </div>
@@ -498,7 +513,8 @@ export default function SignUp() {
                       User Upload Options
                     </h4>
                     <p className="text-sm text-arcon-gray-secondary font-roboto">
-                      Select how users are allowed to submit documents during the process.
+                      Select how users are allowed to submit documents during
+                      the process.
                     </p>
                   </div>
 
@@ -523,7 +539,8 @@ export default function SignUp() {
                           Allow Upload from Device
                         </Label>
                         <p className="text-sm text-arcon-gray-secondary font-roboto">
-                          Let users upload existing documents directly from their device.
+                          Let users upload existing documents directly from
+                          their device.
                         </p>
                       </div>
                     </div>
@@ -548,7 +565,8 @@ export default function SignUp() {
                           Allow Capture via Webcam
                         </Label>
                         <p className="text-sm text-arcon-gray-secondary font-roboto">
-                          Enable webcam access to allow users to capture documents in real time.
+                          Enable webcam access to allow users to capture
+                          documents in real time.
                         </p>
                       </div>
                     </div>
@@ -562,7 +580,8 @@ export default function SignUp() {
                       Unreadable Document Handling
                     </h4>
                     <p className="text-sm text-arcon-gray-secondary font-roboto">
-                      Choose what action the system should take if a submitted document is not clear.
+                      Choose what action the system should take if a submitted
+                      document is not clear.
                     </p>
                   </div>
 
@@ -578,7 +597,11 @@ export default function SignUp() {
                     >
                       <div className="space-y-4">
                         <div className="flex items-start gap-3">
-                          <RadioGroupItem value="reject" id="reject" className="mt-0.5" />
+                          <RadioGroupItem
+                            value="reject"
+                            id="reject"
+                            className="mt-0.5"
+                          />
                           <div className="flex-1">
                             <Label
                               htmlFor="reject"
@@ -587,13 +610,18 @@ export default function SignUp() {
                               Reject Immediately
                             </Label>
                             <p className="text-sm text-arcon-gray-secondary font-roboto">
-                              Skip retry and reject unclear documents without further attempts.
+                              Skip retry and reject unclear documents without
+                              further attempts.
                             </p>
                           </div>
                         </div>
 
                         <div className="flex items-start gap-3">
-                          <RadioGroupItem value="retry" id="retry" className="mt-0.5" />
+                          <RadioGroupItem
+                            value="retry"
+                            id="retry"
+                            className="mt-0.5"
+                          />
                           <div className="flex-1">
                             <Label
                               htmlFor="retry"
@@ -602,7 +630,8 @@ export default function SignUp() {
                               Allow Retries Before Rejection
                             </Label>
                             <p className="text-sm text-arcon-gray-secondary font-roboto">
-                              Let users reattempt uploading the document before it's finally rejected.
+                              Let users reattempt uploading the document before
+                              it's finally rejected.
                             </p>
                           </div>
                         </div>
@@ -628,7 +657,9 @@ export default function SignUp() {
                         <div key={docType} className="flex items-center gap-2">
                           <Checkbox
                             id={docType}
-                            checked={documentData.selectedDocuments.includes(docType)}
+                            checked={documentData.selectedDocuments.includes(
+                              docType,
+                            )}
                             onCheckedChange={() => toggleDocument(docType)}
                           />
                           <Label
@@ -672,8 +703,7 @@ export default function SignUp() {
                   ? "Processing..."
                   : currentStep === 1
                     ? "Next"
-                    : "Complete Sign Up"
-                }
+                    : "Complete Sign Up"}
               </button>
             </div>
           </div>

@@ -335,31 +335,31 @@ export default function DocumentVerification() {
                 </div>
 
                 {/* Unreadable Document Handling */}
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   <div>
-                    <h4 className="text-base font-bold text-[#172B4D] leading-3 mb-2">
+                    <h4 className="text-sm lg:text-base font-bold text-[#172B4D] leading-tight mb-2">
                       Unreadable Document Handling
                     </h4>
-                    <p className="text-[13px] text-[#172B4D] leading-5">
+                    <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
                       Choose what action the system should take if a submitted document is not clear or unreadable.
                     </p>
                   </div>
 
-                  <div className="bg-[#F6F7FB] rounded p-6">
+                  <div className="bg-[#F6F7FB] rounded p-4 lg:p-6">
                     <RadioGroup value={documentHandling} onValueChange={setDocumentHandling}>
-                      <div className="space-y-5">
+                      <div className="space-y-4 lg:space-y-5">
                         {/* Reject Immediately */}
-                        <div className="pb-5 border-b border-[#D0D4E4]">
+                        <div className="pb-4 lg:pb-5 border-b border-[#D0D4E4]">
                           <div className="flex items-start gap-2">
-                            <RadioGroupItem value="reject" id="reject" className="mt-0.5" />
-                            <div className="flex-1">
-                              <Label 
+                            <RadioGroupItem value="reject" id="reject" className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]" />
+                            <div className="flex-1 min-w-0">
+                              <Label
                                 htmlFor="reject"
-                                className="text-[13px] font-medium text-[#172B4D] leading-[18px] block mb-2"
+                                className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2"
                               >
                                 Reject Immediately
                               </Label>
-                              <p className="text-[13px] text-[#505258] leading-5">
+                              <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                                 Skip retry and reject unclear documents without further attempts.
                               </p>
                             </div>
@@ -369,15 +369,15 @@ export default function DocumentVerification() {
                         {/* Allow Retries */}
                         <div>
                           <div className="flex items-start gap-2">
-                            <RadioGroupItem value="retry" id="retry" className="mt-0.5" />
-                            <div className="flex-1">
-                              <Label 
+                            <RadioGroupItem value="retry" id="retry" className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]" />
+                            <div className="flex-1 min-w-0">
+                              <Label
                                 htmlFor="retry"
-                                className="text-[13px] font-medium text-[#172B4D] leading-[18px] block mb-2"
+                                className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2"
                               >
                                 Allow Retries Before Rejection
                               </Label>
-                              <p className="text-[13px] text-[#505258] leading-5">
+                              <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                                 Let users reattempt uploading the document before it's finally rejected.
                               </p>
                             </div>

@@ -114,7 +114,11 @@ export default function SignUp() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -518,14 +522,18 @@ export default function SignUp() {
                   value={formData.gender}
                   onChange={handleInputChange}
                   className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base ${
-                    formData.gender ? "text-arcon-gray-primary" : "text-arcon-gray-secondary"
+                    formData.gender
+                      ? "text-arcon-gray-primary"
+                      : "text-arcon-gray-secondary"
                   } ${
                     errors.gender
                       ? "border-red-500"
                       : "border-arcon-gray-border"
                   } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent bg-white`}
                 >
-                  <option value="" disabled>Select gender</option>
+                  <option value="" disabled>
+                    Select gender
+                  </option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>

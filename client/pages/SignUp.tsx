@@ -548,7 +548,7 @@ export default function SignUp() {
             </div>
 
             {errors.submit && (
-              <div className="text-red-500 text-sm text-center font-roboto">
+              <div className="text-red-500 text-xs sm:text-sm text-center font-roboto">
                 {errors.submit}
               </div>
             )}

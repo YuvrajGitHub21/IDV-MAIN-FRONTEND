@@ -178,7 +178,7 @@ export default function Templates() {
           {/* Mobile overlay */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 lg:hidden"
+              className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-40"
               onClick={() => setSidebarOpen(false)}
             />
           )}

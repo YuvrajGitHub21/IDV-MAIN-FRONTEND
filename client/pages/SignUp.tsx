@@ -334,7 +334,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.firstName && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.firstName}
                 </p>
               )}

@@ -16,31 +16,26 @@ export default function SignUp() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    // First name
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
     }
 
-    // Last name
     if (!formData.lastName.trim()) {
       newErrors.lastName = "Last name is required";
     }
 
-    // Email validation
     if (!formData.email) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Password validation
     if (!formData.password) {
       newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
 
-    // Confirm password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.confirmPassword !== formData.password) {
@@ -98,12 +93,11 @@ export default function SignUp() {
   };
 
   return (
-    <div className="w-full h-screen bg-white flex">
-      {/* Left Side - Illustrations and Content */}
-      <div className="relative w-full lg:w-1/2 bg-white overflow-hidden">
+    <div className="w-full min-h-screen bg-white flex flex-col lg:flex-row overflow-hidden">
+      {/* Left Side - Illustrations and Content (desktop only) */}
+      <div className="relative hidden lg:block lg:w-1/2 bg-white overflow-hidden">
         {/* Background Blur Effects */}
         <div className="absolute inset-0">
-          {/* Large blue gradient circle */}
           <div
             className="absolute w-[342px] h-[342px] rounded-full opacity-80"
             style={{
@@ -113,7 +107,6 @@ export default function SignUp() {
               top: "301px",
             }}
           />
-          {/* Large ellipse */}
           <div
             className="absolute w-[465px] h-[397px] rounded-full opacity-80"
             style={{
@@ -127,7 +120,6 @@ export default function SignUp() {
 
         {/* Decorative Elements */}
         <div className="relative z-10">
-          {/* Floating gradient elements */}
           <div
             className="absolute w-[279px] h-[123px] opacity-80"
             style={{
@@ -147,7 +139,6 @@ export default function SignUp() {
 
           {/* Main illustration cards */}
           <div className="absolute" style={{ left: "275px", top: "140px" }}>
-            {/* Background card (rotated) */}
             <div
               className="absolute w-[252px] h-[318px] rounded-3xl border border-black/10"
               style={{
@@ -158,7 +149,6 @@ export default function SignUp() {
               }}
             />
 
-            {/* Front card */}
             <div
               className="absolute w-[252px] h-[318px] rounded-3xl border border-black/10 bg-white"
               style={{
@@ -167,7 +157,6 @@ export default function SignUp() {
                 backdropFilter: "blur(7.5px)",
               }}
             >
-              {/* Check icon */}
               <div className="absolute top-6 right-6">
                 <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
                   <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
@@ -182,11 +171,9 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Content area */}
               <div className="absolute inset-4 top-16">
-                <div className="w-full h-[130px] rounded-2xl bg-arcon-blue-light"></div>
+                <div className="w-full h-[130px] rounded-2xl bg-arcon-blue/20" />
 
-                {/* Identity verification illustration */}
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
                   <div className="w-16 h-16 rounded-full bg-white/50 flex items-center justify-center">
                     <svg width="40" height="40" viewBox="0 0 67 94" fill="none">
@@ -211,7 +198,6 @@ export default function SignUp() {
                 </div>
               </div>
 
-              {/* Security elements */}
               <div className="absolute bottom-8 left-8 right-8">
                 <div className="h-20 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 relative overflow-hidden">
                   <div className="absolute inset-0 bg-white/20"></div>
@@ -228,11 +214,11 @@ export default function SignUp() {
         </div>
 
         {/* Bottom Content */}
-        <div className="absolute bottom-24 left-20 right-20 text-center z-20">
-          <h2 className="text-arcon-gray-heading text-3xl font-bold font-roboto leading-tight mb-6">
+        <div className="absolute bottom-10 left-8 right-8 text-center z-20 lg:bottom-24 lg:left-20 lg:right-20">
+          <h2 className="text-arcon-gray-heading text-2xl md:text-3xl font-bold font-roboto leading-tight mb-4 md:mb-6">
             Proof of identity, made simple.
           </h2>
-          <p className="text-arcon-gray-secondary text-sm font-roboto leading-relaxed">
+          <p className="text-arcon-gray-secondary text-sm md:text-base font-roboto leading-relaxed">
             Easily verify your identity in seconds with our secure and seamless
             process.
           </p>
@@ -240,9 +226,9 @@ export default function SignUp() {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 lg:px-16 bg-white relative">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-8 sm:py-12 md:py-16 bg-white relative">
         {/* Decorative background elements */}
-        <div className="absolute top-0 right-0 w-full h-full overflow-hidden">
+        <div className="absolute top-0 right-0 w-full h-full overflow-hidden hidden md:block pointer-events-none">
           <div
             className="absolute opacity-80"
             style={{
@@ -265,11 +251,10 @@ export default function SignUp() {
           </div>
         </div>
 
-        <div className="relative z-10 max-w-[360px] mx-auto w-full">
+        <div className="relative z-10 max-w-[360px] md:max-w-[420px] mx-auto w-full">
           {/* Logo */}
-          <div className="flex justify-center mb-12">
+          <div className="flex justify-center mb-8 md:mb-12">
             <div className="flex items-center gap-3">
-              {/* Arcon Triangle Logo */}
               <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
                 <path
                   d="M27.3723 22.6039C27.9964 23.7209 27.189 25.097 25.9095 25.097H4.88702C3.6005 25.097 2.79387 23.7073 3.43201 22.5902L14.0587 3.98729C14.7055 2.85516 16.3405 2.86285 16.9765 4.00102L27.3723 22.6039Z"
@@ -285,8 +270,8 @@ export default function SignUp() {
           </div>
 
           {/* Form Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-arcon-gray-heading text-3xl font-bold font-roboto mb-2">
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-arcon-gray-heading text-2xl md:text-3xl font-bold font-roboto mb-2">
               Sign up
             </h1>
             <p className="text-arcon-gray-secondary text-sm font-roboto">
@@ -295,8 +280,7 @@ export default function SignUp() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* First Name */}
+          <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
             <div>
               <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
                 First Name
@@ -322,7 +306,6 @@ export default function SignUp() {
               )}
             </div>
 
-            {/* Last Name */}
             <div>
               <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
                 Last Name
@@ -348,7 +331,6 @@ export default function SignUp() {
               )}
             </div>
 
-            {/* Email Field */}
             <div>
               <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
                 Email Address
@@ -372,7 +354,6 @@ export default function SignUp() {
               )}
             </div>
 
-            {/* Password Field */}
             <div>
               <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
                 Password
@@ -398,7 +379,6 @@ export default function SignUp() {
               )}
             </div>
 
-            {/* Confirm Password Field */}
             <div>
               <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
                 Confirm Password
@@ -424,14 +404,12 @@ export default function SignUp() {
               )}
             </div>
 
-            {/* Submit Error */}
             {errors.submit && (
               <div className="text-red-500 text-sm text-center font-roboto">
                 {errors.submit}
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
@@ -441,7 +419,6 @@ export default function SignUp() {
             </button>
           </form>
 
-          {/* Login Link */}
           <div className="text-center mt-6">
             <p className="text-arcon-gray-secondary text-sm font-roboto">
               Already have an account?{" "}

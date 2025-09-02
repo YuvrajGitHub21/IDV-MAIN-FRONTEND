@@ -15,6 +15,7 @@ import {
   Plus,
   Trash2,
   GripVertical,
+  Info,
 } from "lucide-react";
 
 interface VerificationStep {

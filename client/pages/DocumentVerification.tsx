@@ -287,22 +287,22 @@ export default function DocumentVerification() {
 
                   <div className="bg-[#F6F7FB] rounded p-4 lg:p-6 space-y-4 lg:space-y-5">
                     {/* Upload from Device */}
-                    <div className="pb-5 border-b border-[#D0D4E4]">
+                    <div className="pb-4 lg:pb-5 border-b border-[#D0D4E4]">
                       <div className="flex items-start gap-2">
                         <Checkbox
                           id="upload-device"
                           checked={allowUploadFromDevice}
                           onCheckedChange={setAllowUploadFromDevice}
-                          className="mt-0.5"
+                          className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
-                        <div className="flex-1">
-                          <Label 
+                        <div className="flex-1 min-w-0">
+                          <Label
                             htmlFor="upload-device"
-                            className="text-[13px] font-medium text-[#172B4D] leading-[18px] block mb-2"
+                            className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2"
                           >
                             Allow Upload from Device
                           </Label>
-                          <p className="text-[13px] text-[#505258] leading-5">
+                          <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                             Let users upload existing documents directly from their device.
                           </p>
                         </div>
@@ -316,16 +316,16 @@ export default function DocumentVerification() {
                           id="capture-webcam"
                           checked={allowCaptureWebcam}
                           onCheckedChange={setAllowCaptureWebcam}
-                          className="mt-0.5"
+                          className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
-                        <div className="flex-1">
-                          <Label 
+                        <div className="flex-1 min-w-0">
+                          <Label
                             htmlFor="capture-webcam"
-                            className="text-[13px] font-medium text-[#172B4D] leading-[18px] block mb-2"
+                            className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2"
                           >
                             Allow Capture via Webcam
                           </Label>
-                          <p className="text-[13px] text-[#505258] leading-5">
+                          <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                             Enable webcam access to allow users to capture documents in real time.
                           </p>
                         </div>

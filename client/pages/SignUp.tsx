@@ -314,7 +314,10 @@ export default function SignUp() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 sm:space-y-5 md:space-y-6"
+          >
             <div>
               <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 First Name

@@ -107,11 +107,14 @@ export default function TemplateBuilder() {
   const location = useLocation();
   const templateName = location.state?.templateName || "New Template";
 
-  const [verificationSteps, setVerificationSteps] = useState<VerificationStep[]>([
+  const [verificationSteps, setVerificationSteps] = useState<
+    VerificationStep[]
+  >([
     {
       id: "personal-info",
       title: "Personal Information",
-      description: "Set up fields to collect basic user details like name, contact.",
+      description:
+        "Set up fields to collect basic user details like name, contact.",
       isRequired: true,
       isEnabled: true,
     },
@@ -128,17 +131,38 @@ export default function TemplateBuilder() {
     {
       id: "biometric-verification",
       title: "Biometric Verification",
-      description: "Set selfie retries, liveness threshold, and biometric storage",
+      description:
+        "Set selfie retries, liveness threshold, and biometric storage",
       isRequired: false,
       isEnabled: false,
     },
   ]);
 
   const [optionalFields, setOptionalFields] = useState<FieldOption[]>([
-    { id: "date-of-birth", name: "Date Of Birth", placeholder: "10/07/1997", checked: false },
-    { id: "current-address", name: "Current Address", placeholder: "Enter your current address", checked: false },
-    { id: "permanent-address", name: "Permanent Address", placeholder: "Enter your permanent address", checked: false },
-    { id: "gender", name: "Gender", placeholder: "Select gender", checked: false },
+    {
+      id: "date-of-birth",
+      name: "Date Of Birth",
+      placeholder: "10/07/1997",
+      checked: false,
+    },
+    {
+      id: "current-address",
+      name: "Current Address",
+      placeholder: "Enter your current address",
+      checked: false,
+    },
+    {
+      id: "permanent-address",
+      name: "Permanent Address",
+      placeholder: "Enter your permanent address",
+      checked: false,
+    },
+    {
+      id: "gender",
+      name: "Gender",
+      placeholder: "Select gender",
+      checked: false,
+    },
   ]);
 
   const [addedFields, setAddedFields] = useState<AddedField[]>([]);
@@ -170,45 +194,42 @@ export default function TemplateBuilder() {
   }, []);
 
   const toggleOptionalField = (fieldId: string) => {
-    const field = optionalFields.find(f => f.id === fieldId);
+    const field = optionalFields.find((f) => f.id === fieldId);
     if (!field) return;
 
     if (field.checked) {
       // Remove from added fields and uncheck
-      setAddedFields(prev => prev.filter(f => f.id !== fieldId));
-      setOptionalFields(prev =>
-        prev.map(f =>
-          f.id === fieldId ? { ...f, checked: false } : f
-        )
+      setAddedFields((prev) => prev.filter((f) => f.id !== fieldId));
+      setOptionalFields((prev) =>
+        prev.map((f) => (f.id === fieldId ? { ...f, checked: false } : f)),
       );
     } else {
       // Add to added fields and check
-      setAddedFields(prev => [
+      setAddedFields((prev) => [
         ...prev,
-        { id: field.id, name: field.name, placeholder: field.placeholder, value: "" }
+        {
+          id: field.id,
+          name: field.name,
+          placeholder: field.placeholder,
+          value: "",
+        },
       ]);
-      setOptionalFields(prev =>
-        prev.map(f =>
-          f.id === fieldId ? { ...f, checked: true } : f
-        )
+      setOptionalFields((prev) =>
+        prev.map((f) => (f.id === fieldId ? { ...f, checked: true } : f)),
       );
     }
   };
 
   const removeAddedField = (fieldId: string) => {
-    setAddedFields(prev => prev.filter(f => f.id !== fieldId));
-    setOptionalFields(prev =>
-      prev.map(f =>
-        f.id === fieldId ? { ...f, checked: false } : f
-      )
+    setAddedFields((prev) => prev.filter((f) => f.id !== fieldId));
+    setOptionalFields((prev) =>
+      prev.map((f) => (f.id === fieldId ? { ...f, checked: false } : f)),
     );
   };
 
   const updateFieldValue = (fieldId: string, value: string) => {
-    setAddedFields(prev =>
-      prev.map(f =>
-        f.id === fieldId ? { ...f, value } : f
-      )
+    setAddedFields((prev) =>
+      prev.map((f) => (f.id === fieldId ? { ...f, value } : f)),
     );
   };
 
@@ -223,8 +244,8 @@ export default function TemplateBuilder() {
 
   // Get available steps that aren't already added
   const getAvailableStepsToAdd = () => {
-    return availableSteps.filter(step => 
-      !verificationSteps.find(vs => vs.id === step.id)
+    return availableSteps.filter(
+      (step) => !verificationSteps.find((vs) => vs.id === step.id),
     );
   };
 
@@ -266,7 +287,9 @@ export default function TemplateBuilder() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <h1 className="text-xl font-bold text-gray-900">{templateName}</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                {templateName}
+              </h1>
             </div>
           </div>
         </div>
@@ -288,7 +311,9 @@ export default function TemplateBuilder() {
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-blue-600 bg-blue-600">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
-              <span className="text-sm font-medium text-gray-900">Form builder</span>
+              <span className="text-sm font-medium text-gray-900">
+                Form builder
+              </span>
             </div>
 
             <div className="w-24 h-px bg-gray-300"></div>
@@ -319,9 +344,12 @@ export default function TemplateBuilder() {
             {/* Build Process Section */}
             <div className="mb-8">
               <div className="mb-6">
-                <h2 className="text-base font-bold text-gray-900 mb-2">Build your process</h2>
+                <h2 className="text-base font-bold text-gray-900 mb-2">
+                  Build your process
+                </h2>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  Create a flow by adding required information fields and verification steps for your users.
+                  Create a flow by adding required information fields and
+                  verification steps for your users.
                 </p>
               </div>
 
@@ -341,7 +369,9 @@ export default function TemplateBuilder() {
             {getAvailableStepsToAdd().length > 0 && (
               <div>
                 <div className="mb-6">
-                  <h2 className="text-base font-bold text-gray-900 mb-2">Add Verification Steps</h2>
+                  <h2 className="text-base font-bold text-gray-900 mb-2">
+                    Add Verification Steps
+                  </h2>
                   <p className="text-sm text-gray-600 leading-relaxed">
                     Insert secure verification steps as needed.
                   </p>
@@ -353,8 +383,12 @@ export default function TemplateBuilder() {
                     <div className="p-3 rounded border border-gray-200 bg-white">
                       <div className="flex items-start gap-3">
                         <div className="flex-1">
-                          <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                          <h3 className="font-bold text-sm text-gray-900 mb-1">
+                            {step.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {step.description}
+                          </p>
                         </div>
                         <Button
                           variant="ghost"
@@ -452,13 +486,17 @@ export default function TemplateBuilder() {
                           Added Fields
                         </h3>
                         <p className="text-sm text-gray-600 leading-relaxed">
-                          Extra fields to collect specific to your verification flow.
+                          Extra fields to collect specific to your verification
+                          flow.
                         </p>
                       </div>
 
                       <div className="space-y-4">
                         {addedFields.map((field) => (
-                          <div key={field.id} className="border border-blue-300 rounded-lg p-5 bg-blue-50">
+                          <div
+                            key={field.id}
+                            className="border border-blue-300 rounded-lg p-5 bg-blue-50"
+                          >
                             <div className="flex items-center justify-between mb-3">
                               <Label className="font-semibold text-sm text-gray-900">
                                 {field.name}
@@ -474,12 +512,16 @@ export default function TemplateBuilder() {
                             </div>
                             <Input
                               value={field.value}
-                              onChange={(e) => updateFieldValue(field.id, e.target.value)}
+                              onChange={(e) =>
+                                updateFieldValue(field.id, e.target.value)
+                              }
                               placeholder={field.placeholder}
                               className="bg-white border-gray-300"
                             />
                             <div className="text-xs text-gray-500 mt-1">
-                              {field.placeholder.includes("Required") ? "Required" : "Optional"}
+                              {field.placeholder.includes("Required")
+                                ? "Required"
+                                : "Optional"}
                             </div>
                           </div>
                         ))}
@@ -506,22 +548,24 @@ export default function TemplateBuilder() {
             {/* Optional Fields */}
             <div className="p-3">
               <div className="space-y-3">
-                {optionalFields.filter(field => !field.checked).map((field) => (
-                  <div key={field.id} className="flex items-center gap-2">
-                    <Checkbox
-                      id={field.id}
-                      checked={field.checked}
-                      onCheckedChange={() => toggleOptionalField(field.id)}
-                      className="w-4 h-4"
-                    />
-                    <label
-                      htmlFor={field.id}
-                      className="text-sm font-bold text-gray-600 cursor-pointer"
-                    >
-                      {field.name}
-                    </label>
-                  </div>
-                ))}
+                {optionalFields
+                  .filter((field) => !field.checked)
+                  .map((field) => (
+                    <div key={field.id} className="flex items-center gap-2">
+                      <Checkbox
+                        id={field.id}
+                        checked={field.checked}
+                        onCheckedChange={() => toggleOptionalField(field.id)}
+                        className="w-4 h-4"
+                      />
+                      <label
+                        htmlFor={field.id}
+                        className="text-sm font-bold text-gray-600 cursor-pointer"
+                      >
+                        {field.name}
+                      </label>
+                    </div>
+                  ))}
               </div>
             </div>
           </div>

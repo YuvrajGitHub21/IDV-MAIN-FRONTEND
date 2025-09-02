@@ -288,7 +288,7 @@ export default function SignUp() {
           {/* Form */}
           <form
             onSubmit={handleSubmit}
-            className="space-y-4 sm:space-y-5 md:space-y-6"
+            className="space-y-5 sm:space-y-6 md:space-y-7"
           >
             <div>
               <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">

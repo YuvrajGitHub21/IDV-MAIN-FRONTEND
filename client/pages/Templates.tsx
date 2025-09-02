@@ -109,6 +109,16 @@ export default function Templates() {
     // Add your template action logic here
   };
 
+  const handleLogout = () => {
+    // Clear authentication tokens and user data from localStorage
+    localStorage.removeItem("access");
+    localStorage.removeItem("refresh");
+    localStorage.removeItem("user");
+
+    // Navigate to login page
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}

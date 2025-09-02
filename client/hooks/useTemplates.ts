@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-/* ===================== Types (allow nulls like Swagger) ===================== */
+/* ===================== Types (match API: allow nulls) ===================== */
 export interface TemplateItem {
   id: string;
   name: string;
@@ -9,7 +9,7 @@ export interface TemplateItem {
   templateRules: string | null;
   isActive: boolean;
   createdAtUtc: string;
-  // If API later returns this:
+  // If API later adds this:
   // updatedAtUtc?: string | null;
 }
 
@@ -41,7 +41,69 @@ export interface TemplateFilters {
   pageSize?: number;
 }
 
-/* ===================== Dev mocks (kept for users hook fallback) ===================== */
+/* ===================== Original mock data (kept for fallback) ===================== */
+const rawMockTemplates: TemplateItem[] = [
+  {
+    id: "1",
+    name: "Template Name",
+    description: "Template description",
+    createdBy: "user1",
+    templateRules: "Rules",
+    isActive: true,
+    createdAtUtc: "2024-07-14T00:00:00Z",
+  },
+  {
+    id: "2",
+    name: "New Template",
+    description: "New template description",
+    createdBy: "user2",
+    templateRules: "Rules",
+    isActive: true,
+    createdAtUtc: "2024-06-22T00:00:00Z",
+  },
+  {
+    id: "3",
+    name: "Template_Newname",
+    description: "Template description",
+    createdBy: "user3",
+    templateRules: "Rules",
+    isActive: false,
+    createdAtUtc: "2024-06-18T00:00:00Z",
+  },
+  {
+    id: "4",
+    name: "Template Name 8",
+    description: "Template description",
+    createdBy: "user4",
+    templateRules: "Rules",
+    isActive: true,
+    createdAtUtc: "2024-05-04T00:00:00Z",
+  },
+  {
+    id: "5",
+    name: "Template Name 2",
+    description: "Template description",
+    createdBy: "user5",
+    templateRules: "Rules",
+    isActive: true,
+    createdAtUtc: "2024-07-14T00:00:00Z",
+  },
+  {
+    id: "6",
+    name: "Template_New1name",
+    description: "Template description",
+    createdBy: "user2",
+    templateRules: "Rules",
+    isActive: true,
+    createdAtUtc: "2024-07-14T00:00:00Z",
+  },
+];
+
+/* Rename mock templates to "hardcore 1..n" for fallback */
+const buildHardcoreMocks = (items: TemplateItem[]): TemplateItem[] =>
+  items.map((t, i) => ({ ...t, name: `hardcore ${i + 1}` }));
+
+/* Mock users for useUsers fallback */
 const mockUsers: Record<string, string> = {
   user1: "Patricia A. Ramirez",
   user2: "Deloris L. Hall",
@@ -57,7 +119,42 @@ const HARDCODED_CREATED_BY = "31e844b2-cba4-48b2-a687-419934046176";
 const getToken = () =>
   typeof window !== "undefined" ? localStorage.getItem("access") : null;
 
-/* ===================== Templates hook (REAL API) ===================== */
+/* ===================== Fallback (filters + pagination like before) ===================== */
+function getFallbackData(filters: TemplateFilters = {}) {
+  const hardcore = buildHardcoreMocks(rawMockTemplates);
+
+  let filtered = [...hardcore];
+
+  // Search by name/description (case-insensitive)
+  if (filters.search) {
+    const q = filters.search.toLowerCase();
+    filtered = filtered.filter(
+      (t) =>
+        (t.name ?? "").toLowerCase().includes(q) ||
+        (t.description ?? "").toLowerCase().includes(q),
+    );
+  }
+
+  // isActive filter
+  if (filters.isActive !== undefined) {
+    filtered = filtered.filter((t) => t.isActive === filters.isActive);
+  }
+
+  // createdBy filter (only applies to mocks with user1..5)
+  if (filters.createdBy) {
+    filtered = filtered.filter((t) => t.createdBy === filters.createdBy);
+  }
+
+  // Pagination
+  const page = filters.page || 1;
+  const pageSize = filters.pageSize || 12;
+  const startIndex = (page - 1) * pageSize;
+  const paginated = filtered.slice(startIndex, startIndex + pageSize);
+
+  return { items: paginated, total: filtered.length };
+}
+
+/* ===================== Templates hook (REAL API + fallback) ===================== */
 export const useTemplates = () => {
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -68,12 +165,20 @@ export const useTemplates = () => {
     setLoading(true);
     setError(null);
 
+    const useFallback = (reason?: string) => {
+      if (reason) {
+        // keep a short, helpful error; UI remains usable with fallback data
+        setError(reason);
+      }
+      const fb = getFallbackData(filters);
+      setTemplates(fb.items);
+      setTotalItems(fb.total);
+    };
+
     try {
       const token = getToken();
       if (!token) {
-        setError("No auth token found. Please log in.");
-        setTemplates([]);
-        setTotalItems(0);
+        useFallback("No auth token found. Showing offline data.");
         return;
       }
 
@@ -93,7 +198,6 @@ export const useTemplates = () => {
         {
           method: "GET",
           headers: {
-            // Server returns JSON even if Swagger shows text/plain
             Accept: "application/json, text/plain, */*",
             Authorization: `Bearer ${token}`,
           },
@@ -102,13 +206,11 @@ export const useTemplates = () => {
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        setError(
+        useFallback(
           `API Error: ${res.status} ${res.statusText}${
             text ? ` — ${text.slice(0, 200)}` : ""
-          }`,
+          }. Showing offline data.`,
         );
-        setTemplates([]);
-        setTotalItems(0);
         return;
       }
 
@@ -118,10 +220,8 @@ export const useTemplates = () => {
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Failed to fetch templates";
-      setError(msg);
       console.error("Error fetching templates:", err);
-      setTemplates([]);
-      setTotalItems(0);
+      useFallback(`${msg}. Showing offline data.`);
     } finally {
       setLoading(false);
     }
@@ -137,9 +237,7 @@ export const useTemplates = () => {
   };
 };
 
-/* ===================== Users hook (safe fallback) ===================== */
-/* Keeps your current API surface. It returns mock names for non-mock IDs
-   (your GUIDs will show "Unknown User" unless you wire the real endpoint). */
+/* ===================== Users hook (kept simple; mocks by default) ===================== */
 export const useUsers = () => {
   const [users, setUsers] = useState<Record<string, string>>(mockUsers);
   const [loading, setLoading] = useState(false);
@@ -153,7 +251,7 @@ export const useUsers = () => {
       setError(null);
 
       try {
-        // Flip to true and adjust the URL if your API supports /api/User/{id}
+        // Flip to true and wire your real endpoint if needed.
         const useRealAPI = false;
 
         if (useRealAPI) {
@@ -211,7 +309,7 @@ export const useUsers = () => {
   return { users, loading, error, fetchUser, fetchMultipleUsers };
 };
 
-/* ===================== Utilities (unchanged API) ===================== */
+/* ===================== Utilities (same API as your code) ===================== */
 export const formatDate = (dateString: string): string => {
   if (!dateString) return "-";
   const d = new Date(dateString);

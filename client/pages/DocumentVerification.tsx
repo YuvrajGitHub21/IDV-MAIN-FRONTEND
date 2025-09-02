@@ -389,26 +389,26 @@ export default function DocumentVerification() {
                 </div>
 
                 {/* Supported Countries */}
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   <div>
-                    <h4 className="text-base font-bold text-[#172B4D] leading-3 mb-2">
+                    <h4 className="text-sm lg:text-base font-bold text-[#172B4D] leading-tight mb-2">
                       Supported Countries for Identity Verification
                     </h4>
-                    <p className="text-[13px] text-[#172B4D] leading-5">
+                    <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
                       Only document from these countries are supported.
                     </p>
                   </div>
 
-                  <div className="bg-[#F6F7FB] rounded p-6 space-y-4">
+                  <div className="bg-[#F6F7FB] rounded p-4 lg:p-6 space-y-3 lg:space-y-4">
                     {/* Country Selection */}
                     <div>
-                      <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] block mb-2">
+                      <Label className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2">
                         Which countries are supported?
                       </Label>
                       <div className="relative">
                         <Button
                           variant="outline"
-                          className="w-80 h-8 justify-between text-[13px] text-[#676879] border-[#C3C6D4] bg-white"
+                          className="w-full max-w-80 h-8 justify-between text-xs lg:text-[13px] text-[#676879] border-[#C3C6D4] bg-white"
                         >
                           Select Countries
                           <ChevronDown className="w-2.5 h-2.5" />
@@ -420,14 +420,14 @@ export default function DocumentVerification() {
                     {selectedCountries.map((country) => (
                       <div key={country} className="bg-white rounded p-3">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-[14px] font-medium text-black">{country}</span>
+                          <span className="text-sm lg:text-[14px] font-medium text-black">{country}</span>
                           <Button
                             variant="ghost"
                             size="sm"
                             className="w-8 h-8 p-0 hover:bg-gray-100"
                             onClick={() => removeCountry(country)}
                           >
-                            <Trash2 className="w-[18px] h-[18px] text-[#676879]" />
+                            <Trash2 className="w-4 lg:w-[18px] h-4 lg:h-[18px] text-[#676879]" />
                           </Button>
                         </div>
 
@@ -442,11 +442,11 @@ export default function DocumentVerification() {
                                 id={`${country}-${docType}`}
                                 checked={selectedDocuments.includes(docType)}
                                 onCheckedChange={() => toggleDocument(docType)}
-                                className="w-[18px] h-[18px]"
+                                className="w-4 h-4 lg:w-[18px] lg:h-[18px]"
                               />
                               <Label
                                 htmlFor={`${country}-${docType}`}
-                                className="text-[13px] font-medium text-[#505258]"
+                                className="text-xs lg:text-[13px] font-medium text-[#505258] cursor-pointer"
                               >
                                 {docType}
                               </Label>

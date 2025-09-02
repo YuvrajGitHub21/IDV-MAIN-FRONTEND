@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   useTemplates,
@@ -16,6 +17,7 @@ export default function Templates() {
   const [pageSize, setPageSize] = useState(12);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Use custom hooks for API integration
   const {

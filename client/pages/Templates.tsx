@@ -90,44 +90,20 @@ export default function Templates() {
     );
   };
 
-  const getInviteesAvatars = () => {
-    const avatarColors = [
-      "bg-pink-200",
-      "bg-blue-200",
-      "bg-purple-200",
-      "bg-orange-200",
-      "bg-teal-200",
-      "bg-yellow-200",
-    ];
+  // Handle template actions
+  const handleCreateNewTemplate = () => {
+    console.log("Create new template");
+    // Add your create new template logic here
+  };
 
-    return (
-      <div className="flex -space-x-1">
-        <div
-          className={cn(
-            "w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium",
-            avatarColors[0],
-          )}
-        >
-          OP
-        </div>
-        <div
-          className={cn(
-            "w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium",
-            avatarColors[1],
-          )}
-        >
-          VS
-        </div>
-        <div
-          className={cn(
-            "w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium",
-            avatarColors[2],
-          )}
-        >
-          +{Math.floor(Math.random() * 8) + 1}
-        </div>
-      </div>
-    );
+  const handleChooseTemplate = () => {
+    console.log("Choose template");
+    // Add your choose template logic here
+  };
+
+  const handleTemplateAction = (action: string, templateId: string) => {
+    console.log(`Action: ${action} for template: ${templateId}`);
+    // Add your template action logic here
   };
 
   return (

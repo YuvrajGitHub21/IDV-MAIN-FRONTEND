@@ -30,6 +30,68 @@ interface FieldOption {
   checked: boolean;
 }
 
+interface DraggableVerificationStepProps {
+  step: VerificationStep;
+  index: number;
+  moveStep: (dragIndex: number, hoverIndex: number) => void;
+  onRemove: (stepId: string) => void;
+}
+
+const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
+  step,
+  index,
+  moveStep,
+  onRemove,
+}) => {
+  const [{ isDragging }, drag] = useDrag({
+    type: "verification-step",
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [, drop] = useDrop({
+    accept: "verification-step",
+    hover: (item: { index: number }) => {
+      if (item.index !== index) {
+        moveStep(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+
+  return (
+    <div
+      ref={(node) => drag(drop(node))}
+      className={cn(
+        "relative mb-4 cursor-move",
+        isDragging && "opacity-50"
+      )}
+    >
+      <div className="p-3 rounded border border-gray-200 bg-white">
+        <div className="flex items-start gap-3">
+          <GripVertical className="w-4 h-4 text-gray-400 mt-1" />
+          <div className="flex-1">
+            <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+          </div>
+          {!step.isRequired && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 h-auto text-red-500 hover:text-red-700"
+              onClick={() => onRemove(step.id)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function TemplateBuilder() {
   const navigate = useNavigate();
   const location = useLocation();

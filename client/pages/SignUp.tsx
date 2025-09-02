@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
@@ -13,11 +13,11 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("access")) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   if (typeof window !== "undefined" && localStorage.getItem("access")) {
+  //     navigate("/dashboard", { replace: true });
+  //   }
+  // }, [navigate]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};

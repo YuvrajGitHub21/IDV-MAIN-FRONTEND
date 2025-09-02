@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -26,12 +27,17 @@ export function NameTemplateDialog({
   onCancel,
 }: NameTemplateDialogProps) {
   const [templateName, setTemplateName] = useState("");
+  const navigate = useNavigate();
 
   const handleSave = () => {
     if (templateName.trim()) {
       onSave?.(templateName.trim());
       setTemplateName("");
       onOpenChange(false);
+      // Navigate to template builder with the template name
+      navigate("/template-builder", {
+        state: { templateName: templateName.trim() },
+      });
     }
   };
 

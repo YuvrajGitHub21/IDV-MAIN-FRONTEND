@@ -52,6 +52,22 @@ export default function SignUp() {
       newErrors.confirmPassword = "Passwords do not match";
     }
 
+    if (!formData.dateOfBirth) {
+      newErrors.dateOfBirth = "Date of birth is required";
+    }
+
+    if (!formData.permanentAddress.trim()) {
+      newErrors.permanentAddress = "Permanent address is required";
+    }
+
+    if (!formData.currentAddress.trim()) {
+      newErrors.currentAddress = "Current address is required";
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = "Please select your gender";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

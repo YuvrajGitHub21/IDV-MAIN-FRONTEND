@@ -173,40 +173,40 @@ export default function DocumentVerification() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1">
+      <div className="flex flex-col lg:flex-row flex-1">
         {/* Left Sidebar */}
-        <div className="w-full lg:w-[332px] p-4 lg:pr-2 border-r border-gray-200 bg-white">
-          <div className="space-y-8">
+        <div className="w-full lg:w-[332px] p-4 lg:pr-2 border-b lg:border-b-0 lg:border-r border-gray-200 bg-white">
+          <div className="space-y-6 lg:space-y-8">
             {/* Build Process Section */}
             <div className="space-y-2">
               <div className="pb-2">
-                <h2 className="text-[15px] font-bold text-[#292F4C] leading-3 mb-2">
+                <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
                   Build your process
                 </h2>
-                <p className="text-[13px] text-[#505258] leading-5">
+                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                   Create a flow by adding required information fields and verification steps for your users.
                 </p>
               </div>
 
               {/* Personal Information */}
-              <div className="w-full px-7 py-3 flex items-center gap-2 rounded">
+              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded">
                 <div className="flex-1">
-                  <h3 className="text-[14px] font-bold text-[#292F4C] leading-[13px] mb-2">
+                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
                     Personal Information
                   </h3>
-                  <p className="text-[13px] text-[#505258] leading-[18px]">
+                  <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                     Set up fields to collect basic user details like name, contact.
                   </p>
                 </div>
               </div>
 
               {/* Document Verification - Selected */}
-              <div className="w-full px-7 py-3 flex items-center gap-2 rounded border border-[#DEDEDD] bg-[#CCE5FF]">
+              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded border border-[#DEDEDD] bg-[#CCE5FF]">
                 <div className="flex-1">
-                  <h3 className="text-[14px] font-bold text-[#292F4C] leading-[13px] mb-2">
+                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
                     Document Verification
                   </h3>
-                  <p className="text-[13px] text-[#505258] leading-[18px]">
+                  <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                     Set ID submission rules and handling for unclear files.
                   </p>
                 </div>
@@ -216,21 +216,21 @@ export default function DocumentVerification() {
             {/* Add Verification Steps */}
             <div className="space-y-2">
               <div className="pb-2">
-                <h2 className="text-[15px] font-bold text-[#292F4C] leading-3 mb-2">
+                <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
                   Add Verification Steps
                 </h2>
-                <p className="text-[13px] text-[#505258] leading-5">
+                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                   Insert secure verification steps as needed.
                 </p>
               </div>
 
               {/* Biometric Verification - Disabled */}
-              <div className="w-full px-7 py-3 flex items-center gap-2 rounded opacity-50">
+              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded opacity-50">
                 <div className="flex-1">
-                  <h3 className="text-[14px] font-bold text-[#292F4C] leading-[13px] mb-2">
+                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
                     Biometric Verification
                   </h3>
-                  <p className="text-[13px] text-[#505258] leading-[18px]">
+                  <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
                     Set selfie retries, liveness threshold, and biometric storage
                   </p>
                 </div>

@@ -131,41 +131,41 @@ export default function DocumentVerification() {
       </div>
 
       {/* Steps Navigation */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-3 border-b border-gray-200 bg-white gap-3">
         <Button
           variant="ghost"
-          className="text-gray-600 text-sm hover:bg-gray-50"
+          className="text-gray-600 text-sm hover:bg-gray-50 self-start sm:self-auto"
           onClick={handlePrevious}
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Previous
         </Button>
 
-        <div className="flex items-center gap-8">
+        <div className="flex items-center gap-4 sm:gap-8 justify-center">
           {/* Step 1 - Active */}
           <div className="flex flex-col items-center gap-1.5">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-[#0073EA] bg-[#0073EA]">
-              <span className="text-white font-bold text-sm">1</span>
+            <div className="flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 rounded-full border-2 border-[#0073EA] bg-[#0073EA]">
+              <span className="text-white font-bold text-xs sm:text-sm">1</span>
             </div>
-            <span className="text-sm font-medium text-[#172B4D]">
+            <span className="text-xs sm:text-sm font-medium text-[#172B4D] text-center">
               Form builder
             </span>
           </div>
 
-          <div className="w-[120px] h-px bg-[#D0D4E4]"></div>
+          <div className="w-16 sm:w-[120px] h-px bg-[#D0D4E4]"></div>
 
           {/* Step 2 - Inactive */}
           <div className="flex flex-col items-center gap-1.5">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-[#D0D4E4] bg-white">
-              <span className="text-gray-600 font-bold text-sm">2</span>
+            <div className="flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 rounded-full border border-[#D0D4E4] bg-white">
+              <span className="text-gray-600 font-bold text-xs sm:text-sm">2</span>
             </div>
-            <span className="text-sm text-gray-600">Preview</span>
+            <span className="text-xs sm:text-sm text-gray-600 text-center">Preview</span>
           </div>
         </div>
 
         <Button
           variant="ghost"
-          className="text-gray-600 text-sm hover:bg-gray-50"
+          className="text-gray-600 text-sm hover:bg-gray-50 self-end sm:self-auto"
           onClick={handleNext}
         >
           Next

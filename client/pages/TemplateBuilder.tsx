@@ -294,26 +294,14 @@ export default function TemplateBuilder() {
             </div>
 
             {/* Added Verification Steps */}
-            {verificationSteps.slice(1).map((step) => (
-              <div key={step.id} className="relative mb-4">
-                <div className="p-3 rounded border border-gray-200 bg-white">
-                  <div className="flex items-start gap-3">
-                    <GripVertical className="w-4 h-4 text-gray-400 mt-1 cursor-move" />
-                    <div className="flex-1">
-                      <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
-                      <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="p-1 h-auto text-red-500 hover:text-red-700"
-                      onClick={() => removeVerificationStep(step.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+            {verificationSteps.slice(1).map((step, index) => (
+              <DraggableVerificationStep
+                key={step.id}
+                step={step}
+                index={index + 1}
+                moveStep={moveStep}
+                onRemove={removeVerificationStep}
+              />
             ))}
 
             {/* Available Steps to Add */}

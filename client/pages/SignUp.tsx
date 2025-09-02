@@ -219,7 +219,8 @@ export default function SignUp() {
             Proof of identity, made simple.
           </h2>
           <p className="text-arcon-gray-secondary text-sm md:text-base font-roboto leading-relaxed">
-            Easily verify your identity in seconds with our secure and seamless process.
+            Easily verify your identity in seconds with our secure and seamless
+            process.
           </p>
         </div>
       </div>
@@ -241,7 +242,8 @@ export default function SignUp() {
             <div
               className="w-full h-full rounded-full"
               style={{
-                background: "linear-gradient(135deg, #F8E4E8 50%, #E0EFFE 100%)",
+                background:
+                  "linear-gradient(135deg, #F8E4E8 50%, #E0EFFE 100%)",
                 filter: "blur(20px)",
                 opacity: 0.6,
               }}

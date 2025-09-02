@@ -138,7 +138,13 @@ export default function Login() {
               <div className="absolute top-6 right-6">
                 <div className="w-6 h-6 rounded-full bg-green-600 flex items-center justify-center">
                   <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-                    <path d="M1 5L5 9L13 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path
+                      d="M1 5L5 9L13 1"
+                      stroke="white"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </div>
               </div>
@@ -149,8 +155,22 @@ export default function Login() {
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
                   <div className="w-16 h-16 rounded-full bg-white/50 flex items-center justify-center">
                     <svg width="40" height="40" viewBox="0 0 67 94" fill="none">
-                      <path d="M33.5 80.1898V93.5464L51.6857 70.2102L33.5 80.1898Z" stroke="#91ACC8" strokeWidth="1.8144" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M33.5 93.5464L52.3406 83.6172L51.6857 70.2102" stroke="#91ACC8" strokeWidth="1.8144" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M33.5 80.1898V93.5464L51.6857 70.2102L33.5 80.1898Z"
+                        stroke="#91ACC8"
+                        strokeWidth="1.8144"
+                        strokeMiterlimit="10"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M33.5 93.5464L52.3406 83.6172L51.6857 70.2102"
+                        stroke="#91ACC8"
+                        strokeWidth="1.8144"
+                        strokeMiterlimit="10"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -177,7 +197,8 @@ export default function Login() {
             Proof of identity, made simple.
           </h2>
           <p className="text-arcon-gray-secondary text-sm md:text-base font-roboto leading-relaxed">
-            Easily verify your identity in seconds with our secure and seamless process.
+            Easily verify your identity in seconds with our secure and seamless
+            process.
           </p>
         </div>
       </div>
@@ -199,7 +220,8 @@ export default function Login() {
             <div
               className="w-full h-full rounded-full"
               style={{
-                background: "linear-gradient(135deg, #F8E4E8 50%, #E0EFFE 100%)",
+                background:
+                  "linear-gradient(135deg, #F8E4E8 50%, #E0EFFE 100%)",
                 filter: "blur(20px)",
                 opacity: 0.6,
               }}
@@ -219,7 +241,9 @@ export default function Login() {
                   fill="none"
                 />
               </svg>
-              <span className="text-arcon-gray-primary text-2xl font-bold font-roboto">arcon</span>
+              <span className="text-arcon-gray-primary text-2xl font-bold font-roboto">
+                arcon
+              </span>
             </div>
           </div>
 
@@ -247,12 +271,14 @@ export default function Login() {
                   onChange={handleInputChange}
                   placeholder="Enter mobile number or email address"
                   className={`w-full h-[54px] px-3 py-4 border rounded font-roboto text-base placeholder-arcon-gray-secondary ${
-                    errors.email ? 'border-red-500' : 'border-arcon-gray-border'
+                    errors.email ? "border-red-500" : "border-arcon-gray-border"
                   } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                 />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">{errors.email}</p>
+                <p className="text-red-500 text-sm mt-1 font-roboto">
+                  {errors.email}
+                </p>
               )}
             </div>
 
@@ -268,12 +294,16 @@ export default function Login() {
                   onChange={handleInputChange}
                   placeholder="Enter your password"
                   className={`w-full h-[54px] px-3 py-4 border rounded font-roboto text-base placeholder-arcon-gray-secondary ${
-                    errors.password ? 'border-red-500' : 'border-arcon-gray-border'
+                    errors.password
+                      ? "border-red-500"
+                      : "border-arcon-gray-border"
                   } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                 />
               </div>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">{errors.password}</p>
+                <p className="text-red-500 text-sm mt-1 font-roboto">
+                  {errors.password}
+                </p>
               )}
             </div>
 

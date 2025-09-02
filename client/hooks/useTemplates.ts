@@ -48,7 +48,7 @@ const mockTemplates: TemplateItem[] = [
     createdBy: "user1",
     templateRules: "Rules",
     isActive: true,
-    createdAtUtc: "2024-07-14T00:00:00Z"
+    createdAtUtc: "2024-07-14T00:00:00Z",
   },
   {
     id: "2",
@@ -57,7 +57,7 @@ const mockTemplates: TemplateItem[] = [
     createdBy: "user2",
     templateRules: "Rules",
     isActive: true,
-    createdAtUtc: "2024-06-22T00:00:00Z"
+    createdAtUtc: "2024-06-22T00:00:00Z",
   },
   {
     id: "3",
@@ -66,7 +66,7 @@ const mockTemplates: TemplateItem[] = [
     createdBy: "user3",
     templateRules: "Rules",
     isActive: false,
-    createdAtUtc: "2024-06-18T00:00:00Z"
+    createdAtUtc: "2024-06-18T00:00:00Z",
   },
   {
     id: "4",
@@ -75,7 +75,7 @@ const mockTemplates: TemplateItem[] = [
     createdBy: "user4",
     templateRules: "Rules",
     isActive: true,
-    createdAtUtc: "2024-05-04T00:00:00Z"
+    createdAtUtc: "2024-05-04T00:00:00Z",
   },
   {
     id: "5",
@@ -84,7 +84,7 @@ const mockTemplates: TemplateItem[] = [
     createdBy: "user5",
     templateRules: "Rules",
     isActive: true,
-    createdAtUtc: "2024-07-14T00:00:00Z"
+    createdAtUtc: "2024-07-14T00:00:00Z",
   },
   {
     id: "6",
@@ -93,8 +93,8 @@ const mockTemplates: TemplateItem[] = [
     createdBy: "user2",
     templateRules: "Rules",
     isActive: true,
-    createdAtUtc: "2024-07-14T00:00:00Z"
-  }
+    createdAtUtc: "2024-07-14T00:00:00Z",
+  },
 ];
 
 const mockUsers: Record<string, string> = {
@@ -102,7 +102,7 @@ const mockUsers: Record<string, string> = {
   user2: "Deloris L. Hall",
   user3: "Carl H. Smith",
   user4: "Ryan M. Johnson",
-  user5: "Fannie W. Johnson"
+  user5: "Fannie W. Johnson",
 };
 
 // Custom hook for templates API
@@ -115,63 +115,83 @@ export const useTemplates = () => {
   const fetchTemplates = useCallback(async (filters: TemplateFilters = {}) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       // TODO: Replace with actual API call when backend is ready
       const useRealAPI = false; // Set to true when ready to use real API
-      
+
       if (useRealAPI) {
         const searchParams = new URLSearchParams();
-        if (filters.isActive !== undefined) searchParams.append('isActive', filters.isActive.toString());
-        if (filters.createdBy) searchParams.append('CreatedBy', filters.createdBy);
-        if (filters.search) searchParams.append('Search', filters.search);
-        if (filters.page) searchParams.append('Page', filters.page.toString());
-        if (filters.pageSize) searchParams.append('PageSize', filters.pageSize.toString());
+        if (filters.isActive !== undefined)
+          searchParams.append("isActive", filters.isActive.toString());
+        if (filters.createdBy)
+          searchParams.append("CreatedBy", filters.createdBy);
+        if (filters.search) searchParams.append("Search", filters.search);
+        if (filters.page) searchParams.append("Page", filters.page.toString());
+        if (filters.pageSize)
+          searchParams.append("PageSize", filters.pageSize.toString());
 
-        const response = await fetch(`http://localhost:5294/api/form-templates?${searchParams.toString()}`);
-        
+        const response = await fetch(
+          `http://localhost:5294/api/form-templates?${searchParams.toString()}`,
+        );
+
         if (!response.ok) {
-          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+          throw new Error(
+            `API Error: ${response.status} ${response.statusText}`,
+          );
         }
-        
+
         const data: TemplatesResponse = await response.json();
         setTemplates(data.items);
         setTotalItems(data.total);
       } else {
         // Use mock data for development
         let filteredTemplates = [...mockTemplates];
-        
+
         // Apply search filter
         if (filters.search) {
-          filteredTemplates = filteredTemplates.filter(template =>
-            template.name.toLowerCase().includes(filters.search!.toLowerCase()) ||
-            template.description.toLowerCase().includes(filters.search!.toLowerCase())
+          filteredTemplates = filteredTemplates.filter(
+            (template) =>
+              template.name
+                .toLowerCase()
+                .includes(filters.search!.toLowerCase()) ||
+              template.description
+                .toLowerCase()
+                .includes(filters.search!.toLowerCase()),
           );
         }
-        
+
         // Apply isActive filter
         if (filters.isActive !== undefined) {
-          filteredTemplates = filteredTemplates.filter(template => template.isActive === filters.isActive);
+          filteredTemplates = filteredTemplates.filter(
+            (template) => template.isActive === filters.isActive,
+          );
         }
-        
+
         // Apply createdBy filter
         if (filters.createdBy) {
-          filteredTemplates = filteredTemplates.filter(template => template.createdBy === filters.createdBy);
+          filteredTemplates = filteredTemplates.filter(
+            (template) => template.createdBy === filters.createdBy,
+          );
         }
-        
+
         // Apply pagination
         const page = filters.page || 1;
         const pageSize = filters.pageSize || 12;
         const startIndex = (page - 1) * pageSize;
-        const paginatedTemplates = filteredTemplates.slice(startIndex, startIndex + pageSize);
-        
+        const paginatedTemplates = filteredTemplates.slice(
+          startIndex,
+          startIndex + pageSize,
+        );
+
         setTemplates(paginatedTemplates);
         setTotalItems(filteredTemplates.length);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch templates';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch templates";
       setError(errorMessage);
-      console.error('Error fetching templates:', err);
+      console.error("Error fetching templates:", err);
     } finally {
       setLoading(false);
     }
@@ -183,7 +203,7 @@ export const useTemplates = () => {
     error,
     totalItems,
     fetchTemplates,
-    refetch: fetchTemplates
+    refetch: fetchTemplates,
   };
 };
 
@@ -193,61 +213,72 @@ export const useUsers = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUser = useCallback(async (userId: string): Promise<string> => {
-    if (users[userId]) {
-      return users[userId];
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // TODO: Replace with actual API call when backend is ready
-      const useRealAPI = false; // Set to true when ready to use real API
-      
-      if (useRealAPI) {
-        const response = await fetch(`http://localhost:5294/api/User/${userId}`);
-        
-        if (!response.ok) {
-          throw new Error(`API Error: ${response.status} ${response.statusText}`);
-        }
-        
-        const data: UserResponse = await response.json();
-        
-        if (data.success) {
-          const fullName = `${data.data.firstName} ${data.data.lastName}`;
-          setUsers(prev => ({ ...prev, [userId]: fullName }));
-          return fullName;
-        } else {
-          throw new Error(data.message || 'Failed to fetch user');
-        }
-      } else {
-        // Use mock data for development
-        const userName = mockUsers[userId] || "Unknown User";
-        setUsers(prev => ({ ...prev, [userId]: userName }));
-        return userName;
+  const fetchUser = useCallback(
+    async (userId: string): Promise<string> => {
+      if (users[userId]) {
+        return users[userId];
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user';
-      setError(errorMessage);
-      console.error('Error fetching user:', err);
-      return "Unknown User";
-    } finally {
-      setLoading(false);
-    }
-  }, [users]);
 
-  const fetchMultipleUsers = useCallback(async (userIds: string[]) => {
-    const promises = userIds.map(id => fetchUser(id));
-    await Promise.all(promises);
-  }, [fetchUser]);
+      setLoading(true);
+      setError(null);
+
+      try {
+        // TODO: Replace with actual API call when backend is ready
+        const useRealAPI = false; // Set to true when ready to use real API
+
+        if (useRealAPI) {
+          const response = await fetch(
+            `http://localhost:5294/api/User/${userId}`,
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              `API Error: ${response.status} ${response.statusText}`,
+            );
+          }
+
+          const data: UserResponse = await response.json();
+
+          if (data.success) {
+            const fullName = `${data.data.firstName} ${data.data.lastName}`;
+            setUsers((prev) => ({ ...prev, [userId]: fullName }));
+            return fullName;
+          } else {
+            throw new Error(data.message || "Failed to fetch user");
+          }
+        } else {
+          // Use mock data for development
+          const userName = mockUsers[userId] || "Unknown User";
+          setUsers((prev) => ({ ...prev, [userId]: userName }));
+          return userName;
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to fetch user";
+        setError(errorMessage);
+        console.error("Error fetching user:", err);
+        return "Unknown User";
+      } finally {
+        setLoading(false);
+      }
+    },
+    [users],
+  );
+
+  const fetchMultipleUsers = useCallback(
+    async (userIds: string[]) => {
+      const promises = userIds.map((id) => fetchUser(id));
+      await Promise.all(promises);
+    },
+    [fetchUser],
+  );
 
   return {
     users,
     loading,
     error,
     fetchUser,
-    fetchMultipleUsers
+    fetchMultipleUsers,
   };
 };
 
@@ -256,13 +287,15 @@ export const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "2-digit",
-    year: "numeric"
+    year: "numeric",
   });
 };
 
 export const getStatusInfo = (isActive: boolean) => {
   return {
     label: isActive ? "Completed" : "In Progress",
-    className: isActive ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+    className: isActive
+      ? "bg-green-100 text-green-800"
+      : "bg-yellow-100 text-yellow-800",
   };
 };

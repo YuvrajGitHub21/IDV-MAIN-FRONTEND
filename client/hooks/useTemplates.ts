@@ -1,14 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 
-// Types for API responses
+/* ===================== Types (allow nulls like Swagger) ===================== */
 export interface TemplateItem {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   createdBy: string;
-  templateRules: string;
+  templateRules: string | null;
   isActive: boolean;
   createdAtUtc: string;
+  // If API later returns this:
+  // updatedAtUtc?: string | null;
 }
 
 export interface TemplatesResponse {
@@ -22,7 +24,7 @@ export interface UserResponse {
   success: boolean;
   message: string;
   data: {
-    id: number;
+    id: number | string;
     firstName: string;
     lastName: string;
     email: string;
@@ -33,70 +35,13 @@ export interface UserResponse {
 
 export interface TemplateFilters {
   isActive?: boolean;
-  createdBy?: string;
+  createdBy?: string; // ignored (we hardcode below)
   search?: string;
   page?: number;
   pageSize?: number;
 }
 
-// Mock data for development
-const mockTemplates: TemplateItem[] = [
-  {
-    id: "1",
-    name: "Template Name",
-    description: "Template description",
-    createdBy: "user1",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-07-14T00:00:00Z",
-  },
-  {
-    id: "2",
-    name: "New Template",
-    description: "New template description",
-    createdBy: "user2",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-06-22T00:00:00Z",
-  },
-  {
-    id: "3",
-    name: "Template_Newname",
-    description: "Template description",
-    createdBy: "user3",
-    templateRules: "Rules",
-    isActive: false,
-    createdAtUtc: "2024-06-18T00:00:00Z",
-  },
-  {
-    id: "4",
-    name: "Template Name 8",
-    description: "Template description",
-    createdBy: "user4",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-05-04T00:00:00Z",
-  },
-  {
-    id: "5",
-    name: "Template Name 2",
-    description: "Template description",
-    createdBy: "user5",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-07-14T00:00:00Z",
-  },
-  {
-    id: "6",
-    name: "Template_New1name",
-    description: "Template description",
-    createdBy: "user2",
-    templateRules: "Rules",
-    isActive: true,
-    createdAtUtc: "2024-07-14T00:00:00Z",
-  },
-];
-
+/* ===================== Dev mocks (kept for users hook fallback) ===================== */
 const mockUsers: Record<string, string> = {
   user1: "Patricia A. Ramirez",
   user2: "Deloris L. Hall",
@@ -105,7 +50,14 @@ const mockUsers: Record<string, string> = {
   user5: "Fannie W. Johnson",
 };
 
-// Custom hook for templates API
+/* ===================== Config ===================== */
+const API_BASE = "http://localhost:5294";
+const HARDCODED_CREATED_BY = "31e844b2-cba4-48b2-a687-419934046176";
+
+const getToken = () =>
+  typeof window !== "undefined" ? localStorage.getItem("access") : null;
+
+/* ===================== Templates hook (REAL API) ===================== */
 export const useTemplates = () => {
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -117,81 +69,59 @@ export const useTemplates = () => {
     setError(null);
 
     try {
-      // TODO: Replace with actual API call when backend is ready
-      const useRealAPI = false; // Set to true when ready to use real API
-
-      if (useRealAPI) {
-        const searchParams = new URLSearchParams();
-        if (filters.isActive !== undefined)
-          searchParams.append("isActive", filters.isActive.toString());
-        if (filters.createdBy)
-          searchParams.append("CreatedBy", filters.createdBy);
-        if (filters.search) searchParams.append("Search", filters.search);
-        if (filters.page) searchParams.append("Page", filters.page.toString());
-        if (filters.pageSize)
-          searchParams.append("PageSize", filters.pageSize.toString());
-
-        const response = await fetch(
-          `http://localhost:5294/api/form-templates?${searchParams.toString()}`,
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `API Error: ${response.status} ${response.statusText}`,
-          );
-        }
-
-        const data: TemplatesResponse = await response.json();
-        setTemplates(data.items);
-        setTotalItems(data.total);
-      } else {
-        // Use mock data for development
-        let filteredTemplates = [...mockTemplates];
-
-        // Apply search filter
-        if (filters.search) {
-          filteredTemplates = filteredTemplates.filter(
-            (template) =>
-              template.name
-                .toLowerCase()
-                .includes(filters.search!.toLowerCase()) ||
-              template.description
-                .toLowerCase()
-                .includes(filters.search!.toLowerCase()),
-          );
-        }
-
-        // Apply isActive filter
-        if (filters.isActive !== undefined) {
-          filteredTemplates = filteredTemplates.filter(
-            (template) => template.isActive === filters.isActive,
-          );
-        }
-
-        // Apply createdBy filter
-        if (filters.createdBy) {
-          filteredTemplates = filteredTemplates.filter(
-            (template) => template.createdBy === filters.createdBy,
-          );
-        }
-
-        // Apply pagination
-        const page = filters.page || 1;
-        const pageSize = filters.pageSize || 12;
-        const startIndex = (page - 1) * pageSize;
-        const paginatedTemplates = filteredTemplates.slice(
-          startIndex,
-          startIndex + pageSize,
-        );
-
-        setTemplates(paginatedTemplates);
-        setTotalItems(filteredTemplates.length);
+      const token = getToken();
+      if (!token) {
+        setError("No auth token found. Please log in.");
+        setTemplates([]);
+        setTotalItems(0);
+        return;
       }
+
+      const searchParams = new URLSearchParams();
+      const isActive = filters.isActive ?? true; // default true like your example
+      const page = filters.page ?? 1;
+      const pageSize = filters.pageSize ?? 20;
+
+      searchParams.append("IsActive", String(isActive));
+      searchParams.append("CreatedBy", HARDCODED_CREATED_BY); // hardcoded as requested
+      searchParams.append("Page", String(page));
+      searchParams.append("PageSize", String(pageSize));
+      if (filters.search) searchParams.append("Search", filters.search);
+
+      const res = await fetch(
+        `${API_BASE}/api/form-templates?${searchParams.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            // Server returns JSON even if Swagger shows text/plain
+            Accept: "application/json, text/plain, */*",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        setError(
+          `API Error: ${res.status} ${res.statusText}${
+            text ? ` — ${text.slice(0, 200)}` : ""
+          }`,
+        );
+        setTemplates([]);
+        setTotalItems(0);
+        return;
+      }
+
+      const data: TemplatesResponse = await res.json();
+      setTemplates(Array.isArray(data.items) ? data.items : []);
+      setTotalItems(typeof data.total === "number" ? data.total : 0);
     } catch (err) {
-      const errorMessage =
+      const msg =
         err instanceof Error ? err.message : "Failed to fetch templates";
-      setError(errorMessage);
+      setError(msg);
       console.error("Error fetching templates:", err);
+      setTemplates([]);
+      setTotalItems(0);
     } finally {
       setLoading(false);
     }
@@ -207,7 +137,9 @@ export const useTemplates = () => {
   };
 };
 
-// Custom hook for users API
+/* ===================== Users hook (safe fallback) ===================== */
+/* Keeps your current API surface. It returns mock names for non-mock IDs
+   (your GUIDs will show "Unknown User" unless you wire the real endpoint). */
 export const useUsers = () => {
   const [users, setUsers] = useState<Record<string, string>>(mockUsers);
   const [loading, setLoading] = useState(false);
@@ -215,48 +147,51 @@ export const useUsers = () => {
 
   const fetchUser = useCallback(
     async (userId: string): Promise<string> => {
-      if (users[userId]) {
-        return users[userId];
-      }
+      if (users[userId]) return users[userId];
 
       setLoading(true);
       setError(null);
 
       try {
-        // TODO: Replace with actual API call when backend is ready
-        const useRealAPI = false; // Set to true when ready to use real API
+        // Flip to true and adjust the URL if your API supports /api/User/{id}
+        const useRealAPI = false;
 
         if (useRealAPI) {
-          const response = await fetch(
-            `http://localhost:5294/api/User/${userId}`,
-          );
+          const token = getToken();
+          if (!token) throw new Error("No auth token found");
 
-          if (!response.ok) {
+          const res = await fetch(`${API_BASE}/api/User/${userId}`, {
+            headers: {
+              Accept: "application/json, text/plain, */*",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!res.ok) {
+            const text = await res.text().catch(() => "");
             throw new Error(
-              `API Error: ${response.status} ${response.statusText}`,
+              `User API Error: ${res.status} ${res.statusText}${
+                text ? ` — ${text.slice(0, 200)}` : ""
+              }`,
             );
           }
 
-          const data: UserResponse = await response.json();
-
-          if (data.success) {
-            const fullName = `${data.data.firstName} ${data.data.lastName}`;
-            setUsers((prev) => ({ ...prev, [userId]: fullName }));
-            return fullName;
-          } else {
-            throw new Error(data.message || "Failed to fetch user");
-          }
+          const data: UserResponse = await res.json();
+          const fullName = data?.data
+            ? `${data.data.firstName} ${data.data.lastName}`.trim()
+            : "Unknown User";
+          setUsers((prev) => ({ ...prev, [userId]: fullName }));
+          return fullName;
         } else {
-          // Use mock data for development
           const userName = mockUsers[userId] || "Unknown User";
           setUsers((prev) => ({ ...prev, [userId]: userName }));
           return userName;
         }
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to fetch user";
-        setError(errorMessage);
-        console.error("Error fetching user:", err);
+      } catch (e) {
+        const msg =
+          e instanceof Error ? e.message : "Failed to fetch user";
+        setError(msg);
+        console.error("Error fetching user:", e);
         return "Unknown User";
       } finally {
         setLoading(false);
@@ -267,24 +202,21 @@ export const useUsers = () => {
 
   const fetchMultipleUsers = useCallback(
     async (userIds: string[]) => {
-      const promises = userIds.map((id) => fetchUser(id));
-      await Promise.all(promises);
+      const unique = Array.from(new Set(userIds)).filter(Boolean);
+      await Promise.all(unique.map((id) => fetchUser(id)));
     },
     [fetchUser],
   );
 
-  return {
-    users,
-    loading,
-    error,
-    fetchUser,
-    fetchMultipleUsers,
-  };
+  return { users, loading, error, fetchUser, fetchMultipleUsers };
 };
 
-// Utility functions
+/* ===================== Utilities (unchanged API) ===================== */
 export const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString("en-GB", {
+  if (!dateString) return "-";
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return "-";
+  return d.toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

@@ -114,11 +114,13 @@ const mockUsers: Record<string, string> = {
 
 /* ===================== Config ===================== */
 const API_BASE = "http://localhost:5294";
-const HARDCODED_CREATED_BY = "31e844b2-cba4-48b2-a687-419934046176";
+const HARDCODED_CREATED_BY = "40945cdc-c62b-4c39-99e1-650c990af422";
 
 const getToken = () =>
   typeof window !== "undefined" ? localStorage.getItem("access") : null;
 
+const getfirstName = () =>
+  typeof window !== "undefined" ? localStorage.getItem("name") : null;
 /* ===================== Fallback (filters + pagination like before) ===================== */
 function getFallbackData(filters: TemplateFilters = {}) {
   const hardcore = buildHardcoreMocks(rawMockTemplates);
@@ -281,7 +283,7 @@ export const useUsers = () => {
           setUsers((prev) => ({ ...prev, [userId]: fullName }));
           return fullName;
         } else {
-          const userName = mockUsers[userId] || "Unknown User";
+          const userName = getfirstName() || "Unknown User";
           setUsers((prev) => ({ ...prev, [userId]: userName }));
           return userName;
         }

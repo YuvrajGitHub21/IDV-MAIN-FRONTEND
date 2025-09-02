@@ -56,6 +56,7 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
         localStorage.setItem("access", data.data.accessToken);
+        localStorage.setItem("name", data.data.user.firstName);
         navigate("/dashboard", { replace: true });
       } else {
         const errorData = await response.json();

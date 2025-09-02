@@ -347,7 +347,7 @@ export default function SignUp() {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   placeholder="Enter your last name"
-                  className={`w-full h-[54px] px-3 py-4 border rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
                     errors.lastName
                       ? "border-red-500"
                       : "border-arcon-gray-border"

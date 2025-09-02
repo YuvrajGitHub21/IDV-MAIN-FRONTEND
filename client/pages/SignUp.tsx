@@ -316,7 +316,7 @@ export default function SignUp() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 First Name
               </label>
               <div className="relative">
@@ -326,7 +326,7 @@ export default function SignUp() {
                   value={formData.firstName}
                   onChange={handleInputChange}
                   placeholder="Enter your first name"
-                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.firstName
                       ? "border-red-500"
                       : "border-arcon-gray-border"
@@ -341,7 +341,7 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Last Name
               </label>
               <div className="relative">
@@ -351,7 +351,7 @@ export default function SignUp() {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   placeholder="Enter your last name"
-                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.lastName
                       ? "border-red-500"
                       : "border-arcon-gray-border"
@@ -366,7 +366,7 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Email Address
               </label>
               <div className="relative">
@@ -376,7 +376,7 @@ export default function SignUp() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Enter your email address"
-                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.email ? "border-red-500" : "border-arcon-gray-border"
                   } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                 />
@@ -389,7 +389,7 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Password
               </label>
               <div className="relative">
@@ -399,7 +399,7 @@ export default function SignUp() {
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Enter your password"
-                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.password
                       ? "border-red-500"
                       : "border-arcon-gray-border"
@@ -414,7 +414,7 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Confirm Password
               </label>
               <div className="relative">
@@ -424,7 +424,7 @@ export default function SignUp() {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   placeholder="Re-enter your password"
-                  className={`w-full h-[54px] px-3 py-4 border-t border-r border-b border-l rounded font-roboto text-base placeholder-arcon-gray-secondary ${
+                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border-t border-r border-b border-l rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.confirmPassword
                       ? "border-red-500"
                       : "border-arcon-gray-border"

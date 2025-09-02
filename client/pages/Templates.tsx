@@ -230,7 +230,7 @@ export default function Templates() {
               </div>
 
               {/* Verification */}
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
+              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer" onClick={goToNotFound}>
                 <svg
                   className="w-5 h-5"
                   width="22"
@@ -385,7 +385,7 @@ export default function Templates() {
             </div>
 
             {/* Help */}
-            <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
+            <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer" onClick={goToNotFound}>
               <svg
                 className="w-5 h-5"
                 width="22"

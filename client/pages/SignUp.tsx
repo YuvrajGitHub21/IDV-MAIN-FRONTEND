@@ -359,7 +359,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.lastName && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.lastName}
                 </p>
               )}
@@ -382,7 +382,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.email}
                 </p>
               )}
@@ -407,7 +407,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.password}
                 </p>
               )}
@@ -432,7 +432,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.confirmPassword && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.confirmPassword}
                 </p>
               )}
@@ -456,7 +456,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.dateOfBirth && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.dateOfBirth}
                 </p>
               )}
@@ -481,7 +481,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.permanentAddress && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.permanentAddress}
                 </p>
               )}
@@ -506,7 +506,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.currentAddress && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.currentAddress}
                 </p>
               )}
@@ -541,7 +541,7 @@ export default function SignUp() {
                 </select>
               </div>
               {errors.gender && (
-                <p className="text-red-500 text-sm mt-1 font-roboto">
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.gender}
                 </p>
               )}

@@ -465,34 +465,60 @@ export default function TemplateBuilder() {
                   {/* Required Fields */}
                   <div className="space-y-4 mb-8">
                     {/* First Name */}
-                    <div className="border border-gray-300 rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-sm text-gray-900">
-                          First Name
-                        </h4>
+                    <div className={cn(
+                      "rounded-lg border-r border-b border-l bg-white",
+                      systemFieldAlerts.firstName ? "border-blue-500" : "border-gray-300"
+                    )}>
+                      {systemFieldAlerts.firstName && (
+                        <div className="h-2 bg-blue-500 rounded-t-lg"></div>
+                      )}
+                      <div className="p-4">
+                        {systemFieldAlerts.firstName && (
+                          <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
+                            <Info className="w-5 h-5 text-red-500" />
+                            <span className="text-sm text-gray-900 font-medium">
+                              This field is system-required and cannot be modified.
+                            </span>
+                          </div>
+                        )}
+                        <div className="mb-2">
+                          <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
+                            <span className="text-sm font-semibold text-gray-900">First Name</span>
+                          </div>
+                        </div>
+                        <Input
+                          value={systemFieldValues.firstName}
+                          onFocus={() => handleSystemFieldFocus("firstName")}
+                          onBlur={() => handleSystemFieldBlur("firstName")}
+                          className="border-gray-300 text-gray-600"
+                          readOnly
+                        />
                       </div>
-                      <div className="text-sm text-gray-500">Eg: John</div>
                     </div>
 
                     {/* Last Name */}
-                    <div className="border border-gray-300 rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-sm text-gray-900">
-                          Last Name
-                        </h4>
+                    <div className="border border-gray-300 rounded-lg">
+                      <div className="p-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-sm text-gray-900">
+                            Last Name
+                          </h4>
+                        </div>
+                        <div className="text-sm text-gray-500">Eg: Wick</div>
                       </div>
-                      <div className="text-sm text-gray-500">Eg: Wick</div>
                     </div>
 
                     {/* Email Address */}
-                    <div className="border border-gray-300 rounded-lg p-5">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-semibold text-sm text-gray-900">
-                          Email Address
-                        </h4>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Eg: johnwick@email.com
+                    <div className="border border-gray-300 rounded-lg">
+                      <div className="p-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-sm text-gray-900">
+                            Email Address
+                          </h4>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Eg: johnwick@email.com
+                        </div>
                       </div>
                     </div>
                   </div>

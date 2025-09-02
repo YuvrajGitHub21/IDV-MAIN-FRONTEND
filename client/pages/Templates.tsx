@@ -420,20 +420,10 @@ export default function Templates() {
                 </div>
 
                 {/* Add New Button */}
-                <div className="flex">
-                  <button className="bg-blue-600 text-white px-3 py-1.5 text-sm font-medium rounded-l hover:bg-blue-700">
-                    Add New
-                  </button>
-                  <button className="bg-blue-600 border-l border-blue-500 text-white px-2 py-1.5 rounded-r hover:bg-blue-700">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M7 10l5 5 5-5z" />
-                    </svg>
-                  </button>
-                </div>
+                <AddNewTemplateDropdown
+                  onCreateNew={handleCreateNewTemplate}
+                  onChooseTemplate={handleChooseTemplate}
+                />
               </div>
             </div>
           </div>

@@ -41,13 +41,10 @@ const App = () => (
   </QueryClientProvider>
 );
 
-// Prevent multiple createRoot calls in development
-const container = document.getElementById("root")!;
-let root = (container as any)._reactRoot;
-
-if (!root) {
-  root = createRoot(container);
-  (container as any)._reactRoot = root;
+// Create root only once and render
+const container = document.getElementById("root");
+if (container && !container.hasAttribute('data-react-root')) {
+  container.setAttribute('data-react-root', 'true');
+  const root = createRoot(container);
+  root.render(<App />);
 }
-
-root.render(<App />);

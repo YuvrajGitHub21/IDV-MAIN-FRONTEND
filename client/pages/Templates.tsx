@@ -106,7 +106,18 @@ export default function Templates() {
 
   const handleTemplateAction = (action: string, templateId: string) => {
     console.log(`Action: ${action} for template: ${templateId}`);
-    // Add your template action logic here
+
+    switch (action) {
+      case "preview":
+        navigate(`/preview/${templateId}`);
+        break;
+      case "edit":
+        navigate("/template-builder", { state: { templateId } });
+        break;
+      default:
+        // Add your other template action logic here
+        console.log(`Action ${action} not yet implemented`);
+    }
   };
 
   const handleLogout = () => {

@@ -49,7 +49,7 @@ export default function Preview() {
     templateName: "New Template",
     verificationSteps: [],
     addedFields: [],
-    sections: {
+    templateData: {
       personalInfo: true,
       documentVerification: false,
       biometricVerification: false,

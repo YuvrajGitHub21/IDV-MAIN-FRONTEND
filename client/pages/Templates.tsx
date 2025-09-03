@@ -109,13 +109,16 @@ export default function Templates() {
     // Add your template action logic here
   };
 
-  const handleLogout = () => {
-    // Clear authentication tokens and user data from localStorage
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    localStorage.removeItem("user");
-
-    // Navigate to login page
+  const handleLogout = async () => {
+    // Clear session on server (if supported) and memory token
+    try {
+      const { logout } = await import("@/lib/http");
+      await logout();
+    } catch (_) {}
+    // Clear non-sensitive display info
+    try {
+      localStorage.removeItem("name");
+    } catch (_) {}
     navigate("/login", { replace: true });
   };
 

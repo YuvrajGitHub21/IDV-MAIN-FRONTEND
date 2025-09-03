@@ -113,11 +113,8 @@ const mockUsers: Record<string, string> = {
 };
 
 /* ===================== Config ===================== */
-const API_BASE = "http://localhost:5294";
+import { API_BASE, apiFetch, getAccessToken } from "@/lib/http";
 const HARDCODED_CREATED_BY = "40945cdc-c62b-4c39-99e1-650c990af422";
-
-const getToken = () =>
-  typeof window !== "undefined" ? localStorage.getItem("access") : null;
 
 const getfirstName = () =>
   typeof window !== "undefined" ? localStorage.getItem("name") : null;
@@ -178,10 +175,10 @@ export const useTemplates = () => {
     };
 
     try {
-      const token = getToken();
+      const token = getAccessToken();
       if (!token) {
-        useFallback("No auth token found. Showing offline data.");
-        return;
+        // We can still try API; apiFetch will attempt refresh using cookie
+        // but if that also fails we'll fallback gracefully below.
       }
 
       const searchParams = new URLSearchParams();
@@ -195,13 +192,12 @@ export const useTemplates = () => {
       searchParams.append("PageSize", String(pageSize));
       if (filters.search) searchParams.append("Search", filters.search);
 
-      const res = await fetch(
-        `${API_BASE}/api/form-templates?${searchParams.toString()}`,
+      const res = await apiFetch(
+        `${API_BASE}/form-templates?${searchParams.toString()}`,
         {
           method: "GET",
           headers: {
             Accept: "application/json, text/plain, */*",
-            Authorization: `Bearer ${token}`,
           },
         },
       );
@@ -257,13 +253,9 @@ export const useUsers = () => {
         const useRealAPI = false;
 
         if (useRealAPI) {
-          const token = getToken();
-          if (!token) throw new Error("No auth token found");
-
-          const res = await fetch(`${API_BASE}/api/User/${userId}`, {
+          const res = await apiFetch(`${API_BASE}/User/${userId}`, {
             headers: {
               Accept: "application/json, text/plain, */*",
-              Authorization: `Bearer ${token}`,
             },
           });
 

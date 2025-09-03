@@ -66,6 +66,15 @@ export default function SignUp() {
   const handleNext = () => {
     if (currentStep === 1) {
       if (!validateForm()) return;
+      let hasDoc = false;
+      try {
+        const raw = localStorage.getItem("arcon_has_document_verification");
+        hasDoc = raw ? JSON.parse(raw) === true : false;
+      } catch {}
+      if (hasDoc) {
+        navigate("/document-verification");
+        return;
+      }
       setCurrentStep(2);
     } else {
       handleSubmit();

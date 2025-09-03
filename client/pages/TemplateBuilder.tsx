@@ -790,8 +790,10 @@ export default function TemplateBuilder() {
   };
 
   const handleNext = () => {
-    console.log("Navigate to preview");
-    // TODO: Add navigation to preview step
+    // Navigate to preview or next step in the flow
+    // For now, log that we're ready for preview
+    console.log("Template ready for preview");
+    // TODO: Implement preview page navigation
   };
 
   useEffect(() => {

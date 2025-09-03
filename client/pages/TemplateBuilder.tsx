@@ -107,9 +107,10 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 };
 
 // Document Verification Configuration Component
-const DocumentVerificationSection: React.FC<{ onNext?: () => void }> = ({
-  onNext,
-}) => {
+const DocumentVerificationSection: React.FC<{
+  isExpanded: boolean;
+  onToggle: () => void;
+}> = ({ isExpanded, onToggle }) => {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
@@ -117,12 +118,6 @@ const DocumentVerificationSection: React.FC<{ onNext?: () => void }> = ({
     "India",
   ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  const handleNext = () => {
-    setIsExpanded(false);
-    onNext?.();
-  };
 
   // Load form state on mount
   useEffect(() => {
@@ -195,7 +190,7 @@ const DocumentVerificationSection: React.FC<{ onNext?: () => void }> = ({
           variant="ghost"
           size="sm"
           className="p-0 h-auto"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={onToggle}
         >
           <Minus className="w-5 h-5 text-gray-700" />
         </Button>
@@ -423,17 +418,6 @@ const DocumentVerificationSection: React.FC<{ onNext?: () => void }> = ({
               ))}
             </div>
           </div>
-
-          {/* Next Button */}
-          <div className="flex justify-end pt-6">
-            <Button
-              className="bg-[#0073EA] hover:bg-blue-700 text-white px-6 py-2"
-              onClick={handleNext}
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
         </div>
       )}
     </div>
@@ -441,19 +425,14 @@ const DocumentVerificationSection: React.FC<{ onNext?: () => void }> = ({
 };
 
 // Biometric Verification Configuration Component
-const BiometricVerificationSection: React.FC<{ onNext?: () => void }> = ({
-  onNext,
-}) => {
+const BiometricVerificationSection: React.FC<{
+  isExpanded: boolean;
+  onToggle: () => void;
+}> = ({ isExpanded, onToggle }) => {
   const [maxRetries, setMaxRetries] = useState("4");
   const [askUserRetry, setAskUserRetry] = useState(false);
   const [blockAfterRetries, setBlockAfterRetries] = useState(false);
   const [dataRetention, setDataRetention] = useState("6 Months");
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  const handleNext = () => {
-    setIsExpanded(false);
-    onNext?.();
-  };
 
   // Load form state on mount
   useEffect(() => {
@@ -498,7 +477,7 @@ const BiometricVerificationSection: React.FC<{ onNext?: () => void }> = ({
           variant="ghost"
           size="sm"
           className="p-0 h-auto"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={onToggle}
         >
           <Minus className="w-5 h-5 text-gray-700" />
         </Button>
@@ -654,17 +633,6 @@ const BiometricVerificationSection: React.FC<{ onNext?: () => void }> = ({
               </div>
             </div>
           </div>
-
-          {/* Next Button */}
-          <div className="flex justify-end pt-6">
-            <Button
-              className="bg-[#0073EA] hover:bg-blue-700 text-white px-6 py-2"
-              onClick={handleNext}
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
         </div>
       )}
     </div>
@@ -765,6 +733,11 @@ export default function TemplateBuilder() {
 
   const [addedFields, setAddedFields] = useState<AddedField[]>([]);
   const [personalInfoExpanded, setPersonalInfoExpanded] = useState(true);
+  const [documentVerificationExpanded, setDocumentVerificationExpanded] =
+    useState(false);
+  const [biometricVerificationExpanded, setBiometricVerificationExpanded] =
+    useState(false);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
   // System fields state
   const [systemFieldAlerts, setSystemFieldAlerts] = useState<{
@@ -846,10 +819,42 @@ export default function TemplateBuilder() {
   };
 
   const handleNext = () => {
-    // Navigate to preview or next step in the flow
-    // For now, log that we're ready for preview
-    console.log("Template ready for preview");
-    // TODO: Implement preview page navigation
+    const sections = [
+      { name: "personal-info", setExpanded: setPersonalInfoExpanded },
+      {
+        name: "document-verification",
+        setExpanded: setDocumentVerificationExpanded,
+      },
+      {
+        name: "biometric-verification",
+        setExpanded: setBiometricVerificationExpanded,
+      },
+    ];
+
+    // Get only the sections that are added to the verification steps
+    const activeSections = sections.filter(
+      (section) =>
+        section.name === "personal-info" ||
+        verificationSteps.some((step) => step.id === section.name),
+    );
+
+    if (currentSectionIndex < activeSections.length) {
+      // Collapse current section
+      activeSections[currentSectionIndex].setExpanded(false);
+
+      // Move to next section or preview
+      const nextIndex = currentSectionIndex + 1;
+      setCurrentSectionIndex(nextIndex);
+
+      if (nextIndex < activeSections.length) {
+        // Expand next section
+        activeSections[nextIndex].setExpanded(true);
+      } else {
+        // All sections completed, navigate to preview
+        console.log("Template ready for preview");
+        // TODO: Implement preview page navigation
+      }
+    }
   };
 
   useEffect(() => {
@@ -867,6 +872,35 @@ export default function TemplateBuilder() {
       );
     } catch {}
   }, [verificationSteps]);
+
+  // Auto-expand next section when current section is completed
+  useEffect(() => {
+    const sections = [
+      { name: "personal-info", setExpanded: setPersonalInfoExpanded },
+      {
+        name: "document-verification",
+        setExpanded: setDocumentVerificationExpanded,
+      },
+      {
+        name: "biometric-verification",
+        setExpanded: setBiometricVerificationExpanded,
+      },
+    ];
+
+    const activeSections = sections.filter(
+      (section) =>
+        section.name === "personal-info" ||
+        verificationSteps.some((step) => step.id === section.name),
+    );
+
+    // When a new verification step is added, expand it if it's the next in sequence
+    if (currentSectionIndex < activeSections.length) {
+      const nextSection = activeSections[currentSectionIndex];
+      if (nextSection && nextSection.name !== "personal-info") {
+        nextSection.setExpanded(true);
+      }
+    }
+  }, [verificationSteps, currentSectionIndex]);
 
   const handleSystemFieldFocus = (fieldKey: string) => {
     setSystemFieldAlerts((prev) => ({ ...prev, [fieldKey]: true }));
@@ -968,7 +1002,21 @@ export default function TemplateBuilder() {
             className="text-gray-600 text-sm"
             onClick={handleNext}
           >
-            Next
+            {(() => {
+              const sections = [
+                { name: "personal-info" },
+                { name: "document-verification" },
+                { name: "biometric-verification" },
+              ];
+              const activeSections = sections.filter(
+                (section) =>
+                  section.name === "personal-info" ||
+                  verificationSteps.some((step) => step.id === section.name),
+              );
+              return currentSectionIndex >= activeSections.length
+                ? "Preview"
+                : "Next";
+            })()}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
@@ -1252,17 +1300,6 @@ export default function TemplateBuilder() {
                         </div>
                       </div>
                     )}
-
-                    {/* Next Button */}
-                    <div className="flex justify-end pt-6">
-                      <Button
-                        className="bg-[#0073EA] hover:bg-blue-700 text-white px-6 py-2"
-                        onClick={() => setPersonalInfoExpanded(false)}
-                      >
-                        Next
-                        <ChevronRight className="w-4 h-4 ml-1" />
-                      </Button>
-                    </div>
                   </div>
                 )}
               </div>
@@ -1270,12 +1307,30 @@ export default function TemplateBuilder() {
               {/* Document Verification Section */}
               {verificationSteps.some(
                 (step) => step.id === "document-verification",
-              ) && <DocumentVerificationSection />}
+              ) && (
+                <DocumentVerificationSection
+                  isExpanded={documentVerificationExpanded}
+                  onToggle={() =>
+                    setDocumentVerificationExpanded(
+                      !documentVerificationExpanded,
+                    )
+                  }
+                />
+              )}
 
               {/* Biometric Verification Section */}
               {verificationSteps.some(
                 (step) => step.id === "biometric-verification",
-              ) && <BiometricVerificationSection />}
+              ) && (
+                <BiometricVerificationSection
+                  isExpanded={biometricVerificationExpanded}
+                  onToggle={() =>
+                    setBiometricVerificationExpanded(
+                      !biometricVerificationExpanded,
+                    )
+                  }
+                />
+              )}
             </div>
           </div>
 

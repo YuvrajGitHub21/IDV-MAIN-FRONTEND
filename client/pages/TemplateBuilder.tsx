@@ -418,17 +418,6 @@ const DocumentVerificationSection: React.FC<{ isExpanded: boolean; onToggle: () 
               ))}
             </div>
           </div>
-
-          {/* Next Button */}
-          <div className="flex justify-end pt-6">
-            <Button
-              className="bg-[#0073EA] hover:bg-blue-700 text-white px-6 py-2"
-              onClick={handleNext}
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
         </div>
       )}
     </div>

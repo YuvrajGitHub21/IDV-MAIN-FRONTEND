@@ -1,8 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { ChevronLeft, Send, Save, FileText, Check, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+interface VerificationStep {
+  id: string;
+  title: string;
+  description: string;
+  isRequired: boolean;
+  isEnabled: boolean;
+}
+
+interface TemplateData {
+  templateName: string;
+  verificationSteps: VerificationStep[];
+  sections: {
+    personalInfo: boolean;
+    documentVerification: boolean;
+    biometricVerification: boolean;
+  };
+}
+
+interface SectionConfig {
+  id: string;
+  title: string;
+  description: string;
+  component: React.ReactNode;
+  enabled: boolean;
+}
 
 export default function Preview() {
   const navigate = useNavigate();
@@ -10,20 +36,150 @@ export default function Preview() {
   const { templateId } = useParams();
   const [activeView, setActiveView] = useState<"admin" | "receiver">("admin");
 
-  // Get template data from location state or localStorage
-  const templateData = location.state?.templateData || {};
-  const templateName = location.state?.templateName || "New Template";
+  // Get template data from location state
+  const templateData: TemplateData = location.state || {
+    templateName: "New Template",
+    verificationSteps: [],
+    sections: {
+      personalInfo: true,
+      documentVerification: false,
+      biometricVerification: false,
+    }
+  };
+
+  // API-ready data structure
+  const apiPayload = useMemo(() => {
+    const orderedSections = [];
+    
+    // Personal Information is always first and required
+    orderedSections.push({
+      type: "personal-info",
+      title: "Personal Information",
+      order: 0,
+      required: true,
+      fields: [
+        { name: "firstName", type: "text", required: true, placeholder: "Input" },
+        { name: "lastName", type: "text", required: true, placeholder: "Input" },
+        { name: "email", type: "email", required: true, placeholder: "Input" },
+        { name: "dateOfBirth", type: "date", required: true, placeholder: "DD/MM/YYYY" }
+      ]
+    });
+
+    // Add other sections based on verificationSteps order
+    templateData.verificationSteps.forEach((step, index) => {
+      if (step.id === "document-verification") {
+        orderedSections.push({
+          type: "document-verification",
+          title: "Document Verification",
+          order: index + 1,
+          required: step.isRequired,
+          settings: {
+            uploadOptions: {
+              allowDeviceUpload: true,
+              allowWebcamCapture: true
+            },
+            documentHandling: {
+              allowRetries: true
+            },
+            supportedCountries: [
+              {
+                country: "India",
+                supportedDocuments: ["Aadhar Card", "Driving License", "Pan Card", "Passport"]
+              }
+            ]
+          }
+        });
+      } else if (step.id === "biometric-verification") {
+        orderedSections.push({
+          type: "biometric-verification",
+          title: "Biometric Verification",
+          order: index + 1,
+          required: step.isRequired,
+          settings: {
+            maxRetryAttempts: 4,
+            livenessThreshold: {
+              action: "ask-retry",
+              description: "Ask the user to try again"
+            },
+            dataRetention: {
+              enabled: true,
+              duration: "6 Months"
+            }
+          }
+        });
+      }
+    });
+
+    return {
+      templateId: templateId || "new",
+      templateName: templateData.templateName,
+      sections: orderedSections,
+      createdAt: new Date().toISOString(),
+      status: "draft"
+    };
+  }, [templateData, templateId]);
+
+  // Create section components
+  const createSectionComponents = (): SectionConfig[] => {
+    const sections: SectionConfig[] = [];
+
+    // Personal Information (always first)
+    sections.push({
+      id: "personal-info",
+      title: "Personal Information",
+      description: "Please provide your basic personal information to begin the identity verification process.",
+      enabled: true,
+      component: <PersonalInformationSection />
+    });
+
+    // Add sections based on verificationSteps order
+    templateData.verificationSteps.forEach((step) => {
+      if (step.id === "document-verification") {
+        sections.push({
+          id: "document-verification",
+          title: "Document Verification",
+          description: "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
+          enabled: step.isEnabled,
+          component: <DocumentVerificationSection />
+        });
+      } else if (step.id === "biometric-verification") {
+        sections.push({
+          id: "biometric-verification",
+          title: "Biometric Verification",
+          description: "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
+          enabled: step.isEnabled,
+          component: <BiometricVerificationSection />
+        });
+      }
+    });
+
+    return sections;
+  };
+
+  const orderedSections = createSectionComponents();
 
   const handleBack = () => {
     navigate("/template-builder");
   };
 
-  const handleSaveAndSendInvite = () => {
-    console.log("Save and send invite");
+  const handleSaveAndSendInvite = async () => {
+    console.log("API Payload for Save & Send Invite:", apiPayload);
+    // TODO: Make API call
+    // await fetch('/api/templates', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ ...apiPayload, action: 'save_and_send' })
+    // });
   };
 
-  const handleSave = () => {
-    console.log("Save template");
+  const handleSave = async () => {
+    console.log("API Payload for Save:", apiPayload);
+    // TODO: Make API call
+    // await fetch('/api/templates', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ ...apiPayload, action: 'save' })
+    // });
   };
 
   const handlePrevious = () => {
@@ -78,7 +234,7 @@ export default function Preview() {
               >
                 <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
               </button>
-              <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">{templateName}</h1>
+              <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">{templateData.templateName}</h1>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -165,7 +321,7 @@ export default function Preview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                        Showing {orderedSections.length} sections in the order configured by admin.
                       </p>
                     </div>
                   </div>
@@ -179,7 +335,7 @@ export default function Preview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                        How users will see the verification process.
                       </p>
                     </div>
                   </div>
@@ -198,404 +354,30 @@ export default function Preview() {
         <div className="w-[987px] flex flex-col items-center gap-6 p-4 pt-4">
           <div className="flex flex-col items-center gap-4 w-full">
             
-            {/* Personal Information Section */}
-            <div className="flex flex-col gap-4 w-full rounded bg-white">
-              <div className="p-0 pb-px pl-px pr-px flex flex-col w-full rounded border border-[#DEDEDD]">
-                <div className="px-2 py-4 flex flex-col items-center gap-2 w-full bg-white">
-                  <div className="flex items-center gap-2 w-full pb-1">
-                    <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
-                    <h2 className="text-base font-bold text-[#172B4D] leading-3">Personal Information</h2>
-                  </div>
-                  <div className="flex items-center gap-2.5 w-full pl-7">
-                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                      Please provide your basic personal information to begin the identity verification process.
-                    </p>
-                  </div>
-                </div>
-                <div className="px-[34px] py-5 flex flex-col w-full border-t border-[#DEDEDD] bg-white">
-                  <div className="flex flex-col w-full">
-                    <div className="flex flex-col w-full">
-                      <div className="flex flex-col gap-6 w-full">
-                        <div className="flex flex-col w-full">
-                          <div className="flex gap-6 w-full">
-                            <div className="flex flex-col flex-1">
-                              <div className="flex gap-2 w-full pb-2">
-                                <div className="flex flex-col justify-center flex-1 h-2.5">
-                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">First Name</span>
-                                </div>
-                              </div>
-                              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
-                                <div className="flex items-center gap-2 flex-1">
-                                  <span className="text-[13px] text-[#676879] leading-5">Input</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex flex-col flex-1">
-                              <div className="flex gap-2 w-full pb-2">
-                                <div className="flex flex-col justify-center flex-1 h-2.5">
-                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Last Name</span>
-                                </div>
-                              </div>
-                              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
-                                <div className="flex items-center gap-2 flex-1">
-                                  <span className="text-[13px] text-[#676879] leading-5">Input</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex gap-6 w-full">
-                            <div className="flex flex-col flex-1">
-                              <div className="flex gap-2 w-full pb-2">
-                                <div className="flex flex-col justify-center flex-1 h-2.5">
-                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Email</span>
-                                </div>
-                              </div>
-                              <div className="flex flex-col gap-1 w-full">
-                                <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
-                                  <div className="flex items-center gap-2 flex-1">
-                                    <span className="text-[13px] text-[#676879] leading-5">Input</span>
-                                  </div>
-                                  <div className="h-7 px-3 py-[9px] flex items-center gap-2 rounded bg-white">
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="w-[452px] flex flex-col">
-                              <div className="flex gap-2 w-full pb-2">
-                                <div className="flex flex-col justify-center flex-1 h-2.5">
-                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Date Of Birth</span>
-                                </div>
-                              </div>
-                              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
-                                <div className="flex items-center gap-2 flex-1">
-                                  <span className="text-[13px] text-[#676879] leading-5">DD/MM/YYYY</span>
-                                </div>
-                                <div className="w-[18px] flex items-center gap-[7.2px]">
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+            {/* Render sections in configured order */}
+            {orderedSections.map((section, index) => (
+              <div key={section.id} className="flex flex-col gap-4 w-full rounded bg-white">
+                <div className="p-0 pb-px pl-px pr-px flex flex-col w-full rounded border border-[#DEDEDD]">
+                  <div className="px-2 py-4 flex flex-col items-center gap-2 w-full bg-white">
+                    <div className="flex items-center gap-2 w-full pb-1">
+                      <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
+                      <h2 className="text-base font-bold text-[#172B4D] leading-3">{section.title}</h2>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        Order: {index + 1}
+                      </span>
                     </div>
+                    <div className="flex items-center gap-2.5 w-full pl-7">
+                      <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                        {section.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="px-[34px] py-5 flex flex-col w-full border-t border-[#DEDEDD] bg-white">
+                    {section.component}
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Document Verification Section */}
-            <div className="flex flex-col gap-4 w-full rounded bg-white">
-              <div className="p-0 pb-5 pl-px pr-px flex flex-col w-full rounded border border-[#DEDEDD]">
-                <div className="px-3 py-4 flex flex-col items-center gap-2 w-full bg-white">
-                  <div className="flex items-center gap-2 w-full pb-1">
-                    <h2 className="text-base font-bold text-[#172B4D] leading-3">Document Verification</h2>
-                  </div>
-                  <div className="flex items-center gap-2.5 w-full pl-7">
-                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                      Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.
-                    </p>
-                  </div>
-                </div>
-                <div className="px-[34px] py-4 flex flex-col items-center w-full border-t border-[#DEDEDD] bg-white">
-                  <div className="flex flex-col gap-6 w-full">
-                    
-                    {/* User Upload Options */}
-                    <div className="flex items-center w-full rounded-t-lg bg-white">
-                      <div className="flex flex-col items-center gap-4 flex-1">
-                        <div className="flex gap-6 w-full">
-                          <div className="flex flex-col gap-2 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-base font-bold text-[#172B4D] leading-3">User Upload Options</h3>
-                            </div>
-                            <div className="flex items-center gap-2 w-full">
-                              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                                Select how users are allowed to submit documents during the process.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
-                          <div className="pb-5 flex flex-col w-full border-b border-[#D0D4E4]">
-                            <div className="flex gap-2 w-full">
-                              <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M4.96526 7.24061L8.49526 3.71062C8.5914 3.61448 8.70547 3.56641 8.83745 3.56641C8.96944 3.56641 9.08351 3.61448 9.17965 3.71062C9.2758 3.80677 9.32387 3.92084 9.32387 4.05283C9.32387 4.18481 9.2758 4.29888 9.17965 4.39502L5.30345 8.27123C5.2073 8.36738 5.09457 8.41545 4.96526 8.41545C4.83595 8.41545 4.72322 8.36738 4.62707 8.27123L2.81805 6.46221C2.72191 6.36606 2.67517 6.252 2.67784 6.12002C2.68052 5.98803 2.72993 5.87396 2.82608 5.77781C2.92222 5.68167 3.03629 5.63359 3.16828 5.63359C3.30027 5.63359 3.41433 5.68167 3.51048 5.77781L4.96526 7.24061Z" fill="white"/>
-                                </svg>
-                              </div>
-                              <div className="w-[538px] flex flex-col gap-2">
-                                <div className="flex flex-col justify-center w-full h-2.5">
-                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Upload from Device</span>
-                                </div>
-                                <p className="w-full text-[13px] text-[#505258] leading-5">
-                                  Let users upload existing documents directly from their device.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="h-[58px] pb-5 flex flex-col w-full">
-                            <div className="pb-5 flex flex-col w-full">
-                              <div className="flex gap-2 w-full">
-                                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
-                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4.96526 7.24061L8.49526 3.71062C8.5914 3.61448 8.70547 3.56641 8.83745 3.56641C8.96944 3.56641 9.08351 3.61448 9.17965 3.71062C9.2758 3.80677 9.32387 3.92084 9.32387 4.05283C9.32387 4.18481 9.2758 4.29888 9.17965 4.39502L5.30345 8.27123C5.2073 8.36738 5.09457 8.41545 4.96526 8.41545C4.83595 8.41545 4.72322 8.36738 4.62707 8.27123L2.81805 6.46221C2.72191 6.36606 2.67517 6.252 2.67784 6.12002C2.68052 5.98803 2.72993 5.87396 2.82608 5.77781C2.92222 5.68167 3.03629 5.63359 3.16828 5.63359C3.30027 5.63359 3.41433 5.68167 3.51048 5.77781L4.96526 7.24061Z" fill="white"/>
-                                  </svg>
-                                </div>
-                                <div className="w-[538px] flex flex-col gap-2">
-                                  <div className="flex flex-col justify-center w-full h-2.5">
-                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Capture via Webcam</span>
-                                  </div>
-                                  <p className="w-full text-[13px] text-[#505258] leading-5">
-                                    Enable webcam access to allow users to capture documents in real time.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Unreadable Document Handling */}
-                    <div className="flex items-center w-full bg-white">
-                      <div className="flex flex-col items-center gap-4 flex-1">
-                        <div className="flex gap-6 w-full">
-                          <div className="flex flex-col gap-2 flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-base font-bold text-[#172B4D] leading-3">Unreadable Document Handling</h3>
-                            </div>
-                            <div className="flex items-center gap-2 w-full">
-                              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                                Choose what action the system should take if a submitted document is not clear or unreadable.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
-                          <div className="h-[58px] pb-5 flex flex-col w-full">
-                            <div className="pb-5 flex flex-col w-full">
-                              <div className="flex gap-2 w-full">
-                                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
-                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4.96526 7.24061L8.49526 3.71062C8.5914 3.61448 8.70547 3.56641 8.83745 3.56641C8.96944 3.56641 9.08351 3.61448 9.17965 3.71062C9.2758 3.80677 9.32387 3.92084 9.32387 4.05283C9.32387 4.18481 9.2758 4.29888 9.17965 4.39502L5.30345 8.27123C5.2073 8.36738 5.09457 8.41545 4.96526 8.41545C4.83595 8.41545 4.72322 8.36738 4.62707 8.27123L2.81805 6.46221C2.72191 6.36606 2.67517 6.252 2.67784 6.12002C2.68052 5.98803 2.72993 5.87396 2.82608 5.77781C2.92222 5.68167 3.03629 5.63359 3.16828 5.63359C3.30027 5.63359 3.41433 5.68167 3.51048 5.77781L4.96526 7.24061Z" fill="white"/>
-                                  </svg>
-                                </div>
-                                <div className="w-[538px] flex flex-col gap-2">
-                                  <div className="flex flex-col justify-center w-full h-2.5">
-                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Retries Before Rejection</span>
-                                  </div>
-                                  <p className="w-full text-[13px] text-[#505258] leading-5">
-                                    Let users reattempt uploading the document before it's finally rejected.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Supported Countries */}
-                    <div className="flex flex-col items-center gap-4 w-full">
-                      <div className="flex gap-6 w-full">
-                        <div className="flex flex-col gap-2 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-base font-bold text-[#172B4D] leading-3">Supported Countries for Identity Verification</h3>
-                          </div>
-                          <div className="flex items-center gap-2 w-full">
-                            <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                              Only document from these countries are supported.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
-                        <div className="flex flex-col gap-2 w-full">
-                          <div className="flex flex-col gap-2 w-full">
-                            <div className="flex flex-col justify-center w-full h-2.5">
-                              <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Which countries are supported?</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
-                          <div className="h-[42px] flex items-center gap-6 w-full">
-                            <span className="text-sm font-medium text-black leading-[22px]">India</span>
-                          </div>
-                          <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
-                            <div className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
-                              <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M4.85224 7.38323L8.77446 3.46102C8.88129 3.3542 9.00803 3.30078 9.15468 3.30078C9.30133 3.30078 9.42807 3.3542 9.5349 3.46102C9.64173 3.56785 9.69514 3.69459 9.69514 3.84125C9.69514 3.9879 9.64173 4.11464 9.5349 4.22146L5.228 8.52836C5.12118 8.63519 4.99592 8.68861 4.85224 8.68861C4.70856 8.68861 4.58331 8.63519 4.47648 8.52836L2.46646 6.51834C2.35963 6.41151 2.3077 6.28477 2.31067 6.13813C2.31364 5.99147 2.36855 5.86473 2.47537 5.7579C2.5822 5.65107 2.70894 5.59766 2.8556 5.59766C3.00225 5.59766 3.12899 5.65107 3.23582 5.7579L4.85224 7.38323Z" fill="white"/>
-                                </svg>
-                              </div>
-                              <span className="text-[13px] font-medium text-[#505258]">Aadhar Card</span>
-                            </div>
-                            <div className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
-                              <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M4.85224 7.38323L8.77446 3.46102C8.88129 3.3542 9.00803 3.30078 9.15468 3.30078C9.30133 3.30078 9.42807 3.3542 9.5349 3.46102C9.64173 3.56785 9.69514 3.69459 9.69514 3.84125C9.69514 3.9879 9.64173 4.11464 9.5349 4.22146L5.228 8.52836C5.12118 8.63519 4.99592 8.68861 4.85224 8.68861C4.70856 8.68861 4.58331 8.63519 4.47648 8.52836L2.46646 6.51834C2.35963 6.41151 2.3077 6.28477 2.31067 6.13813C2.31364 5.99147 2.36855 5.86473 2.47537 5.7579C2.5822 5.65107 2.70894 5.59766 2.8556 5.59766C3.00225 5.59766 3.12899 5.65107 3.23582 5.7579L4.85224 7.38323Z" fill="white"/>
-                                </svg>
-                              </div>
-                              <span className="text-[13px] font-medium text-[#505258]">Driving License</span>
-                            </div>
-                            <div className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
-                              <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M4.85224 7.38323L8.77446 3.46102C8.88129 3.3542 9.00803 3.30078 9.15468 3.30078C9.30133 3.30078 9.42807 3.3542 9.5349 3.46102C9.64173 3.56785 9.69514 3.69459 9.69514 3.84125C9.69514 3.9879 9.64173 4.11464 9.5349 4.22146L5.228 8.52836C5.12118 8.63519 4.99592 8.68861 4.85224 8.68861C4.70856 8.68861 4.58331 8.63519 4.47648 8.52836L2.46646 6.51834C2.35963 6.41151 2.3077 6.28477 2.31067 6.13813C2.31364 5.99147 2.36855 5.86473 2.47537 5.7579C2.5822 5.65107 2.70894 5.59766 2.8556 5.59766C3.00225 5.59766 3.12899 5.65107 3.23582 5.7579L4.85224 7.38323Z" fill="white"/>
-                                </svg>
-                              </div>
-                              <span className="text-[13px] font-medium text-[#505258]">Pan Card</span>
-                            </div>
-                            <div className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
-                              <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M4.85224 7.38323L8.77446 3.46102C8.88129 3.3542 9.00803 3.30078 9.15468 3.30078C9.30133 3.30078 9.42807 3.3542 9.5349 3.46102C9.64173 3.56785 9.69514 3.69459 9.69514 3.84125C9.69514 3.9879 9.64173 4.11464 9.5349 4.22146L5.228 8.52836C5.12118 8.63519 4.99592 8.68861 4.85224 8.68861C4.70856 8.68861 4.58331 8.63519 4.47648 8.52836L2.46646 6.51834C2.35963 6.41151 2.3077 6.28477 2.31067 6.13813C2.31364 5.99147 2.36855 5.86473 2.47537 5.7579C2.5822 5.65107 2.70894 5.59766 2.8556 5.59766C3.00225 5.59766 3.12899 5.65107 3.23582 5.7579L4.85224 7.38323Z" fill="white"/>
-                                </svg>
-                              </div>
-                              <span className="text-[13px] font-medium text-[#505258]">Passport</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Biometric Verification Section */}
-            <div className="flex flex-col gap-4 w-full rounded bg-white">
-              <div className="p-0 pb-px pl-px pr-px flex flex-col w-full rounded border border-[#DEDEDD]">
-                <div className="px-3 py-4 flex flex-col items-center gap-2 w-full bg-white">
-                  <div className="flex items-center gap-2 w-full pb-1">
-                    <h2 className="text-base font-bold text-[#172B4D] leading-3">Biometric Verification</h2>
-                  </div>
-                  <div className="flex items-center gap-2.5 w-full pl-7">
-                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                      Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.
-                    </p>
-                  </div>
-                </div>
-                <div className="p-4 flex flex-col items-center w-full border-t border-[#DEDEDD] bg-white">
-                  <div className="w-[923px] flex flex-col gap-6">
-                    
-                    {/* Retry Attempts */}
-                    <div className="flex flex-col gap-5 w-full">
-                      <div className="flex items-center w-full bg-white">
-                        <div className="flex flex-col items-center gap-4 flex-1">
-                          <div className="flex flex-col gap-2 w-full">
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-base font-bold text-[#172B4D] leading-3">Retry Attempts for Selfie Capture</h3>
-                            </div>
-                            <div className="flex items-center gap-2 w-full">
-                              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                                Define how many times a user can retry if the selfie capture fails.
-                              </p>
-                            </div>
-                          </div>
-                          <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
-                            <div className="pb-5 flex flex-col w-full">
-                              <div className="flex items-center gap-2 w-full">
-                                <div className="flex flex-col gap-2 flex-1">
-                                  <div className="flex flex-col justify-center w-full h-2.5">
-                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Set the maximum number of retries</span>
-                                  </div>
-                                </div>
-                                <div className="w-80 flex gap-3 bg-[#F6F7FB]">
-                                  <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4] bg-[#F6F7FB]">
-                                    <div className="flex items-center gap-2 flex-1">
-                                      <span className="text-[13px] text-[#676879] leading-5">4</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Liveness Confidence Threshold */}
-                    <div className="flex flex-col gap-5 w-full">
-                      <div className="flex items-center w-full bg-white">
-                        <div className="flex flex-col items-center gap-4 flex-1">
-                          <div className="flex gap-6 w-full">
-                            <div className="flex flex-col gap-2 flex-1">
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-base font-bold text-[#172B4D] leading-3">Liveness Confidence Threshold (%)</h3>
-                              </div>
-                              <div className="flex items-center gap-2 w-full">
-                                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                                  Choose what should happen if a user's liveness score does not meet the required threshold.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="pt-6 px-6 pb-0 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
-                            <div className="pb-5 flex flex-col w-full">
-                              <div className="flex gap-2 w-full">
-                                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
-                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4.96526 7.24061L8.49526 3.71062C8.5914 3.61448 8.70547 3.56641 8.83745 3.56641C8.96944 3.56641 9.08351 3.61448 9.17965 3.71062C9.2758 3.80677 9.32387 3.92084 9.32387 4.05283C9.32387 4.18481 9.2758 4.29888 9.17965 4.39502L5.30345 8.27123C5.2073 8.36738 5.09457 8.41545 4.96526 8.41545C4.83595 8.41545 4.72322 8.36738 4.62707 8.27123L2.81805 6.46221C2.72191 6.36606 2.67517 6.252 2.67784 6.12002C2.68052 5.98803 2.72993 5.87396 2.82608 5.77781C2.92222 5.68167 3.03629 5.63359 3.16828 5.63359C3.30027 5.63359 3.41433 5.68167 3.51048 5.77781L4.96526 7.24061Z" fill="white"/>
-                                  </svg>
-                                </div>
-                                <div className="w-[508px] flex flex-col gap-2">
-                                  <div className="flex flex-col justify-center w-full h-2.5">
-                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Ask the user to try again</span>
-                                  </div>
-                                  <p className="w-full text-[13px] text-[#505258] leading-5">
-                                    Prompt the user to reattempt the selfie.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Biometric Data Retention */}
-                    <div className="flex flex-col gap-5 w-full">
-                      <div className="flex items-center w-full bg-white">
-                        <div className="flex flex-col items-center gap-4 flex-1">
-                          <div className="flex gap-6 w-full">
-                            <div className="flex flex-col gap-2 flex-1">
-                              <div className="flex items-center gap-2">
-                                <h3 className="text-base font-bold text-[#172B4D] leading-3">Biometric Data Retention</h3>
-                              </div>
-                              <div className="flex items-center gap-2 w-full">
-                                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                                  Choose whether to store biometric/selfie data and define retention duration.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
-                            <div className="pb-5 flex flex-col items-center w-full">
-                              <div className="flex items-center gap-2 w-full">
-                                <div className="flex flex-col gap-2 flex-1">
-                                  <div className="flex flex-col justify-center w-full h-2.5">
-                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Enable biometric data storage</span>
-                                  </div>
-                                </div>
-                                <div className="w-80 flex gap-3">
-                                  <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4]">
-                                    <div className="flex items-center gap-2 flex-1">
-                                      <span className="text-[13px] text-[#676879] leading-5">6 Months</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
 
           </div>
         </div>
@@ -603,3 +385,317 @@ export default function Preview() {
     </div>
   );
 }
+
+// Section Components
+const PersonalInformationSection = () => (
+  <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full">
+      <div className="flex flex-col gap-6 w-full">
+        <div className="flex flex-col w-full">
+          <div className="flex gap-6 w-full">
+            <div className="flex flex-col flex-1">
+              <div className="flex gap-2 w-full pb-2">
+                <div className="flex flex-col justify-center flex-1 h-2.5">
+                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">First Name</span>
+                </div>
+              </div>
+              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-[13px] text-[#676879] leading-5">Input</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col flex-1">
+              <div className="flex gap-2 w-full pb-2">
+                <div className="flex flex-col justify-center flex-1 h-2.5">
+                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Last Name</span>
+                </div>
+              </div>
+              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-[13px] text-[#676879] leading-5">Input</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-6 w-full">
+            <div className="flex flex-col flex-1">
+              <div className="flex gap-2 w-full pb-2">
+                <div className="flex flex-col justify-center flex-1 h-2.5">
+                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Email</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 w-full">
+                <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-[13px] text-[#676879] leading-5">Input</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="w-[452px] flex flex-col">
+              <div className="flex gap-2 w-full pb-2">
+                <div className="flex flex-col justify-center flex-1 h-2.5">
+                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Date Of Birth</span>
+                </div>
+              </div>
+              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-[13px] text-[#676879] leading-5">DD/MM/YYYY</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const DocumentVerificationSection = () => (
+  <div className="flex flex-col gap-6 w-full">
+    {/* User Upload Options */}
+    <div className="flex items-center w-full rounded-t-lg bg-white">
+      <div className="flex flex-col items-center gap-4 flex-1">
+        <div className="flex gap-6 w-full">
+          <div className="flex flex-col gap-2 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#172B4D] leading-3">User Upload Options</h3>
+            </div>
+            <div className="flex items-center gap-2 w-full">
+              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                Select how users are allowed to submit documents during the process.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+          <div className="pb-5 flex flex-col w-full border-b border-[#D0D4E4]">
+            <div className="flex gap-2 w-full">
+              <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                <Check className="w-2.5 h-2.5 text-white" />
+              </div>
+              <div className="w-[538px] flex flex-col gap-2">
+                <div className="flex flex-col justify-center w-full h-2.5">
+                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Upload from Device</span>
+                </div>
+                <p className="w-full text-[13px] text-[#505258] leading-5">
+                  Let users upload existing documents directly from their device.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="h-[58px] pb-5 flex flex-col w-full">
+            <div className="pb-5 flex flex-col w-full">
+              <div className="flex gap-2 w-full">
+                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                  <Check className="w-2.5 h-2.5 text-white" />
+                </div>
+                <div className="w-[538px] flex flex-col gap-2">
+                  <div className="flex flex-col justify-center w-full h-2.5">
+                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Capture via Webcam</span>
+                  </div>
+                  <p className="w-full text-[13px] text-[#505258] leading-5">
+                    Enable webcam access to allow users to capture documents in real time.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Unreadable Document Handling */}
+    <div className="flex items-center w-full bg-white">
+      <div className="flex flex-col items-center gap-4 flex-1">
+        <div className="flex gap-6 w-full">
+          <div className="flex flex-col gap-2 flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#172B4D] leading-3">Unreadable Document Handling</h3>
+            </div>
+            <div className="flex items-center gap-2 w-full">
+              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                Choose what action the system should take if a submitted document is not clear or unreadable.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+          <div className="h-[58px] pb-5 flex flex-col w-full">
+            <div className="pb-5 flex flex-col w-full">
+              <div className="flex gap-2 w-full">
+                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                  <Check className="w-2.5 h-2.5 text-white" />
+                </div>
+                <div className="w-[538px] flex flex-col gap-2">
+                  <div className="flex flex-col justify-center w-full h-2.5">
+                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Retries Before Rejection</span>
+                  </div>
+                  <p className="w-full text-[13px] text-[#505258] leading-5">
+                    Let users reattempt uploading the document before it's finally rejected.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Supported Countries */}
+    <div className="flex flex-col items-center gap-4 w-full">
+      <div className="flex gap-6 w-full">
+        <div className="flex flex-col gap-2 flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-[#172B4D] leading-3">Supported Countries for Identity Verification</h3>
+          </div>
+          <div className="flex items-center gap-2 w-full">
+            <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+              Only document from these countries are supported.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+        <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col justify-center w-full h-2.5">
+              <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Which countries are supported?</span>
+            </div>
+          </div>
+        </div>
+        <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
+          <div className="h-[42px] flex items-center gap-6 w-full">
+            <span className="text-sm font-medium text-black leading-[22px]">India</span>
+          </div>
+          <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
+            {["Aadhar Card", "Driving License", "Pan Card", "Passport"].map((doc) => (
+              <div key={doc} className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
+                <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
+                  <Check className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-[13px] font-medium text-[#505258]">{doc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const BiometricVerificationSection = () => (
+  <div className="w-[923px] flex flex-col gap-6">
+    {/* Retry Attempts */}
+    <div className="flex flex-col gap-5 w-full">
+      <div className="flex items-center w-full bg-white">
+        <div className="flex flex-col items-center gap-4 flex-1">
+          <div className="flex flex-col gap-2 w-full">
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-[#172B4D] leading-3">Retry Attempts for Selfie Capture</h3>
+            </div>
+            <div className="flex items-center gap-2 w-full">
+              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                Define how many times a user can retry if the selfie capture fails.
+              </p>
+            </div>
+          </div>
+          <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+            <div className="pb-5 flex flex-col w-full">
+              <div className="flex items-center gap-2 w-full">
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex flex-col justify-center w-full h-2.5">
+                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Set the maximum number of retries</span>
+                  </div>
+                </div>
+                <div className="w-80 flex gap-3 bg-[#F6F7FB]">
+                  <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4] bg-[#F6F7FB]">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-[13px] text-[#676879] leading-5">4</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Liveness Confidence Threshold */}
+    <div className="flex flex-col gap-5 w-full">
+      <div className="flex items-center w-full bg-white">
+        <div className="flex flex-col items-center gap-4 flex-1">
+          <div className="flex gap-6 w-full">
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-[#172B4D] leading-3">Liveness Confidence Threshold (%)</h3>
+              </div>
+              <div className="flex items-center gap-2 w-full">
+                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                  Choose what should happen if a user's liveness score does not meet the required threshold.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="pt-6 px-6 pb-0 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+            <div className="pb-5 flex flex-col w-full">
+              <div className="flex gap-2 w-full">
+                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                  <Check className="w-2.5 h-2.5 text-white" />
+                </div>
+                <div className="w-[508px] flex flex-col gap-2">
+                  <div className="flex flex-col justify-center w-full h-2.5">
+                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Ask the user to try again</span>
+                  </div>
+                  <p className="w-full text-[13px] text-[#505258] leading-5">
+                    Prompt the user to reattempt the selfie.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Biometric Data Retention */}
+    <div className="flex flex-col gap-5 w-full">
+      <div className="flex items-center w-full bg-white">
+        <div className="flex flex-col items-center gap-4 flex-1">
+          <div className="flex gap-6 w-full">
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-[#172B4D] leading-3">Biometric Data Retention</h3>
+              </div>
+              <div className="flex items-center gap-2 w-full">
+                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                  Choose whether to store biometric/selfie data and define retention duration.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+            <div className="pb-5 flex flex-col items-center w-full">
+              <div className="flex items-center gap-2 w-full">
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex flex-col justify-center w-full h-2.5">
+                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Enable biometric data storage</span>
+                  </div>
+                </div>
+                <div className="w-80 flex gap-3">
+                  <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4]">
+                    <div className="flex items-center gap-2 flex-1">
+                      <span className="text-[13px] text-[#676879] leading-5">6 Months</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);

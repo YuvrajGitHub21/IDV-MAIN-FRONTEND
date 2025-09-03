@@ -107,8 +107,9 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 };
 
 // Document Verification Configuration Component
-const DocumentVerificationSection: React.FC<{ onNext?: () => void }> = ({
-  onNext,
+const DocumentVerificationSection: React.FC<{ isExpanded: boolean; onToggle: () => void }> = ({
+  isExpanded,
+  onToggle,
 }) => {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);

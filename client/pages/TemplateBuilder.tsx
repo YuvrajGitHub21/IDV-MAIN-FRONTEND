@@ -202,6 +202,15 @@ const DocumentVerificationSection: React.FC<{onNext?: () => void}> = ({onNext}) 
         </h2>
       </div>
 
+      {/* Description when collapsed */}
+      {!isExpanded && (
+        <div className="px-4 lg:px-9 pb-3">
+          <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+            Define how users can submit ID documents and what happens if files are unclear.
+          </p>
+        </div>
+      )}
+
       {/* Content */}
       {isExpanded && (
         <div className="p-8 space-y-6">

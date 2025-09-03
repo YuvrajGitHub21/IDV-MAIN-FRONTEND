@@ -383,13 +383,12 @@ export default function Preview() {
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
                       <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
-                        Admin View
+                        Template Preview
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        Showing {orderedSections.length} sections configured by
-                        admin.
+                        Showing exactly what admin selected: {orderedSections.length} sections with {3 + (templateData.addedFields?.length || 0)} fields total.
                       </p>
                     </div>
                   </div>
@@ -400,12 +399,12 @@ export default function Preview() {
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
                       <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
-                        Receiver's View
+                        User Experience
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        How users will see the verification process.
+                        This is exactly how users will experience the verification process.
                       </p>
                     </div>
                   </div>

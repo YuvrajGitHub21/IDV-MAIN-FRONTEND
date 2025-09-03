@@ -44,6 +44,28 @@ export default function Preview() {
   const { templateId } = useParams();
   const [activeView, setActiveView] = useState<"admin" | "receiver">("admin");
 
+  // Load actual configuration data from localStorage
+  const [docVerificationConfig, setDocVerificationConfig] = useState<any>(null);
+  const [biometricConfig, setBiometricConfig] = useState<any>(null);
+
+  useEffect(() => {
+    // Load document verification configuration
+    try {
+      const docRaw = localStorage.getItem("arcon_doc_verification_form");
+      if (docRaw) {
+        setDocVerificationConfig(JSON.parse(docRaw));
+      }
+    } catch {}
+
+    // Load biometric verification configuration
+    try {
+      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
+      if (bioRaw) {
+        setBiometricConfig(JSON.parse(bioRaw));
+      }
+    } catch {}
+  }, []);
+
   // Get template data from location state
   const templateData: TemplateData = location.state || {
     templateName: "New Template",

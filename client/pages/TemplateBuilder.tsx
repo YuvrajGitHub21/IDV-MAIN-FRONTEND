@@ -282,6 +282,10 @@ export default function TemplateBuilder() {
         "arcon_has_document_verification",
         JSON.stringify(hasDoc),
       );
+      localStorage.setItem(
+        "arcon_verification_steps",
+        JSON.stringify(verificationSteps),
+      );
     } catch {}
   }, [verificationSteps]);
 

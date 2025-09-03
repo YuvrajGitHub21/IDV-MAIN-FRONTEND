@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,6 +18,66 @@ import {
   Trash2,
 } from "lucide-react";
 
+interface VerificationStep {
+  id: string;
+  title: string;
+  description: string;
+  isRequired: boolean;
+  isEnabled: boolean;
+}
+
+interface DraggableVerificationStepProps {
+  step: VerificationStep;
+  index: number;
+  moveStep: (dragIndex: number, hoverIndex: number) => void;
+  onRemove: (stepId: string) => void;
+}
+
+const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
+  step,
+  index,
+  moveStep,
+  onRemove,
+}) => {
+  const [{ isDragging }, drag] = useDrag({
+    type: "verification-step",
+    item: { index },
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+  });
+
+  const [, drop] = useDrop({
+    accept: "verification-step",
+    hover: (item: { index: number }) => {
+      if (item.index !== index) {
+        moveStep(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+
+  return (
+    <div ref={(n) => drag(drop(n))} className={cn("relative mb-4 cursor-move", isDragging && "opacity-50")}>
+      <div className="p-3 rounded border border-gray-200 bg-white">
+        <div className="flex items-start gap-3">
+          <div className="flex-1">
+            <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+          </div>
+          {!step.isRequired && (
+            <button
+              className="p-1 h-auto text-red-500 hover:text-red-700"
+              onClick={() => onRemove(step.id)}
+              aria-label={`Remove ${step.title}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DocumentVerification() {
   const navigate = useNavigate();
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
@@ -25,6 +87,89 @@ export default function DocumentVerification() {
     "India",
   ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+
+  // Verification steps state (shared via localStorage)
+  const [verificationSteps, setVerificationSteps] = useState<VerificationStep[]>([]);
+  const availableSteps: VerificationStep[] = [
+    {
+      id: "document-verification",
+      title: "Document Verification",
+      description: "Set ID submission rules and handling for unclear files.",
+      isRequired: false,
+      isEnabled: true,
+    },
+    {
+      id: "biometric-verification",
+      title: "Biometric Verification",
+      description: "Set selfie retries, liveness threshold, and biometric storage",
+      isRequired: false,
+      isEnabled: false,
+    },
+  ];
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_verification_steps");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.every((s: any) => s && s.id)) {
+          setVerificationSteps(parsed);
+          return;
+        }
+      }
+    } catch {}
+    // Fallback: ensure personal-info and document-verification visible
+    setVerificationSteps([
+      {
+        id: "personal-info",
+        title: "Personal Information",
+        description: "Set up fields to collect basic user details like name, contact.",
+        isRequired: true,
+        isEnabled: true,
+      },
+      {
+        id: "document-verification",
+        title: "Document Verification",
+        description: "Set ID submission rules and handling for unclear files.",
+        isRequired: false,
+        isEnabled: true,
+      },
+    ]);
+  }, []);
+
+  useEffect(() => {
+    const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
+    try {
+      localStorage.setItem("arcon_has_document_verification", JSON.stringify(hasDoc));
+      localStorage.setItem("arcon_verification_steps", JSON.stringify(verificationSteps));
+    } catch {}
+  }, [verificationSteps]);
+
+  const moveStep = (dragIndex: number, hoverIndex: number) => {
+    setVerificationSteps((prev) => {
+      const dragged = prev[dragIndex];
+      const next = [...prev];
+      next.splice(dragIndex, 1);
+      next.splice(hoverIndex, 0, dragged);
+      return next;
+    });
+  };
+
+  const addVerificationStep = (stepId: string) => {
+    const step = availableSteps.find((s) => s.id === stepId);
+    if (!step) return;
+    setVerificationSteps((prev) =>
+      prev.find((s) => s.id === stepId) ? prev : [...prev, { ...step, isEnabled: true }],
+    );
+  };
+
+  const removeVerificationStep = (stepId: string) => {
+    if (stepId === "personal-info") return;
+    setVerificationSteps((prev) => prev.filter((s) => s.id !== stepId));
+  };
+
+  const getAvailableStepsToAdd = () =>
+    availableSteps.filter((s) => !verificationSteps.find((vs) => vs.id === s.id));
 
   const handlePrevious = () => {
     navigate("/dashboard");

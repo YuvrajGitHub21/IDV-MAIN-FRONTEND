@@ -852,7 +852,18 @@ export default function TemplateBuilder() {
       } else {
         // All sections completed, navigate to preview
         console.log("Template ready for preview");
-        // TODO: Implement preview page navigation
+        navigate("/preview", {
+          state: {
+            templateName: location.state?.templateName || "New Template",
+            verificationSteps,
+            addedFields,
+            templateData: {
+              personalInfo: true,
+              documentVerification: verificationSteps.some(s => s.id === "document-verification"),
+              biometricVerification: verificationSteps.some(s => s.id === "biometric-verification"),
+            }
+          }
+        });
       }
     }
   };

@@ -182,16 +182,29 @@ export default function TemplateBuilder() {
   const addVerificationStep = (stepId: string) => {
     const stepToAdd = availableSteps.find((step) => step.id === stepId);
     if (stepToAdd) {
-      setVerificationSteps((prev) => [
-        ...prev,
-        { ...stepToAdd, isEnabled: true },
-      ]);
+      setVerificationSteps((prev) => {
+        const next = [...prev, { ...stepToAdd, isEnabled: true }];
+        if (stepId === "document-verification") {
+          try {
+            localStorage.setItem("arcon_has_document_verification", "true");
+          } catch {}
+        }
+        return next;
+      });
     }
   };
 
   const removeVerificationStep = (stepId: string) => {
     if (stepId === "personal-info") return; // Can't remove required step
-    setVerificationSteps((prev) => prev.filter((step) => step.id !== stepId));
+    setVerificationSteps((prev) => {
+      const next = prev.filter((step) => step.id !== stepId);
+      if (stepId === "document-verification") {
+        try {
+          localStorage.setItem("arcon_has_document_verification", "false");
+        } catch {}
+      }
+      return next;
+    });
   };
 
   const moveStep = useCallback((dragIndex: number, hoverIndex: number) => {

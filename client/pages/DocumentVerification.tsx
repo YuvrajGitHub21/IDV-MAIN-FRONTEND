@@ -185,70 +185,66 @@ export default function DocumentVerification() {
       <div className="flex flex-col lg:flex-row flex-1">
         {/* Left Sidebar */}
         <div className="w-full lg:w-[332px] p-4 lg:pr-2 border-b lg:border-b-0 lg:border-r border-gray-200 bg-white">
-          <div className="space-y-6 lg:space-y-8">
-            {/* Build Process Section */}
-            <div className="space-y-2">
-              <div className="pb-2">
-                <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
-                  Build your process
-                </h2>
-                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Create a flow by adding required information fields and
-                  verification steps for your users.
-                </p>
-              </div>
-
-              {/* Personal Information */}
-              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded">
-                <div className="flex-1">
-                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
-                    Personal Information
-                  </h3>
+          <DndProvider backend={HTML5Backend}>
+            <div className="space-y-6 lg:space-y-8">
+              {/* Build Process Section */}
+              <div className="space-y-2">
+                <div className="pb-2">
+                  <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
+                    Build your process
+                  </h2>
                   <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Set up fields to collect basic user details like name,
-                    contact.
+                    Create a flow by adding required information fields and
+                    verification steps for your users.
                   </p>
                 </div>
+
+                {/* All Added Verification Steps (draggable) */}
+                {verificationSteps.map((step, index) => (
+                  <DraggableVerificationStep
+                    key={step.id}
+                    step={step}
+                    index={index}
+                    moveStep={moveStep}
+                    onRemove={removeVerificationStep}
+                  />
+                ))}
               </div>
 
-              {/* Document Verification - Selected */}
-              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded border border-[#DEDEDD] bg-[#CCE5FF]">
-                <div className="flex-1">
-                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
-                    Document Verification
-                  </h3>
+              {/* Add Verification Steps */}
+              <div className="space-y-2">
+                <div className="pb-2">
+                  <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
+                    Add Verification Steps
+                  </h2>
                   <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Set ID submission rules and handling for unclear files.
+                    Insert secure verification steps as needed.
                   </p>
                 </div>
+
+                {/* Available Steps to Add */}
+                {getAvailableStepsToAdd().map((step) => (
+                  <div key={step.id} className="relative mb-4">
+                    <div className="p-3 rounded border border-gray-200 bg-white">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                        </div>
+                        <button
+                          className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                          onClick={() => addVerificationStep(step.id)}
+                          aria-label={`Add ${step.title}`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Add Verification Steps */}
-            <div className="space-y-2">
-              <div className="pb-2">
-                <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
-                  Add Verification Steps
-                </h2>
-                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Insert secure verification steps as needed.
-                </p>
-              </div>
-
-              {/* Biometric Verification - Disabled */}
-              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded opacity-50">
-                <div className="flex-1">
-                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
-                    Biometric Verification
-                  </h3>
-                  <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Set selfie retries, liveness threshold, and biometric
-                    storage
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          </DndProvider>
         </div>
 
         {/* Resize Handle */}

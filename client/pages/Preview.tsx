@@ -193,7 +193,7 @@ export default function Preview() {
           description:
             "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
           enabled: step.isEnabled,
-          component: <BiometricVerificationSection />,
+          component: <BiometricVerificationSection config={biometricConfig} />,
         });
       }
     });

@@ -555,7 +555,7 @@ export default function DocumentVerification() {
                         <Checkbox
                           id="upload-device"
                           checked={allowUploadFromDevice}
-                          onCheckedChange={setAllowUploadFromDevice}
+                          onCheckedChange={checked => setAllowUploadFromDevice(checked === true)}
                           className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
                         <div className="flex-1 min-w-0">
@@ -579,7 +579,7 @@ export default function DocumentVerification() {
                         <Checkbox
                           id="capture-webcam"
                           checked={allowCaptureWebcam}
-                          onCheckedChange={setAllowCaptureWebcam}
+                          onCheckedChange={checked => setAllowCaptureWebcam(checked === true)}
                           className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
                         <div className="flex-1 min-w-0">

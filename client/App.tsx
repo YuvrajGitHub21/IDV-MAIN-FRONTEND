@@ -15,6 +15,7 @@ import TemplateBuilder from "./pages/TemplateBuilder";
 import DocumentVerification from "./pages/DocumentVerification";
 import BiometricVerification from "./pages/BiometricVerification";
 import NotFound from "./pages/NotFound";
+import Home from "./pages/Home";
 
 const queryClient = new QueryClient();
 // 1st change
@@ -22,6 +23,8 @@ const queryClient = new QueryClient();
 // 2nd change
 
 // 3rd change
+
+// 4th Change
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -40,10 +43,14 @@ const App = () => (
                 path="/document-verification"
                 element={<DocumentVerification />}
               />
+
               <Route
                 path="/biometric-verification"
                 element={<BiometricVerification />}
               />
+
+            <Route path="/home" element={<Home />} />
+
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

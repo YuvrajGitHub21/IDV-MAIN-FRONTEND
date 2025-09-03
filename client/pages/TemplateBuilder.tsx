@@ -146,8 +146,24 @@ export default function TemplateBuilder() {
       const raw = localStorage.getItem("arcon_verification_steps");
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.every((s) => s && s.id)) {
-          setVerificationSteps(parsed);
+        if (Array.isArray(parsed)) {
+          const hasPI = parsed.some((s: any) => s?.id === "personal-info");
+          const normalized = hasPI
+            ? parsed
+            : [
+                {
+                  id: "personal-info",
+                  title: "Personal Information",
+                  description:
+                    "Set up fields to collect basic user details like name, contact.",
+                  isRequired: true,
+                  isEnabled: true,
+                },
+                ...parsed,
+              ];
+          setVerificationSteps(
+            normalized.filter((s: any) => s && typeof s.id === "string"),
+          );
         }
       }
     } catch {}

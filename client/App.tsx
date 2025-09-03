@@ -40,6 +40,8 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Templates />} />
               <Route path="/template-builder" element={<TemplateBuilder />} />
+              <Route path="/preview" element={<Preview />} />
+              <Route path="/preview/:templateId" element={<Preview />} />
 
               <Route path="/home" element={<Home />} />
 

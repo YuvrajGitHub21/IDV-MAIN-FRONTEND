@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,6 +18,73 @@ import {
   Trash2,
 } from "lucide-react";
 
+interface VerificationStep {
+  id: string;
+  title: string;
+  description: string;
+  isRequired: boolean;
+  isEnabled: boolean;
+}
+
+interface DraggableVerificationStepProps {
+  step: VerificationStep;
+  index: number;
+  moveStep: (dragIndex: number, hoverIndex: number) => void;
+  onRemove: (stepId: string) => void;
+}
+
+const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
+  step,
+  index,
+  moveStep,
+  onRemove,
+}) => {
+  const [{ isDragging }, drag] = useDrag({
+    type: "verification-step",
+    item: { index },
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+  });
+
+  const [, drop] = useDrop({
+    accept: "verification-step",
+    hover: (item: { index: number }) => {
+      if (item.index !== index) {
+        moveStep(item.index, index);
+        item.index = index;
+      }
+    },
+  });
+
+  return (
+    <div
+      ref={(n) => drag(drop(n))}
+      className={cn("relative mb-4 cursor-move", isDragging && "opacity-50")}
+    >
+      <div className="p-3 rounded border border-gray-200 bg-white">
+        <div className="flex items-start gap-3">
+          <div className="flex-1">
+            <h3 className="font-bold text-sm text-gray-900 mb-1">
+              {step.title}
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {step.description}
+            </p>
+          </div>
+          {!step.isRequired && (
+            <button
+              className="p-1 h-auto text-red-500 hover:text-red-700"
+              onClick={() => onRemove(step.id)}
+              aria-label={`Remove ${step.title}`}
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DocumentVerification() {
   const navigate = useNavigate();
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
@@ -25,6 +94,105 @@ export default function DocumentVerification() {
     "India",
   ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+
+  // Verification steps state (shared via localStorage)
+  const [verificationSteps, setVerificationSteps] = useState<
+    VerificationStep[]
+  >([]);
+  const availableSteps: VerificationStep[] = [
+    {
+      id: "document-verification",
+      title: "Document Verification",
+      description: "Set ID submission rules and handling for unclear files.",
+      isRequired: false,
+      isEnabled: true,
+    },
+    {
+      id: "biometric-verification",
+      title: "Biometric Verification",
+      description:
+        "Set selfie retries, liveness threshold, and biometric storage",
+      isRequired: false,
+      isEnabled: false,
+    },
+  ];
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_verification_steps");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.every((s: any) => s && s.id)) {
+          setVerificationSteps(parsed);
+          return;
+        }
+      }
+    } catch {}
+    // Fallback: ensure personal-info and document-verification visible
+    setVerificationSteps([
+      {
+        id: "personal-info",
+        title: "Personal Information",
+        description:
+          "Set up fields to collect basic user details like name, contact.",
+        isRequired: true,
+        isEnabled: true,
+      },
+      {
+        id: "document-verification",
+        title: "Document Verification",
+        description: "Set ID submission rules and handling for unclear files.",
+        isRequired: false,
+        isEnabled: true,
+      },
+    ]);
+  }, []);
+
+  useEffect(() => {
+    const hasDoc = verificationSteps.some(
+      (s) => s.id === "document-verification",
+    );
+    try {
+      localStorage.setItem(
+        "arcon_has_document_verification",
+        JSON.stringify(hasDoc),
+      );
+      localStorage.setItem(
+        "arcon_verification_steps",
+        JSON.stringify(verificationSteps),
+      );
+    } catch {}
+  }, [verificationSteps]);
+
+  const moveStep = (dragIndex: number, hoverIndex: number) => {
+    setVerificationSteps((prev) => {
+      const dragged = prev[dragIndex];
+      const next = [...prev];
+      next.splice(dragIndex, 1);
+      next.splice(hoverIndex, 0, dragged);
+      return next;
+    });
+  };
+
+  const addVerificationStep = (stepId: string) => {
+    const step = availableSteps.find((s) => s.id === stepId);
+    if (!step) return;
+    setVerificationSteps((prev) =>
+      prev.find((s) => s.id === stepId)
+        ? prev
+        : [...prev, { ...step, isEnabled: true }],
+    );
+  };
+
+  const removeVerificationStep = (stepId: string) => {
+    if (stepId === "personal-info") return;
+    setVerificationSteps((prev) => prev.filter((s) => s.id !== stepId));
+  };
+
+  const getAvailableStepsToAdd = () =>
+    availableSteps.filter(
+      (s) => !verificationSteps.find((vs) => vs.id === s.id),
+    );
 
   const handlePrevious = () => {
     navigate("/dashboard");
@@ -185,70 +353,70 @@ export default function DocumentVerification() {
       <div className="flex flex-col lg:flex-row flex-1">
         {/* Left Sidebar */}
         <div className="w-full lg:w-[332px] p-4 lg:pr-2 border-b lg:border-b-0 lg:border-r border-gray-200 bg-white">
-          <div className="space-y-6 lg:space-y-8">
-            {/* Build Process Section */}
-            <div className="space-y-2">
-              <div className="pb-2">
-                <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
-                  Build your process
-                </h2>
-                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Create a flow by adding required information fields and
-                  verification steps for your users.
-                </p>
-              </div>
-
-              {/* Personal Information */}
-              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded">
-                <div className="flex-1">
-                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
-                    Personal Information
-                  </h3>
+          <DndProvider backend={HTML5Backend}>
+            <div className="space-y-6 lg:space-y-8">
+              {/* Build Process Section */}
+              <div className="space-y-2">
+                <div className="pb-2">
+                  <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
+                    Build your process
+                  </h2>
                   <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Set up fields to collect basic user details like name,
-                    contact.
+                    Create a flow by adding required information fields and
+                    verification steps for your users.
                   </p>
                 </div>
+
+                {/* All Added Verification Steps (draggable) */}
+                {verificationSteps.map((step, index) => (
+                  <DraggableVerificationStep
+                    key={step.id}
+                    step={step}
+                    index={index}
+                    moveStep={moveStep}
+                    onRemove={removeVerificationStep}
+                  />
+                ))}
               </div>
 
-              {/* Document Verification - Selected */}
-              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded border border-[#DEDEDD] bg-[#CCE5FF]">
-                <div className="flex-1">
-                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
-                    Document Verification
-                  </h3>
+              {/* Add Verification Steps */}
+              <div className="space-y-2">
+                <div className="pb-2">
+                  <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
+                    Add Verification Steps
+                  </h2>
                   <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Set ID submission rules and handling for unclear files.
+                    Insert secure verification steps as needed.
                   </p>
                 </div>
+
+                {/* Available Steps to Add */}
+                {getAvailableStepsToAdd().map((step) => (
+                  <div key={step.id} className="relative mb-4">
+                    <div className="p-3 rounded border border-gray-200 bg-white">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-sm text-gray-900 mb-1">
+                            {step.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {step.description}
+                          </p>
+                        </div>
+                        <button
+                          className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                          onClick={() => addVerificationStep(step.id)}
+                          aria-label={`Add ${step.title}`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Add Verification Steps */}
-            <div className="space-y-2">
-              <div className="pb-2">
-                <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
-                  Add Verification Steps
-                </h2>
-                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Insert secure verification steps as needed.
-                </p>
-              </div>
-
-              {/* Biometric Verification - Disabled */}
-              <div className="w-full px-4 lg:px-7 py-3 flex items-center gap-2 rounded opacity-50">
-                <div className="flex-1">
-                  <h3 className="text-sm lg:text-[14px] font-bold text-[#292F4C] leading-tight mb-2">
-                    Biometric Verification
-                  </h3>
-                  <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Set selfie retries, liveness threshold, and biometric
-                    storage
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          </DndProvider>
         </div>
 
         {/* Resize Handle */}

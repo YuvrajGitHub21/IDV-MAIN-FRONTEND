@@ -1,12 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { ChevronLeft, Send, Save, FileText, Check } from "lucide-react";
+import { ChevronLeft, Send, Save, FileText, Check, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 
 export default function Preview() {
   const navigate = useNavigate();
@@ -24,12 +20,10 @@ export default function Preview() {
 
   const handleSaveAndSendInvite = () => {
     console.log("Save and send invite");
-    // TODO: Implement save and send invite functionality
   };
 
   const handleSave = () => {
     console.log("Save template");
-    // TODO: Implement save functionality
   };
 
   const handlePrevious = () => {
@@ -37,475 +31,572 @@ export default function Preview() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="h-11 px-4 flex items-center justify-between border-b border-gray-200 bg-white">
+    <div className="min-h-screen bg-white font-roboto">
+      {/* Header - 44px height */}
+      <header className="h-11 px-4 flex items-center justify-between border-b border-[#DEDEDD] bg-white">
         <img
           src="https://api.builder.io/api/v1/image/assets/TEMP/4566b1e4f2b69299156b1f1c61472e06e0ad9666?width=180"
           alt="Logo"
-          className="h-7"
+          className="w-[90px] h-7"
         />
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-red-400 flex items-center justify-center">
-            <span className="text-white text-xs font-medium">OS</span>
+          <div className="w-8 h-8 rounded-full bg-[#F65F7C] flex items-center justify-center">
+            <span className="text-white text-xs font-medium leading-[10px]">OS</span>
           </div>
         </div>
       </header>
 
-      {/* Sub Header */}
-      <div className="border-b border-gray-200 bg-white">
-        {/* Breadcrumbs */}
-        <div className="h-10 px-4 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-gray-500" />
-          <span className="text-xs text-gray-500">Template</span>
-          <span className="text-xs text-gray-500">/</span>
-          <span className="text-xs text-gray-500">Create New Template</span>
+      {/* Sub Header - 86px total height */}
+      <div className="border-b border-[#DEDEDD] bg-white">
+        {/* Breadcrumbs - 38px height */}
+        <div className="h-[38px] px-4 flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 items-center gap-1">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9.33268 1.51562V4.26932C9.33268 4.64268 9.33268 4.82937 9.40535 4.97198C9.46928 5.09742 9.57122 5.1994 9.69668 5.26332C9.83928 5.33598 10.0259 5.33598 10.3993 5.33598H13.153M9.33268 11.3359H5.33268M10.666 8.66927H5.33268M13.3327 6.66142V11.4693C13.3327 12.5894 13.3327 13.1494 13.1147 13.5773C12.9229 13.9536 12.617 14.2595 12.2407 14.4513C11.8128 14.6693 11.2528 14.6693 10.1327 14.6693H5.86602C4.74591 14.6693 4.18586 14.6693 3.75804 14.4513C3.38171 14.2595 3.07575 13.9536 2.884 13.5773C2.66602 13.1494 2.66602 12.5894 2.66602 11.4693V4.53594C2.66602 3.41583 2.66602 2.85578 2.884 2.42796C3.07575 2.05163 3.38171 1.74567 3.75804 1.55392C4.18586 1.33594 4.74591 1.33594 5.86602 1.33594H8.00722C8.49635 1.33594 8.74095 1.33594 8.97115 1.3912C9.17522 1.44019 9.37028 1.521 9.54928 1.63066C9.75108 1.75434 9.92402 1.92729 10.2699 2.2732L12.3954 4.39868C12.7413 4.74458 12.9143 4.91754 13.0379 5.11937C13.1476 5.29831 13.2284 5.4934 13.2774 5.69747C13.3327 5.92765 13.3327 6.17224 13.3327 6.66142Z" stroke="#515257" strokeWidth="1.09091" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="text-xs text-[#505258] font-medium leading-3">Template</span>
+            </div>
+            <div className="flex h-8 items-center gap-2">
+              <span className="text-xs text-[#505258] font-medium leading-3">/</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 items-center gap-1">
+              <span className="text-xs text-[#505258] font-medium leading-3">Create New Template</span>
+            </div>
+          </div>
         </div>
 
-        {/* Title Section */}
-        <div className="h-12 px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              className="w-7 h-7 p-0 rounded-full bg-gray-100 hover:bg-gray-200"
-            >
-              <ChevronLeft className="w-4 h-4 text-gray-600" />
-            </Button>
-            <h1 className="text-xl font-bold text-gray-900">{templateName}</h1>
+        {/* Heading - 48px height */}
+        <div className="h-12 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2">
+              <button
+                onClick={handleBack}
+                className="w-7 h-7 p-2 flex items-center justify-center rounded-full bg-[#F1F2F4] hover:bg-gray-200 transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
+              </button>
+              <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">{templateName}</h1>
+            </div>
           </div>
           <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={handleSaveAndSendInvite}
-              className="h-8 px-2 text-blue-600 border-blue-600 hover:bg-blue-50"
+              className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-white hover:bg-blue-50 transition-colors"
             >
-              <Send className="w-4 h-4 mr-1" />
-              Save & Send Invite
-            </Button>
-            <Button
-              size="sm"
+              <Send className="w-4 h-4 text-[#0073EA]" strokeWidth={1.33} />
+              <span className="text-[13px] font-medium text-[#0073EA]">Save & Send Invite</span>
+            </button>
+            <button
               onClick={handleSave}
-              className="h-8 px-2 bg-blue-600 hover:bg-blue-700"
+              className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-[#0073EA] hover:bg-blue-700 transition-colors"
             >
-              <Save className="w-4 h-4 mr-1" />
-              Save
-            </Button>
+              <Save className="w-4 h-4 text-white" strokeWidth={1.5} />
+              <span className="text-[13px] font-medium text-white">Save</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Steps Section */}
-      <div className="h-22 px-4 py-3 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handlePrevious}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
-          </Button>
+      {/* Steps Section - 89px height */}
+      <div className="h-[89px] px-4 py-3 border-b border-[#DEDEDD] bg-white">
+        <div className="w-full px-4 py-3 flex items-center justify-between border-b border-[#DEDEDD] bg-white">
+          <div className="flex-1 flex items-center justify-between">
+            <button
+              onClick={handlePrevious}
+              className="flex items-center gap-1 rounded hover:bg-gray-50 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
+              <span className="text-[13px] font-medium text-[#505258]">Previous</span>
+            </button>
 
-          <div className="flex items-center gap-2">
-            {/* Form Builder Step - Completed */}
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="w-11 h-11 rounded-full border-2 border-green-600 p-1.5">
-                <div className="w-8 h-8 rounded-full bg-green-600 flex items-center justify-center">
-                  <Check className="w-4.5 h-4.5 text-white" />
+            <div className="w-[667px] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {/* Form Builder Step - Completed */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="p-1.5 rounded-full border-2 border-[#258750]">
+                    <div className="w-8 h-8 rounded-full bg-[#258750] flex items-center justify-center">
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7.16241 11.2116L13.438 4.93608C13.6089 4.76515 13.8117 4.67969 14.0463 4.67969C14.281 4.67969 14.4837 4.76515 14.6547 4.93608C14.8256 5.107 14.9111 5.30979 14.9111 5.54444C14.9111 5.77908 14.8256 5.98186 14.6547 6.15278L7.76363 13.0438C7.59271 13.2147 7.3923 13.3002 7.16241 13.3002C6.93253 13.3002 6.73212 13.2147 6.5612 13.0438L3.34516 9.82778C3.17423 9.65686 3.09115 9.45408 3.0959 9.21944C3.10066 8.98479 3.1885 8.782 3.35943 8.61108C3.53035 8.44015 3.73314 8.35469 3.96779 8.35469C4.20243 8.35469 4.40521 8.44015 4.57613 8.61108L7.16241 11.2116Z" fill="white"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <span className="text-[13px] font-medium text-[#172B4D]">Form builder</span>
+                </div>
+
+                {/* Connection Line */}
+                <div className="w-[120px] flex flex-col items-start pt-[22px] gap-2.5">
+                  <div className="w-[120px] h-px bg-[#DEDEDD] mt-[22px]"></div>
+                </div>
+
+                {/* Preview Step - Current */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="p-1.5 rounded-full border-2 border-[#0073EA]">
+                    <div className="w-8 h-8 rounded-full bg-[#0073EA] flex items-center justify-center">
+                      <span className="text-white text-base font-bold leading-4">2</span>
+                    </div>
+                  </div>
+                  <span className="text-[13px] font-medium text-[#172B4D]">Preview</span>
                 </div>
               </div>
-              <span className="text-xs font-medium text-gray-900">
-                Form builder
-              </span>
             </div>
 
-            {/* Connection Line */}
-            <div className="w-30 h-px bg-gray-200"></div>
-
-            {/* Preview Step - Current */}
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="w-11 h-11 rounded-full border-2 border-blue-600 p-1.5">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                  <span className="text-white text-base font-bold">2</span>
-                </div>
-              </div>
-              <span className="text-xs font-medium text-gray-900">Preview</span>
+            <div className="flex items-center gap-1 rounded">
+              <span className="text-[13px] font-medium text-[#505258]">Next</span>
             </div>
           </div>
-
-          <div className="text-gray-500 text-xs">Next</div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex min-h-0 flex-1">
-        {/* Sidebar */}
-        <div className="w-83 bg-white border-r border-gray-200 flex flex-col">
-          <div className="p-4 space-y-2">
-            {/* Admin View Tab */}
-            <div
-              className={`p-3 rounded cursor-pointer transition-colors ${
-                activeView === "admin"
-                  ? "bg-blue-50 border-l-4 border-l-blue-600"
-                  : "hover:bg-gray-50"
-              }`}
-              onClick={() => setActiveView("admin")}
-            >
-              <h3 className="font-bold text-sm text-gray-900">Admin View</h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry.
-              </p>
-            </div>
+        {/* Sidebar - 332px width */}
+        <div className="w-[332px] bg-white flex flex-col">
+          <div className="p-4 pr-2 pl-4 flex flex-col gap-2">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                {/* Admin View Tab - Active */}
+                <div className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded bg-[#E6F1FD]">
+                  <div className="flex-1 flex flex-col gap-2">
+                    <div className="flex items-center gap-1">
+                      <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">Admin View</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
+                        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Receiver's View Tab */}
-            <div
-              className={`p-3 rounded cursor-pointer transition-colors opacity-50 ${
-                activeView === "receiver"
-                  ? "bg-blue-50 border-l-4 border-l-blue-600"
-                  : "hover:bg-gray-50"
-              }`}
-              onClick={() => setActiveView("receiver")}
-            >
-              <h3 className="font-bold text-sm text-gray-900">
-                Receiver's View
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry.
-              </p>
+                {/* Receiver's View Tab - Inactive */}
+                <div className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded opacity-50">
+                  <div className="flex-1 flex flex-col gap-2">
+                    <div className="flex items-center gap-1">
+                      <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">Receiver's View</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
+                        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Resize Handle */}
-        <div className="w-4 bg-white border-r border-gray-200 flex items-center justify-center cursor-col-resize">
-          <div className="w-px h-full bg-gray-200"></div>
+        {/* Resize Handle - 16px width */}
+        <div className="w-4 bg-white flex flex-col items-center gap-2.5 cursor-col-resize">
+          <div className="w-px flex-1 bg-[#DEDEDD]"></div>
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 p-6 bg-white overflow-auto">
-          <div className="max-w-4xl mx-auto space-y-6">
+        <div className="w-[987px] flex flex-col items-center gap-6 p-4 pt-4">
+          <div className="flex flex-col items-center gap-4 w-full">
+            
             {/* Personal Information Section */}
-            <Card className="border border-gray-200">
-              <div className="p-4 border-b border-gray-200">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-4.5 h-4.5 rounded-full border border-gray-800 flex items-center justify-center">
-                    <div className="w-2 h-px bg-gray-800"></div>
+            <div className="flex flex-col gap-4 w-full rounded bg-white">
+              <div className="p-0 pb-px pl-px pr-px flex flex-col w-full rounded border border-[#DEDEDD]">
+                <div className="px-2 py-4 flex flex-col items-center gap-2 w-full bg-white">
+                  <div className="flex items-center gap-2 w-full pb-1">
+                    <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
+                    <h2 className="text-base font-bold text-[#172B4D] leading-3">Personal Information</h2>
                   </div>
-                  <h2 className="text-base font-bold text-gray-900">
-                    Personal Information
-                  </h2>
+                  <div className="flex items-center gap-2.5 w-full pl-7">
+                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                      Please provide your basic personal information to begin the identity verification process.
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-900 ml-6">
-                  Please provide your basic personal information to begin the
-                  identity verification process.
-                </p>
+                <div className="px-[34px] py-5 flex flex-col w-full border-t border-[#DEDEDD] bg-white">
+                  <div className="flex flex-col w-full">
+                    <div className="flex flex-col w-full">
+                      <div className="flex flex-col gap-6 w-full">
+                        <div className="flex flex-col w-full">
+                          <div className="flex gap-6 w-full">
+                            <div className="flex flex-col flex-1">
+                              <div className="flex gap-2 w-full pb-2">
+                                <div className="flex flex-col justify-center flex-1 h-2.5">
+                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">First Name</span>
+                                </div>
+                              </div>
+                              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
+                                <div className="flex items-center gap-2 flex-1">
+                                  <span className="text-[13px] text-[#676879] leading-5">Input</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col flex-1">
+                              <div className="flex gap-2 w-full pb-2">
+                                <div className="flex flex-col justify-center flex-1 h-2.5">
+                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Last Name</span>
+                                </div>
+                              </div>
+                              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
+                                <div className="flex items-center gap-2 flex-1">
+                                  <span className="text-[13px] text-[#676879] leading-5">Input</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-6 w-full">
+                            <div className="flex flex-col flex-1">
+                              <div className="flex gap-2 w-full pb-2">
+                                <div className="flex flex-col justify-center flex-1 h-2.5">
+                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Email</span>
+                                </div>
+                              </div>
+                              <div className="flex flex-col gap-1 w-full">
+                                <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
+                                  <div className="flex items-center gap-2 flex-1">
+                                    <span className="text-[13px] text-[#676879] leading-5">Input</span>
+                                  </div>
+                                  <div className="h-7 px-3 py-[9px] flex items-center gap-2 rounded bg-white">
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="w-[452px] flex flex-col">
+                              <div className="flex gap-2 w-full pb-2">
+                                <div className="flex flex-col justify-center flex-1 h-2.5">
+                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Date Of Birth</span>
+                                </div>
+                              </div>
+                              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
+                                <div className="flex items-center gap-2 flex-1">
+                                  <span className="text-[13px] text-[#676879] leading-5">DD/MM/YYYY</span>
+                                </div>
+                                <div className="w-[18px] flex items-center gap-[7.2px]">
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="firstName"
-                        className="text-xs font-medium text-gray-900"
-                      >
-                        First Name
-                      </Label>
-                      <Input
-                        id="firstName"
-                        placeholder="Input"
-                        className="h-10 text-xs border-gray-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="lastName"
-                        className="text-xs font-medium text-gray-900"
-                      >
-                        Last Name
-                      </Label>
-                      <Input
-                        id="lastName"
-                        placeholder="Input"
-                        className="h-10 text-xs border-gray-300"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="email"
-                        className="text-xs font-medium text-gray-900"
-                      >
-                        Email
-                      </Label>
-                      <Input
-                        id="email"
-                        placeholder="Input"
-                        className="h-10 text-xs border-gray-300"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="dob"
-                        className="text-xs font-medium text-gray-900"
-                      >
-                        Date Of Birth
-                      </Label>
-                      <Input
-                        id="dob"
-                        placeholder="DD/MM/YYYY"
-                        className="h-10 text-xs border-gray-300"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            </div>
 
             {/* Document Verification Section */}
-            <Card className="border border-gray-200">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-base font-bold text-gray-900 mb-1">
-                  Document Verification
-                </h2>
-                <p className="text-xs text-gray-900">
-                  Choose a valid government-issued ID (like a passport, driver's
-                  license, or national ID) and upload a clear photo of it.
-                </p>
-              </div>
-              <CardContent className="p-6">
-                <div className="space-y-6">
-                  {/* User Upload Options */}
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900 mb-2">
-                      User Upload Options
-                    </h3>
-                    <p className="text-xs text-gray-900 mb-4">
-                      Select how users are allowed to submit documents during
-                      the process.
-                    </p>
-                    <div className="bg-gray-50 rounded p-6 space-y-5">
-                      <div className="flex items-start gap-2 pb-5 border-b border-gray-200">
-                        <div className="w-4.5 h-4.5 rounded-full bg-green-600 flex items-center justify-center mt-0.5">
-                          <Check className="w-2.5 h-2.5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-xs font-medium text-gray-900 mb-1">
-                            Allow Upload from Device
-                          </h4>
-                          <p className="text-xs text-gray-500">
-                            Let users upload existing documents directly from
-                            their device.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <div className="w-4.5 h-4.5 rounded-full bg-green-600 flex items-center justify-center mt-0.5">
-                          <Check className="w-2.5 h-2.5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-xs font-medium text-gray-900 mb-1">
-                            Allow Capture via Webcam
-                          </h4>
-                          <p className="text-xs text-gray-500">
-                            Enable webcam access to allow users to capture
-                            documents in real time.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+            <div className="flex flex-col gap-4 w-full rounded bg-white">
+              <div className="p-0 pb-5 pl-px pr-px flex flex-col w-full rounded border border-[#DEDEDD]">
+                <div className="px-3 py-4 flex flex-col items-center gap-2 w-full bg-white">
+                  <div className="flex items-center gap-2 w-full pb-1">
+                    <h2 className="text-base font-bold text-[#172B4D] leading-3">Document Verification</h2>
                   </div>
-
-                  {/* Unreadable Document Handling */}
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900 mb-2">
-                      Unreadable Document Handling
-                    </h3>
-                    <p className="text-xs text-gray-900 mb-4">
-                      Choose what action the system should take if a submitted
-                      document is not clear or unreadable.
+                  <div className="flex items-center gap-2.5 w-full pl-7">
+                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                      Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.
                     </p>
-                    <div className="bg-gray-50 rounded p-6">
-                      <div className="flex items-start gap-2">
-                        <div className="w-4.5 h-4.5 rounded-full bg-green-600 flex items-center justify-center mt-0.5">
-                          <Check className="w-2.5 h-2.5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-xs font-medium text-gray-900 mb-1">
-                            Allow Retries Before Rejection
-                          </h4>
-                          <p className="text-xs text-gray-500">
-                            Let users reattempt uploading the document before
-                            it's finally rejected.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Supported Countries */}
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900 mb-2">
-                      Supported Countries for Identity Verification
-                    </h3>
-                    <p className="text-xs text-gray-900 mb-4">
-                      Only document from these countries are supported.
-                    </p>
-                    <div className="bg-gray-50 rounded p-6">
-                      <div className="mb-2">
-                        <Label className="text-xs font-medium text-gray-900">
-                          Which countries are supported?
-                        </Label>
-                      </div>
-                      <div className="bg-white rounded-lg p-3">
-                        <div className="h-10 flex items-center">
-                          <span className="text-sm font-medium text-black">
-                            India
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-2 p-3 bg-white rounded-lg">
-                          <Badge
-                            variant="secondary"
-                            className="h-8 rounded-full border border-gray-300 bg-gray-50"
-                          >
-                            <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center mr-2">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                            Aadhar Card
-                          </Badge>
-                          <Badge
-                            variant="secondary"
-                            className="h-8 rounded-full border border-gray-300 bg-gray-50"
-                          >
-                            <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center mr-2">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                            Driving License
-                          </Badge>
-                          <Badge
-                            variant="secondary"
-                            className="h-8 rounded-full border border-gray-300 bg-gray-50"
-                          >
-                            <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center mr-2">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                            Pan Card
-                          </Badge>
-                          <Badge
-                            variant="secondary"
-                            className="h-8 rounded-full border border-gray-300 bg-gray-50"
-                          >
-                            <div className="w-5 h-5 rounded-full bg-green-600 flex items-center justify-center mr-2">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                            Passport
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="px-[34px] py-4 flex flex-col items-center w-full border-t border-[#DEDEDD] bg-white">
+                  <div className="flex flex-col gap-6 w-full">
+                    
+                    {/* User Upload Options */}
+                    <div className="flex items-center w-full rounded-t-lg bg-white">
+                      <div className="flex flex-col items-center gap-4 flex-1">
+                        <div className="flex gap-6 w-full">
+                          <div className="flex flex-col gap-2 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-base font-bold text-[#172B4D] leading-3">User Upload Options</h3>
+                            </div>
+                            <div className="flex items-center gap-2 w-full">
+                              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                                Select how users are allowed to submit documents during the process.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+                          <div className="pb-5 flex flex-col w-full border-b border-[#D0D4E4]">
+                            <div className="flex gap-2 w-full">
+                              <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M4.96526 7.24061L8.49526 3.71062C8.5914 3.61448 8.70547 3.56641 8.83745 3.56641C8.96944 3.56641 9.08351 3.61448 9.17965 3.71062C9.2758 3.80677 9.32387 3.92084 9.32387 4.05283C9.32387 4.18481 9.2758 4.29888 9.17965 4.39502L5.30345 8.27123C5.2073 8.36738 5.09457 8.41545 4.96526 8.41545C4.83595 8.41545 4.72322 8.36738 4.62707 8.27123L2.81805 6.46221C2.72191 6.36606 2.67517 6.252 2.67784 6.12002C2.68052 5.98803 2.72993 5.87396 2.82608 5.77781C2.92222 5.68167 3.03629 5.63359 3.16828 5.63359C3.30027 5.63359 3.41433 5.68167 3.51048 5.77781L4.96526 7.24061Z" fill="white"/>
+                                </svg>
+                              </div>
+                              <div className="w-[538px] flex flex-col gap-2">
+                                <div className="flex flex-col justify-center w-full h-2.5">
+                                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Upload from Device</span>
+                                </div>
+                                <p className="w-full text-[13px] text-[#505258] leading-5">
+                                  Let users upload existing documents directly from their device.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="h-[58px] pb-5 flex flex-col w-full">
+                            <div className="pb-5 flex flex-col w-full">
+                              <div className="flex gap-2 w-full">
+                                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.96526 7.24061L8.49526 3.71062C8.5914 3.61448 8.70547 3.56641 8.83745 3.56641C8.96944 3.56641 9.08351 3.61448 9.17965 3.71062C9.2758 3.80677 9.32387 3.92084 9.32387 4.05283C9.32387 4.18481 9.2758 4.29888 9.17965 4.39502L5.30345 8.27123C5.2073 8.36738 5.09457 8.41545 4.96526 8.41545C4.83595 8.41545 4.72322 8.36738 4.62707 8.27123L2.81805 6.46221C2.72191 6.36606 2.67517 6.252 2.67784 6.12002C2.68052 5.98803 2.72993 5.87396 2.82608 5.77781C2.92222 5.68167 3.03629 5.63359 3.16828 5.63359C3.30027 5.63359 3.41433 5.68167 3.51048 5.77781L4.96526 7.24061Z" fill="white"/>
+                                  </svg>
+                                </div>
+                                <div className="w-[538px] flex flex-col gap-2">
+                                  <div className="flex flex-col justify-center w-full h-2.5">
+                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Capture via Webcam</span>
+                                  </div>
+                                  <p className="w-full text-[13px] text-[#505258] leading-5">
+                                    Enable webcam access to allow users to capture documents in real time.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Unreadable Document Handling */}
+                    <div className="flex items-center w-full bg-white">
+                      <div className="flex flex-col items-center gap-4 flex-1">
+                        <div className="flex gap-6 w-full">
+                          <div className="flex flex-col gap-2 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-base font-bold text-[#172B4D] leading-3">Unreadable Document Handling</h3>
+                            </div>
+                            <div className="flex items-center gap-2 w-full">
+                              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                                Choose what action the system should take if a submitted document is not clear or unreadable.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+                          <div className="h-[58px] pb-5 flex flex-col w-full">
+                            <div className="pb-5 flex flex-col w-full">
+                              <div className="flex gap-2 w-full">
+                                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.96526 7.24061L8.49526 3.71062C8.5914 3.61448 8.70547 3.56641 8.83745 3.56641C8.96944 3.56641 9.08351 3.61448 9.17965 3.71062C9.2758 3.80677 9.32387 3.92084 9.32387 4.05283C9.32387 4.18481 9.2758 4.29888 9.17965 4.39502L5.30345 8.27123C5.2073 8.36738 5.09457 8.41545 4.96526 8.41545C4.83595 8.41545 4.72322 8.36738 4.62707 8.27123L2.81805 6.46221C2.72191 6.36606 2.67517 6.252 2.67784 6.12002C2.68052 5.98803 2.72993 5.87396 2.82608 5.77781C2.92222 5.68167 3.03629 5.63359 3.16828 5.63359C3.30027 5.63359 3.41433 5.68167 3.51048 5.77781L4.96526 7.24061Z" fill="white"/>
+                                  </svg>
+                                </div>
+                                <div className="w-[538px] flex flex-col gap-2">
+                                  <div className="flex flex-col justify-center w-full h-2.5">
+                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Allow Retries Before Rejection</span>
+                                  </div>
+                                  <p className="w-full text-[13px] text-[#505258] leading-5">
+                                    Let users reattempt uploading the document before it's finally rejected.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Supported Countries */}
+                    <div className="flex flex-col items-center gap-4 w-full">
+                      <div className="flex gap-6 w-full">
+                        <div className="flex flex-col gap-2 flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-base font-bold text-[#172B4D] leading-3">Supported Countries for Identity Verification</h3>
+                          </div>
+                          <div className="flex items-center gap-2 w-full">
+                            <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                              Only document from these countries are supported.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+                        <div className="flex flex-col gap-2 w-full">
+                          <div className="flex flex-col gap-2 w-full">
+                            <div className="flex flex-col justify-center w-full h-2.5">
+                              <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Which countries are supported?</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
+                          <div className="h-[42px] flex items-center gap-6 w-full">
+                            <span className="text-sm font-medium text-black leading-[22px]">India</span>
+                          </div>
+                          <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
+                            <div className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
+                              <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M4.85224 7.38323L8.77446 3.46102C8.88129 3.3542 9.00803 3.30078 9.15468 3.30078C9.30133 3.30078 9.42807 3.3542 9.5349 3.46102C9.64173 3.56785 9.69514 3.69459 9.69514 3.84125C9.69514 3.9879 9.64173 4.11464 9.5349 4.22146L5.228 8.52836C5.12118 8.63519 4.99592 8.68861 4.85224 8.68861C4.70856 8.68861 4.58331 8.63519 4.47648 8.52836L2.46646 6.51834C2.35963 6.41151 2.3077 6.28477 2.31067 6.13813C2.31364 5.99147 2.36855 5.86473 2.47537 5.7579C2.5822 5.65107 2.70894 5.59766 2.8556 5.59766C3.00225 5.59766 3.12899 5.65107 3.23582 5.7579L4.85224 7.38323Z" fill="white"/>
+                                </svg>
+                              </div>
+                              <span className="text-[13px] font-medium text-[#505258]">Aadhar Card</span>
+                            </div>
+                            <div className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
+                              <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M4.85224 7.38323L8.77446 3.46102C8.88129 3.3542 9.00803 3.30078 9.15468 3.30078C9.30133 3.30078 9.42807 3.3542 9.5349 3.46102C9.64173 3.56785 9.69514 3.69459 9.69514 3.84125C9.69514 3.9879 9.64173 4.11464 9.5349 4.22146L5.228 8.52836C5.12118 8.63519 4.99592 8.68861 4.85224 8.68861C4.70856 8.68861 4.58331 8.63519 4.47648 8.52836L2.46646 6.51834C2.35963 6.41151 2.3077 6.28477 2.31067 6.13813C2.31364 5.99147 2.36855 5.86473 2.47537 5.7579C2.5822 5.65107 2.70894 5.59766 2.8556 5.59766C3.00225 5.59766 3.12899 5.65107 3.23582 5.7579L4.85224 7.38323Z" fill="white"/>
+                                </svg>
+                              </div>
+                              <span className="text-[13px] font-medium text-[#505258]">Driving License</span>
+                            </div>
+                            <div className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
+                              <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M4.85224 7.38323L8.77446 3.46102C8.88129 3.3542 9.00803 3.30078 9.15468 3.30078C9.30133 3.30078 9.42807 3.3542 9.5349 3.46102C9.64173 3.56785 9.69514 3.69459 9.69514 3.84125C9.69514 3.9879 9.64173 4.11464 9.5349 4.22146L5.228 8.52836C5.12118 8.63519 4.99592 8.68861 4.85224 8.68861C4.70856 8.68861 4.58331 8.63519 4.47648 8.52836L2.46646 6.51834C2.35963 6.41151 2.3077 6.28477 2.31067 6.13813C2.31364 5.99147 2.36855 5.86473 2.47537 5.7579C2.5822 5.65107 2.70894 5.59766 2.8556 5.59766C3.00225 5.59766 3.12899 5.65107 3.23582 5.7579L4.85224 7.38323Z" fill="white"/>
+                                </svg>
+                              </div>
+                              <span className="text-[13px] font-medium text-[#505258]">Pan Card</span>
+                            </div>
+                            <div className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
+                              <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path d="M4.85224 7.38323L8.77446 3.46102C8.88129 3.3542 9.00803 3.30078 9.15468 3.30078C9.30133 3.30078 9.42807 3.3542 9.5349 3.46102C9.64173 3.56785 9.69514 3.69459 9.69514 3.84125C9.69514 3.9879 9.64173 4.11464 9.5349 4.22146L5.228 8.52836C5.12118 8.63519 4.99592 8.68861 4.85224 8.68861C4.70856 8.68861 4.58331 8.63519 4.47648 8.52836L2.46646 6.51834C2.35963 6.41151 2.3077 6.28477 2.31067 6.13813C2.31364 5.99147 2.36855 5.86473 2.47537 5.7579C2.5822 5.65107 2.70894 5.59766 2.8556 5.59766C3.00225 5.59766 3.12899 5.65107 3.23582 5.7579L4.85224 7.38323Z" fill="white"/>
+                                </svg>
+                              </div>
+                              <span className="text-[13px] font-medium text-[#505258]">Passport</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Biometric Verification Section */}
-            <Card className="border border-gray-200">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-base font-bold text-gray-900 mb-1">
-                  Biometric Verification
-                </h2>
-                <p className="text-xs text-gray-900">
-                  Take a live selfie to confirm you are the person in the ID
-                  document. Make sure you're in a well-lit area and your face is
-                  clearly visible.
-                </p>
-              </div>
-              <CardContent className="p-4">
-                <div className="space-y-6">
-                  {/* Retry Attempts */}
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900 mb-2">
-                      Retry Attempts for Selfie Capture
-                    </h3>
-                    <p className="text-xs text-gray-900 mb-4">
-                      Define how many times a user can retry if the selfie
-                      capture fails.
-                    </p>
-                    <div className="bg-gray-50 rounded p-6">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-gray-900">
-                          Set the maximum number of retries
-                        </Label>
-                        <div className="w-80">
-                          <Input
-                            value="4"
-                            className="h-8 text-xs border-gray-300 bg-gray-50"
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                    </div>
+            <div className="flex flex-col gap-4 w-full rounded bg-white">
+              <div className="p-0 pb-px pl-px pr-px flex flex-col w-full rounded border border-[#DEDEDD]">
+                <div className="px-3 py-4 flex flex-col items-center gap-2 w-full bg-white">
+                  <div className="flex items-center gap-2 w-full pb-1">
+                    <h2 className="text-base font-bold text-[#172B4D] leading-3">Biometric Verification</h2>
                   </div>
-
-                  {/* Liveness Confidence Threshold */}
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900 mb-2">
-                      Liveness Confidence Threshold (%)
-                    </h3>
-                    <p className="text-xs text-gray-900 mb-4">
-                      Choose what should happen if a user's liveness score does
-                      not meet the required threshold.
+                  <div className="flex items-center gap-2.5 w-full pl-7">
+                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                      Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.
                     </p>
-                    <div className="bg-gray-50 rounded p-6">
-                      <div className="flex items-start gap-2">
-                        <div className="w-4.5 h-4.5 rounded-full bg-green-600 flex items-center justify-center mt-0.5">
-                          <Check className="w-2.5 h-2.5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-xs font-medium text-gray-900 mb-1">
-                            Ask the user to try again
-                          </h4>
-                          <p className="text-xs text-gray-500">
-                            Prompt the user to reattempt the selfie.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Biometric Data Retention */}
-                  <div>
-                    <h3 className="text-base font-bold text-gray-900 mb-2">
-                      Biometric Data Retention
-                    </h3>
-                    <p className="text-xs text-gray-900 mb-4">
-                      Choose whether to store biometric/selfie data and define
-                      retention duration.
-                    </p>
-                    <div className="bg-gray-50 rounded p-6">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs font-medium text-gray-900">
-                          Enable biometric data storage
-                        </Label>
-                        <div className="w-80">
-                          <Input
-                            value="6 Months"
-                            className="h-8 text-xs border-gray-300"
-                            readOnly
-                          />
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="p-4 flex flex-col items-center w-full border-t border-[#DEDEDD] bg-white">
+                  <div className="w-[923px] flex flex-col gap-6">
+                    
+                    {/* Retry Attempts */}
+                    <div className="flex flex-col gap-5 w-full">
+                      <div className="flex items-center w-full bg-white">
+                        <div className="flex flex-col items-center gap-4 flex-1">
+                          <div className="flex flex-col gap-2 w-full">
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-base font-bold text-[#172B4D] leading-3">Retry Attempts for Selfie Capture</h3>
+                            </div>
+                            <div className="flex items-center gap-2 w-full">
+                              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                                Define how many times a user can retry if the selfie capture fails.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+                            <div className="pb-5 flex flex-col w-full">
+                              <div className="flex items-center gap-2 w-full">
+                                <div className="flex flex-col gap-2 flex-1">
+                                  <div className="flex flex-col justify-center w-full h-2.5">
+                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Set the maximum number of retries</span>
+                                  </div>
+                                </div>
+                                <div className="w-80 flex gap-3 bg-[#F6F7FB]">
+                                  <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4] bg-[#F6F7FB]">
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <span className="text-[13px] text-[#676879] leading-5">4</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Liveness Confidence Threshold */}
+                    <div className="flex flex-col gap-5 w-full">
+                      <div className="flex items-center w-full bg-white">
+                        <div className="flex flex-col items-center gap-4 flex-1">
+                          <div className="flex gap-6 w-full">
+                            <div className="flex flex-col gap-2 flex-1">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-base font-bold text-[#172B4D] leading-3">Liveness Confidence Threshold (%)</h3>
+                              </div>
+                              <div className="flex items-center gap-2 w-full">
+                                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                                  Choose what should happen if a user's liveness score does not meet the required threshold.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="pt-6 px-6 pb-0 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+                            <div className="pb-5 flex flex-col w-full">
+                              <div className="flex gap-2 w-full">
+                                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.96526 7.24061L8.49526 3.71062C8.5914 3.61448 8.70547 3.56641 8.83745 3.56641C8.96944 3.56641 9.08351 3.61448 9.17965 3.71062C9.2758 3.80677 9.32387 3.92084 9.32387 4.05283C9.32387 4.18481 9.2758 4.29888 9.17965 4.39502L5.30345 8.27123C5.2073 8.36738 5.09457 8.41545 4.96526 8.41545C4.83595 8.41545 4.72322 8.36738 4.62707 8.27123L2.81805 6.46221C2.72191 6.36606 2.67517 6.252 2.67784 6.12002C2.68052 5.98803 2.72993 5.87396 2.82608 5.77781C2.92222 5.68167 3.03629 5.63359 3.16828 5.63359C3.30027 5.63359 3.41433 5.68167 3.51048 5.77781L4.96526 7.24061Z" fill="white"/>
+                                  </svg>
+                                </div>
+                                <div className="w-[508px] flex flex-col gap-2">
+                                  <div className="flex flex-col justify-center w-full h-2.5">
+                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Ask the user to try again</span>
+                                  </div>
+                                  <p className="w-full text-[13px] text-[#505258] leading-5">
+                                    Prompt the user to reattempt the selfie.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Biometric Data Retention */}
+                    <div className="flex flex-col gap-5 w-full">
+                      <div className="flex items-center w-full bg-white">
+                        <div className="flex flex-col items-center gap-4 flex-1">
+                          <div className="flex gap-6 w-full">
+                            <div className="flex flex-col gap-2 flex-1">
+                              <div className="flex items-center gap-2">
+                                <h3 className="text-base font-bold text-[#172B4D] leading-3">Biometric Data Retention</h3>
+                              </div>
+                              <div className="flex items-center gap-2 w-full">
+                                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                                  Choose whether to store biometric/selfie data and define retention duration.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+                            <div className="pb-5 flex flex-col items-center w-full">
+                              <div className="flex items-center gap-2 w-full">
+                                <div className="flex flex-col gap-2 flex-1">
+                                  <div className="flex flex-col justify-center w-full h-2.5">
+                                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">Enable biometric data storage</span>
+                                  </div>
+                                </div>
+                                <div className="w-80 flex gap-3">
+                                  <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4]">
+                                    <div className="flex items-center gap-2 flex-1">
+                                      <span className="text-[13px] text-[#676879] leading-5">6 Months</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>

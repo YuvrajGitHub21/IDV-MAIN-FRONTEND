@@ -239,7 +239,7 @@ export default function DocumentVerification() {
     );
 
   const handlePrevious = () => {
-    navigate("/dashboard");
+    navigate("/template-builder");
   };
 
   const handleNext = () => {

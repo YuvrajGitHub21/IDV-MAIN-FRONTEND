@@ -107,7 +107,7 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 };
 
 // Document Verification Configuration Component
-const DocumentVerificationSection: React.FC = () => {
+const DocumentVerificationSection: React.FC<{onNext?: () => void}> = ({onNext}) => {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
@@ -116,6 +116,11 @@ const DocumentVerificationSection: React.FC = () => {
   ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const handleNext = () => {
+    setIsExpanded(false);
+    onNext?.();
+  };
 
   // Load form state on mount
   useEffect(() => {

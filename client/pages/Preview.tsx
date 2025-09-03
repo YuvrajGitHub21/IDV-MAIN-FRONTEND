@@ -388,7 +388,10 @@ export default function Preview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        Showing exactly what admin selected: {orderedSections.length} sections with {3 + (templateData.addedFields?.length || 0)} fields total.
+                        Showing exactly what admin selected:{" "}
+                        {orderedSections.length} sections with{" "}
+                        {3 + (templateData.addedFields?.length || 0)} fields
+                        total.
                       </p>
                     </div>
                   </div>
@@ -404,7 +407,8 @@ export default function Preview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        This is exactly how users will experience the verification process.
+                        This is exactly how users will experience the
+                        verification process.
                       </p>
                     </div>
                   </div>
@@ -486,11 +490,11 @@ const PersonalInformationSection = ({
   // Combine mandatory fields with admin-selected optional fields
   const allFields = [
     ...mandatoryFields,
-    ...(addedFields || []).map(field => ({
+    ...(addedFields || []).map((field) => ({
       id: field.id,
       name: field.name,
       placeholder: field.placeholder,
-    }))
+    })),
   ];
 
   // Group fields into rows (2 fields per row)

@@ -425,8 +425,9 @@ const DocumentVerificationSection: React.FC<{ isExpanded: boolean; onToggle: () 
 };
 
 // Biometric Verification Configuration Component
-const BiometricVerificationSection: React.FC<{ onNext?: () => void }> = ({
-  onNext,
+const BiometricVerificationSection: React.FC<{ isExpanded: boolean; onToggle: () => void }> = ({
+  isExpanded,
+  onToggle,
 }) => {
   const [maxRetries, setMaxRetries] = useState("4");
   const [askUserRetry, setAskUserRetry] = useState(false);

@@ -1255,12 +1255,26 @@ export default function TemplateBuilder() {
               {/* Document Verification Section */}
               {verificationSteps.some(
                 (step) => step.id === "document-verification",
-              ) && <DocumentVerificationSection />}
+              ) && (
+                <DocumentVerificationSection
+                  isExpanded={documentVerificationExpanded}
+                  onToggle={() =>
+                    setDocumentVerificationExpanded(!documentVerificationExpanded)
+                  }
+                />
+              )}
 
               {/* Biometric Verification Section */}
               {verificationSteps.some(
                 (step) => step.id === "biometric-verification",
-              ) && <BiometricVerificationSection />}
+              ) && (
+                <BiometricVerificationSection
+                  isExpanded={biometricVerificationExpanded}
+                  onToggle={() =>
+                    setBiometricVerificationExpanded(!biometricVerificationExpanded)
+                  }
+                />
+              )}
             </div>
           </div>
 

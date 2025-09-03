@@ -1353,42 +1353,55 @@ export default function TemplateBuilder() {
             </div>
           </div>
 
-          {/* Right Sidebar - Add Fields */}
-          <div className="w-72 border-l border-gray-200 bg-white">
-            {/* Header */}
-            <div className="p-3 border-b border-gray-300">
-              <h2 className="font-bold text-base text-gray-900 mb-1">
-                Add Fields
-              </h2>
-              <p className="text-sm text-gray-600">
-                Add fields specific to your verification flow.
-              </p>
-            </div>
+          {/* Right Sidebar - Add Fields (only show during Personal Info section) */}
+          {personalInfoExpanded && (
+            <div className="w-72 border-l border-gray-200 bg-white">
+              {/* Header */}
+              <div className="p-3 border-b border-gray-300">
+                <h2 className="font-bold text-base text-gray-900 mb-1">
+                  Add Fields
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Add fields specific to your verification flow.
+                </p>
+              </div>
 
-            {/* Optional Fields */}
-            <div className="p-3">
-              <div className="space-y-3">
-                {optionalFields
-                  .filter((field) => !field.checked)
-                  .map((field) => (
-                    <div key={field.id} className="flex items-center gap-2">
-                      <Checkbox
-                        id={field.id}
-                        checked={field.checked}
-                        onCheckedChange={() => toggleOptionalField(field.id)}
-                        className="w-4 h-4"
-                      />
-                      <label
-                        htmlFor={field.id}
-                        className="text-sm font-bold text-gray-600 cursor-pointer"
-                      >
-                        {field.name}
-                      </label>
-                    </div>
-                  ))}
+              {/* Optional Fields */}
+              <div className="p-3">
+                <div className="space-y-3">
+                  {optionalFields
+                    .filter((field) => !field.checked)
+                    .map((field) => (
+                      <div key={field.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={field.id}
+                          checked={field.checked}
+                          onCheckedChange={() => toggleOptionalField(field.id)}
+                          className="w-4 h-4"
+                        />
+                        <label
+                          htmlFor={field.id}
+                          className="text-sm font-bold text-gray-600 cursor-pointer"
+                        >
+                          {field.name}
+                        </label>
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Right Sidebar - Empty space when not in Personal Info */}
+          {!personalInfoExpanded && (
+            <div className="w-72 border-l border-gray-200 bg-white">
+              <div className="p-3 text-center text-gray-500">
+                <p className="text-sm">
+                  Configure options for the selected section
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </DndProvider>

@@ -262,8 +262,12 @@ export default function TemplateBuilder() {
   };
 
   const handleNext = () => {
-    // Navigate to preview step
-    console.log("Navigate to preview");
+    const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
+    if (hasDoc) {
+      navigate("/document-verification");
+    } else {
+      // Stay on page; could add toast later if desired
+    }
   };
 
   const handleSystemFieldFocus = (fieldKey: string) => {

@@ -196,7 +196,15 @@ export default function TemplateBuilder() {
 
   const removeVerificationStep = (stepId: string) => {
     if (stepId === "personal-info") return; // Can't remove required step
-    setVerificationSteps((prev) => prev.filter((step) => step.id !== stepId));
+    setVerificationSteps((prev) => {
+      const next = prev.filter((step) => step.id !== stepId);
+      if (stepId === "document-verification") {
+        try {
+          localStorage.setItem("arcon_has_document_verification", "false");
+        } catch {}
+      }
+      return next;
+    });
   };
 
   const moveStep = useCallback((dragIndex: number, hoverIndex: number) => {

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Button } from "@/components/ui/button";
@@ -139,6 +140,35 @@ export default function TemplateBuilder() {
     },
   ]);
 
+  // Load persisted verification steps on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_verification_steps");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const hasPI = parsed.some((s: any) => s?.id === "personal-info");
+          const normalized = hasPI
+            ? parsed
+            : [
+                {
+                  id: "personal-info",
+                  title: "Personal Information",
+                  description:
+                    "Set up fields to collect basic user details like name, contact.",
+                  isRequired: true,
+                  isEnabled: true,
+                },
+                ...parsed,
+              ];
+          setVerificationSteps(
+            normalized.filter((s: any) => s && typeof s.id === "string"),
+          );
+        }
+      }
+    } catch {}
+  }, []);
+
   const [optionalFields, setOptionalFields] = useState<FieldOption[]>([
     {
       id: "date-of-birth",
@@ -249,9 +279,33 @@ export default function TemplateBuilder() {
   };
 
   const handleNext = () => {
-    // Navigate to preview step
-    console.log("Navigate to preview");
+    const hasDoc = verificationSteps.some(
+      (s) => s.id === "document-verification",
+    );
+    if (!hasDoc) {
+      const doc = availableSteps.find((s) => s.id === "document-verification");
+      if (doc) {
+        setVerificationSteps((prev) => [...prev, { ...doc, isEnabled: true }]);
+      }
+    }
+    navigate("/document-verification");
   };
+
+  useEffect(() => {
+    const hasDoc = verificationSteps.some(
+      (s) => s.id === "document-verification",
+    );
+    try {
+      localStorage.setItem(
+        "arcon_has_document_verification",
+        JSON.stringify(hasDoc),
+      );
+      localStorage.setItem(
+        "arcon_verification_steps",
+        JSON.stringify(verificationSteps),
+      );
+    } catch {}
+  }, [verificationSteps]);
 
   const handleSystemFieldFocus = (fieldKey: string) => {
     setSystemFieldAlerts((prev) => ({ ...prev, [fieldKey]: true }));

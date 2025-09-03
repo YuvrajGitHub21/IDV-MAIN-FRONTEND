@@ -133,8 +133,7 @@ export default function TemplateBuilder() {
     {
       id: "biometric-verification",
       title: "Biometric Verification",
-      description:
-        "Set selfie retries, liveness threshold, and biometric storage",
+      description: "Set selfie retries, liveness threshold, and biometric storage",
       isRequired: false,
       isEnabled: false,
     },

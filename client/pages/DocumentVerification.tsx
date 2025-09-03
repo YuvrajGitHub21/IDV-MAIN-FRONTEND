@@ -167,23 +167,35 @@ export default function DocumentVerification() {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          const hasPI = parsed.some((s: any) => s?.id === "personal-info");
-          const normalized = hasPI
-            ? parsed
-            : [
-                {
-                  id: "personal-info",
-                  title: "Personal Information",
-                  description:
-                    "Set up fields to collect basic user details like name, contact.",
-                  isRequired: true,
-                  isEnabled: true,
-                },
-                ...parsed,
-              ];
-          setVerificationSteps(
-            normalized.filter((s: any) => s && typeof s.id === "string"),
-          );
+          let next = parsed.filter((s: any) => s && typeof s.id === "string");
+          const hasPI = next.some((s: any) => s.id === "personal-info");
+          if (!hasPI) {
+            next = [
+              {
+                id: "personal-info",
+                title: "Personal Information",
+                description:
+                  "Set up fields to collect basic user details like name, contact.",
+                isRequired: true,
+                isEnabled: true,
+              },
+              ...next,
+            ];
+          }
+          if (!next.some((s: any) => s.id === "document-verification")) {
+            next = [
+              ...next,
+              {
+                id: "document-verification",
+                title: "Document Verification",
+                description:
+                  "Set ID submission rules and handling for unclear files.",
+                isRequired: false,
+                isEnabled: true,
+              },
+            ];
+          }
+          setVerificationSteps(next);
           return;
         }
       }

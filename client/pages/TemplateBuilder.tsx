@@ -282,11 +282,13 @@ export default function TemplateBuilder() {
     const hasDoc = verificationSteps.some(
       (s) => s.id === "document-verification",
     );
-    if (hasDoc) {
-      navigate("/document-verification");
-    } else {
-      // Stay on page; could add toast later if desired
+    if (!hasDoc) {
+      const doc = availableSteps.find((s) => s.id === "document-verification");
+      if (doc) {
+        setVerificationSteps((prev) => [...prev, { ...doc, isEnabled: true }]);
+      }
     }
+    navigate("/document-verification");
   };
 
   useEffect(() => {

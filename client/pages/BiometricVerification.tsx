@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import { useDrag, useDrop } from "react-dnd";
 import {
   ChevronLeft,
   ChevronRight,
@@ -17,8 +15,6 @@ import {
   ChevronDown,
   Trash2,
 } from "lucide-react";
-
-// 5th change
 
 interface VerificationStep {
   id: string;
@@ -87,33 +83,30 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
   );
 };
 
-export default function DocumentVerification() {
+export default function BiometricVerification() {
   const navigate = useNavigate();
-  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
-  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
-  const [documentHandling, setDocumentHandling] = useState("");
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([
-    "India",
-  ]);
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+
+  // Form state
+  const [maxRetries, setMaxRetries] = useState("4");
+  const [askUserRetry, setAskUserRetry] = useState(false);
+  const [blockAfterRetries, setBlockAfterRetries] = useState(false);
+  const [dataRetention, setDataRetention] = useState("6 Months");
 
   // Load form state on mount
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("arcon_doc_verification_form");
+      const raw = localStorage.getItem("arcon_biometric_verification_form");
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object") {
-          if (typeof parsed.allowUploadFromDevice === "boolean")
-            setAllowUploadFromDevice(parsed.allowUploadFromDevice);
-          if (typeof parsed.allowCaptureWebcam === "boolean")
-            setAllowCaptureWebcam(parsed.allowCaptureWebcam);
-          if (typeof parsed.documentHandling === "string")
-            setDocumentHandling(parsed.documentHandling);
-          if (Array.isArray(parsed.selectedCountries))
-            setSelectedCountries(parsed.selectedCountries);
-          if (Array.isArray(parsed.selectedDocuments))
-            setSelectedDocuments(parsed.selectedDocuments);
+          if (typeof parsed.maxRetries === "string")
+            setMaxRetries(parsed.maxRetries);
+          if (typeof parsed.askUserRetry === "boolean")
+            setAskUserRetry(parsed.askUserRetry);
+          if (typeof parsed.blockAfterRetries === "boolean")
+            setBlockAfterRetries(parsed.blockAfterRetries);
+          if (typeof parsed.dataRetention === "string")
+            setDataRetention(parsed.dataRetention);
         }
       }
     } catch {}
@@ -123,23 +116,16 @@ export default function DocumentVerification() {
   useEffect(() => {
     try {
       localStorage.setItem(
-        "arcon_doc_verification_form",
+        "arcon_biometric_verification_form",
         JSON.stringify({
-          allowUploadFromDevice,
-          allowCaptureWebcam,
-          documentHandling,
-          selectedCountries,
-          selectedDocuments,
+          maxRetries,
+          askUserRetry,
+          blockAfterRetries,
+          dataRetention,
         }),
       );
     } catch {}
-  }, [
-    allowUploadFromDevice,
-    allowCaptureWebcam,
-    documentHandling,
-    selectedCountries,
-    selectedDocuments,
-  ]);
+  }, [maxRetries, askUserRetry, blockAfterRetries, dataRetention]);
 
   // Verification steps state (shared via localStorage)
   const [verificationSteps, setVerificationSteps] = useState<
@@ -150,14 +136,6 @@ export default function DocumentVerification() {
       id: "document-verification",
       title: "Document Verification",
       description: "Set ID submission rules and handling for unclear files.",
-      isRequired: false,
-      isEnabled: true,
-    },
-    {
-      id: "biometric-verification",
-      title: "Biometric Verification",
-      description:
-        "Set selfie retries, liveness threshold, and biometric storage",
       isRequired: false,
       isEnabled: true,
     },
@@ -184,14 +162,14 @@ export default function DocumentVerification() {
               ...next,
             ];
           }
-          if (!next.some((s: any) => s.id === "document-verification")) {
+          if (!next.some((s: any) => s.id === "biometric-verification")) {
             next = [
               ...next,
               {
-                id: "document-verification",
-                title: "Document Verification",
+                id: "biometric-verification",
+                title: "Biometric Verification",
                 description:
-                  "Set ID submission rules and handling for unclear files.",
+                  "Set selfie retries, liveness threshold, and biometric storage",
                 isRequired: false,
                 isEnabled: true,
               },
@@ -216,13 +194,13 @@ export default function DocumentVerification() {
   }, []);
 
   useEffect(() => {
-    const hasDoc = verificationSteps.some(
-      (s) => s.id === "document-verification",
+    const hasBio = verificationSteps.some(
+      (s) => s.id === "biometric-verification",
     );
     try {
       localStorage.setItem(
-        "arcon_has_document_verification",
-        JSON.stringify(hasDoc),
+        "arcon_has_biometric_verification",
+        JSON.stringify(hasBio),
       );
       localStorage.setItem(
         "arcon_verification_steps",
@@ -262,20 +240,11 @@ export default function DocumentVerification() {
     );
 
   const handlePrevious = () => {
-    navigate("/template-builder");
+    navigate("/document-verification");
   };
 
   const handleNext = () => {
-    const hasBio = verificationSteps.some(
-      (s) => s.id === "biometric-verification",
-    );
-    if (!hasBio) {
-      const bio = availableSteps.find((s) => s.id === "biometric-verification");
-      if (bio) {
-        setVerificationSteps((prev) => [...prev, { ...bio, isEnabled: true }]);
-      }
-    }
-    navigate("/biometric-verification");
+    console.log("Navigate to preview");
   };
 
   const handleSave = () => {
@@ -285,25 +254,6 @@ export default function DocumentVerification() {
   const handlePreview = () => {
     console.log("Preview template");
   };
-
-  const toggleDocument = (docType: string) => {
-    setSelectedDocuments((prev) =>
-      prev.includes(docType)
-        ? prev.filter((d) => d !== docType)
-        : [...prev, docType],
-    );
-  };
-
-  const removeCountry = (country: string) => {
-    setSelectedCountries((prev) => prev.filter((c) => c !== country));
-  };
-
-  const documentTypes = [
-    "Aadhar Card",
-    "Pan Card",
-    "Driving License",
-    "Passport",
-  ];
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -429,70 +379,68 @@ export default function DocumentVerification() {
       <div className="flex flex-col lg:flex-row flex-1">
         {/* Left Sidebar */}
         <div className="w-full lg:w-[332px] p-4 lg:pr-2 border-b lg:border-b-0 lg:border-r border-gray-200 bg-white">
-          <DndProvider backend={HTML5Backend}>
-            <div className="space-y-6 lg:space-y-8">
-              {/* Build Process Section */}
-              <div className="space-y-2">
-                <div className="pb-2">
-                  <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
-                    Build your process
-                  </h2>
-                  <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Create a flow by adding required information fields and
-                    verification steps for your users.
-                  </p>
-                </div>
-
-                {/* All Added Verification Steps (draggable) */}
-                {verificationSteps.map((step, index) => (
-                  <DraggableVerificationStep
-                    key={step.id}
-                    step={step}
-                    index={index}
-                    moveStep={moveStep}
-                    onRemove={removeVerificationStep}
-                  />
-                ))}
+          <div className="space-y-6 lg:space-y-8">
+            {/* Build Process Section */}
+            <div className="space-y-2">
+              <div className="pb-2">
+                <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
+                  Build your process
+                </h2>
+                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+                  Create a flow by adding required information fields and
+                  verification steps for your users.
+                </p>
               </div>
 
-              {/* Add Verification Steps */}
-              <div className="space-y-2">
-                <div className="pb-2">
-                  <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
-                    Add Verification Steps
-                  </h2>
-                  <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                    Insert secure verification steps as needed.
-                  </p>
-                </div>
+              {/* All Added Verification Steps (draggable) */}
+              {verificationSteps.map((step, index) => (
+                <DraggableVerificationStep
+                  key={step.id}
+                  step={step}
+                  index={index}
+                  moveStep={moveStep}
+                  onRemove={removeVerificationStep}
+                />
+              ))}
+            </div>
 
-                {/* Available Steps to Add */}
-                {getAvailableStepsToAdd().map((step) => (
-                  <div key={step.id} className="relative mb-4">
-                    <div className="p-3 rounded border border-gray-200 bg-white">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-sm text-gray-900 mb-1">
-                            {step.title}
-                          </h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">
-                            {step.description}
-                          </p>
-                        </div>
-                        <button
-                          className="p-1 h-auto text-blue-600 hover:text-blue-800"
-                          onClick={() => addVerificationStep(step.id)}
-                          aria-label={`Add ${step.title}`}
-                        >
-                          +
-                        </button>
+            {/* Add Verification Steps */}
+            <div className="space-y-2">
+              <div className="pb-2">
+                <h2 className="text-sm lg:text-[15px] font-bold text-[#292F4C] leading-tight mb-2">
+                  Add Verification Steps
+                </h2>
+                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+                  Insert secure verification steps as needed.
+                </p>
+              </div>
+
+              {/* Available Steps to Add */}
+              {getAvailableStepsToAdd().map((step) => (
+                <div key={step.id} className="relative mb-4">
+                  <div className="p-3 rounded border border-gray-200 bg-white">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-sm text-gray-900 mb-1">
+                          {step.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          {step.description}
+                        </p>
                       </div>
+                      <button
+                        className="p-1 h-auto text-blue-600 hover:text-blue-800"
+                        onClick={() => addVerificationStep(step.id)}
+                        aria-label={`Add ${step.title}`}
+                      >
+                        +
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          </DndProvider>
+          </div>
         </div>
 
         {/* Resize Handle */}
@@ -519,7 +467,7 @@ export default function DocumentVerification() {
               </div>
             </div>
 
-            {/* Document Verification Accordion - Expanded */}
+            {/* Document Verification Accordion */}
             <div className="border border-[#D0D4E4] rounded">
               <div className="p-3 flex items-center gap-2">
                 <Minus className="w-4 lg:w-[18px] h-4 lg:h-[18px] text-[#323238]" />
@@ -533,65 +481,116 @@ export default function DocumentVerification() {
                   files are unclear.
                 </p>
               </div>
+            </div>
 
-              {/* Document Verification Content */}
+            {/* Biometric Verification Accordion - Expanded */}
+            <div className="border border-[#D0D4E4] rounded">
+              <div className="p-3 flex items-center gap-2">
+                <Minus className="w-4 lg:w-[18px] h-4 lg:h-[18px] text-[#323238]" />
+                <h3 className="text-sm lg:text-base font-bold text-[#172B4D]">
+                  Biometric Verification
+                </h3>
+              </div>
+              <div className="px-4 lg:px-9 pb-3">
+                <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+                  Configure selfie capture retries, liveness score thresholds,
+                  and biometric data storage.
+                </p>
+              </div>
+
+              {/* Biometric Verification Content */}
               <div className="px-4 lg:px-9 pb-4 lg:pb-6 space-y-4 lg:space-y-6">
-                {/* User Upload Options */}
+                {/* Retry Attempts for Selfie Capture */}
                 <div className="space-y-3 lg:space-y-4">
                   <div>
                     <h4 className="text-sm lg:text-base font-bold text-[#172B4D] leading-tight mb-2">
-                      User Upload Options
+                      Retry Attempts for Selfie Capture
                     </h4>
                     <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
-                      Select how users are allowed to submit documents during
-                      the process.
+                      Define how many times a user can retry if the selfie
+                      capture fails.
                     </p>
                   </div>
 
                   <div className="bg-[#F6F7FB] rounded p-4 lg:p-6 space-y-4 lg:space-y-5">
-                    {/* Upload from Device */}
+                    <div className="space-y-2">
+                      <Label className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed">
+                        Set the maximum number of retries
+                      </Label>
+                      <div className="w-full max-w-80">
+                        <div className="relative">
+                          <select
+                            value={maxRetries}
+                            onChange={(e) => setMaxRetries(e.target.value)}
+                            className="w-full h-8 px-3 text-xs lg:text-[13px] text-[#676879] border border-[#C3C6D4] bg-white rounded appearance-none pr-8"
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                          </select>
+                          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-2.5 h-2.5 text-[#676879] pointer-events-none" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Liveness Confidence Threshold */}
+                <div className="space-y-3 lg:space-y-4">
+                  <div>
+                    <h4 className="text-sm lg:text-base font-bold text-[#172B4D] leading-tight mb-2">
+                      Liveness Confidence Threshold (%)
+                    </h4>
+                    <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
+                      Choose what should happen if a user's liveness score does
+                      not meet the required threshold.
+                    </p>
+                  </div>
+
+                  <div className="bg-[#F6F7FB] rounded p-4 lg:p-6 space-y-4 lg:space-y-5">
+                    {/* Ask user to retry */}
                     <div className="pb-4 lg:pb-5 border-b border-[#D0D4E4]">
                       <div className="flex items-start gap-2">
                         <Checkbox
-                          id="upload-device"
-                          checked={allowUploadFromDevice}
-                          onCheckedChange={checked => setAllowUploadFromDevice(checked === true)}
+                          id="ask-retry"
+                          checked={askUserRetry}
+                          onCheckedChange={setAskUserRetry}
                           className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
                         <div className="flex-1 min-w-0">
                           <Label
-                            htmlFor="upload-device"
+                            htmlFor="ask-retry"
                             className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2"
                           >
-                            Allow Upload from Device
+                            Ask the user to try again
                           </Label>
                           <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                            Let users upload existing documents directly from
-                            their device.
+                            Prompt the user to reattempt the selfie.
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Capture via Webcam */}
+                    {/* Block further attempts */}
                     <div>
                       <div className="flex items-start gap-2">
                         <Checkbox
-                          id="capture-webcam"
-                          checked={allowCaptureWebcam}
-                          onCheckedChange={checked => setAllowCaptureWebcam(checked === true)}
+                          id="block-attempts"
+                          checked={blockAfterRetries}
+                          onCheckedChange={setBlockAfterRetries}
                           className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
                         <div className="flex-1 min-w-0">
                           <Label
-                            htmlFor="capture-webcam"
+                            htmlFor="block-attempts"
                             className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2"
                           >
-                            Allow Capture via Webcam
+                            Block further attempts after allowed retries fail.
                           </Label>
                           <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                            Enable webcam access to allow users to capture
-                            documents in real time.
+                            Send submission for manual verification.
                           </p>
                         </div>
                       </div>
@@ -599,143 +598,40 @@ export default function DocumentVerification() {
                   </div>
                 </div>
 
-                {/* Unreadable Document Handling */}
+                {/* Biometric Data Retention */}
                 <div className="space-y-3 lg:space-y-4">
                   <div>
                     <h4 className="text-sm lg:text-base font-bold text-[#172B4D] leading-tight mb-2">
-                      Unreadable Document Handling
+                      Biometric Data Retention
                     </h4>
                     <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
-                      Choose what action the system should take if a submitted
-                      document is not clear or unreadable.
+                      Choose whether to store biometric/selfie data and define
+                      retention duration.
                     </p>
                   </div>
 
-                  <div className="bg-[#F6F7FB] rounded p-4 lg:p-6">
-                    <RadioGroup
-                      value={documentHandling}
-                      onValueChange={setDocumentHandling}
-                    >
-                      <div className="space-y-4 lg:space-y-5">
-                        {/* Reject Immediately */}
-                        <div className="pb-4 lg:pb-5 border-b border-[#D0D4E4]">
-                          <div className="flex items-start gap-2">
-                            <RadioGroupItem
-                              value="reject"
-                              id="reject"
-                              className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <Label
-                                htmlFor="reject"
-                                className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2"
-                              >
-                                Reject Immediately
-                              </Label>
-                              <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                                Skip retry and reject unclear documents without
-                                further attempts.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Allow Retries */}
-                        <div>
-                          <div className="flex items-start gap-2">
-                            <RadioGroupItem
-                              value="retry"
-                              id="retry"
-                              className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <Label
-                                htmlFor="retry"
-                                className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2"
-                              >
-                                Allow Retries Before Rejection
-                              </Label>
-                              <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                                Let users reattempt uploading the document
-                                before it's finally rejected.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </div>
-
-                {/* Supported Countries */}
-                <div className="space-y-3 lg:space-y-4">
-                  <div>
-                    <h4 className="text-sm lg:text-base font-bold text-[#172B4D] leading-tight mb-2">
-                      Supported Countries for Identity Verification
-                    </h4>
-                    <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
-                      Only document from these countries are supported.
-                    </p>
-                  </div>
-
-                  <div className="bg-[#F6F7FB] rounded p-4 lg:p-6 space-y-3 lg:space-y-4">
-                    {/* Country Selection */}
-                    <div>
-                      <Label className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed block mb-2">
-                        Which countries are supported?
+                  <div className="bg-[#F6F7FB] rounded p-4 lg:p-6 space-y-4 lg:space-y-5">
+                    <div className="space-y-2">
+                      <Label className="text-xs lg:text-[13px] font-medium text-[#172B4D] leading-relaxed">
+                        Enable biometric data storage
                       </Label>
-                      <div className="relative">
-                        <Button
-                          variant="outline"
-                          className="w-full max-w-80 h-8 justify-between text-xs lg:text-[13px] text-[#676879] border-[#C3C6D4] bg-white"
-                        >
-                          Select Countries
-                          <ChevronDown className="w-2.5 h-2.5" />
-                        </Button>
+                      <div className="w-full max-w-80">
+                        <div className="relative">
+                          <select
+                            value={dataRetention}
+                            onChange={(e) => setDataRetention(e.target.value)}
+                            className="w-full h-8 px-3 text-xs lg:text-[13px] text-[#676879] border border-[#C3C6D4] bg-white rounded appearance-none pr-8"
+                          >
+                            <option value="1 Month">1 Month</option>
+                            <option value="3 Months">3 Months</option>
+                            <option value="6 Months">6 Months</option>
+                            <option value="1 Year">1 Year</option>
+                            <option value="2 Years">2 Years</option>
+                          </select>
+                          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-2.5 h-2.5 text-[#676879] pointer-events-none" />
+                        </div>
                       </div>
                     </div>
-
-                    {/* Selected Countries */}
-                    {selectedCountries.map((country) => (
-                      <div key={country} className="bg-white rounded p-3">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm lg:text-[14px] font-medium text-black">
-                            {country}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-8 h-8 p-0 hover:bg-gray-100"
-                            onClick={() => removeCountry(country)}
-                          >
-                            <Trash2 className="w-4 lg:w-[18px] h-4 lg:h-[18px] text-[#676879]" />
-                          </Button>
-                        </div>
-
-                        {/* Document Types */}
-                        <div className="bg-[#F6F7FB] rounded p-3 flex flex-wrap gap-2">
-                          {documentTypes.map((docType) => (
-                            <div
-                              key={docType}
-                              className="flex items-center gap-2 bg-[#F6F7FB] rounded-full px-2 py-2"
-                            >
-                              <Checkbox
-                                id={`${country}-${docType}`}
-                                checked={selectedDocuments.includes(docType)}
-                                onCheckedChange={() => toggleDocument(docType)}
-                                className="w-4 h-4 lg:w-[18px] lg:h-[18px]"
-                              />
-                              <Label
-                                htmlFor={`${country}-${docType}`}
-                                className="text-xs lg:text-[13px] font-medium text-[#505258] cursor-pointer"
-                              >
-                                {docType}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>

@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Templates from "./pages/Templates";
 import TemplateBuilder from "./pages/TemplateBuilder";
 import DocumentVerification from "./pages/DocumentVerification";
+import BiometricVerification from "./pages/BiometricVerification";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 
@@ -42,7 +43,14 @@ const App = () => (
                 path="/document-verification"
                 element={<DocumentVerification />}
               />
+
+              <Route
+                path="/biometric-verification"
+                element={<BiometricVerification />}
+              />
+
             <Route path="/home" element={<Home />} />
+
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -864,6 +864,28 @@ export default function TemplateBuilder() {
     } catch {}
   }, [verificationSteps]);
 
+  // Auto-expand next section when current section is completed
+  useEffect(() => {
+    const sections = [
+      { name: 'personal-info', setExpanded: setPersonalInfoExpanded },
+      { name: 'document-verification', setExpanded: setDocumentVerificationExpanded },
+      { name: 'biometric-verification', setExpanded: setBiometricVerificationExpanded }
+    ];
+
+    const activeSections = sections.filter(section =>
+      section.name === 'personal-info' ||
+      verificationSteps.some(step => step.id === section.name)
+    );
+
+    // When a new verification step is added, expand it if it's the next in sequence
+    if (currentSectionIndex < activeSections.length) {
+      const nextSection = activeSections[currentSectionIndex];
+      if (nextSection && nextSection.name !== 'personal-info') {
+        nextSection.setExpanded(true);
+      }
+    }
+  }, [verificationSteps, currentSectionIndex]);
+
   const handleSystemFieldFocus = (fieldKey: string) => {
     setSystemFieldAlerts((prev) => ({ ...prev, [fieldKey]: true }));
   };

@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Button } from "@/components/ui/button";
@@ -182,29 +183,16 @@ export default function TemplateBuilder() {
   const addVerificationStep = (stepId: string) => {
     const stepToAdd = availableSteps.find((step) => step.id === stepId);
     if (stepToAdd) {
-      setVerificationSteps((prev) => {
-        const next = [...prev, { ...stepToAdd, isEnabled: true }];
-        if (stepId === "document-verification") {
-          try {
-            localStorage.setItem("arcon_has_document_verification", "true");
-          } catch {}
-        }
-        return next;
-      });
+      setVerificationSteps((prev) => [
+        ...prev,
+        { ...stepToAdd, isEnabled: true },
+      ]);
     }
   };
 
   const removeVerificationStep = (stepId: string) => {
     if (stepId === "personal-info") return; // Can't remove required step
-    setVerificationSteps((prev) => {
-      const next = prev.filter((step) => step.id !== stepId);
-      if (stepId === "document-verification") {
-        try {
-          localStorage.setItem("arcon_has_document_verification", "false");
-        } catch {}
-      }
-      return next;
-    });
+    setVerificationSteps((prev) => prev.filter((step) => step.id !== stepId));
   };
 
   const moveStep = useCallback((dragIndex: number, hoverIndex: number) => {
@@ -271,6 +259,18 @@ export default function TemplateBuilder() {
       // Stay on page; could add toast later if desired
     }
   };
+
+  useEffect(() => {
+    const hasDoc = verificationSteps.some(
+      (s) => s.id === "document-verification",
+    );
+    try {
+      localStorage.setItem(
+        "arcon_has_document_verification",
+        JSON.stringify(hasDoc),
+      );
+    } catch {}
+  }, [verificationSteps]);
 
   const handleSystemFieldFocus = (fieldKey: string) => {
     setSystemFieldAlerts((prev) => ({ ...prev, [fieldKey]: true }));

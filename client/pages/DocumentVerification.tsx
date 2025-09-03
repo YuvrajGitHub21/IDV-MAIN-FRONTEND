@@ -102,11 +102,16 @@ export default function DocumentVerification() {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object") {
-          if (typeof parsed.allowUploadFromDevice === "boolean") setAllowUploadFromDevice(parsed.allowUploadFromDevice);
-          if (typeof parsed.allowCaptureWebcam === "boolean") setAllowCaptureWebcam(parsed.allowCaptureWebcam);
-          if (typeof parsed.documentHandling === "string") setDocumentHandling(parsed.documentHandling);
-          if (Array.isArray(parsed.selectedCountries)) setSelectedCountries(parsed.selectedCountries);
-          if (Array.isArray(parsed.selectedDocuments)) setSelectedDocuments(parsed.selectedDocuments);
+          if (typeof parsed.allowUploadFromDevice === "boolean")
+            setAllowUploadFromDevice(parsed.allowUploadFromDevice);
+          if (typeof parsed.allowCaptureWebcam === "boolean")
+            setAllowCaptureWebcam(parsed.allowCaptureWebcam);
+          if (typeof parsed.documentHandling === "string")
+            setDocumentHandling(parsed.documentHandling);
+          if (Array.isArray(parsed.selectedCountries))
+            setSelectedCountries(parsed.selectedCountries);
+          if (Array.isArray(parsed.selectedDocuments))
+            setSelectedDocuments(parsed.selectedDocuments);
         }
       }
     } catch {}

@@ -12,9 +12,17 @@ interface VerificationStep {
   isEnabled: boolean;
 }
 
+interface AddedField {
+  id: string;
+  name: string;
+  placeholder: string;
+  value: string;
+}
+
 interface TemplateData {
   templateName: string;
   verificationSteps: VerificationStep[];
+  addedFields: AddedField[];
   sections: {
     personalInfo: boolean;
     documentVerification: boolean;
@@ -40,6 +48,7 @@ export default function Preview() {
   const templateData: TemplateData = location.state || {
     templateName: "New Template",
     verificationSteps: [],
+    addedFields: [],
     sections: {
       personalInfo: true,
       documentVerification: false,
@@ -57,27 +66,16 @@ export default function Preview() {
       title: "Personal Information",
       order: 0,
       required: true,
-      fields: [
-        {
-          name: "firstName",
-          type: "text",
-          required: true,
-          placeholder: "Input",
-        },
-        {
-          name: "lastName",
-          type: "text",
-          required: true,
-          placeholder: "Input",
-        },
-        { name: "email", type: "email", required: true, placeholder: "Input" },
-        {
-          name: "dateOfBirth",
-          type: "date",
-          required: true,
-          placeholder: "DD/MM/YYYY",
-        },
-      ],
+      fields: templateData.addedFields.map((field) => ({
+        name: field.name,
+        type: field.id.includes("email")
+          ? "email"
+          : field.id.includes("date")
+            ? "date"
+            : "text",
+        required: true,
+        placeholder: field.placeholder,
+      })),
     });
 
     // Add other sections based on verificationSteps order
@@ -150,7 +148,9 @@ export default function Preview() {
       description:
         "Please provide your basic personal information to begin the identity verification process.",
       enabled: true,
-      component: <PersonalInformationSection />,
+      component: (
+        <PersonalInformationSection addedFields={templateData.addedFields} />
+      ),
     });
 
     // Add sections based on verificationSteps order
@@ -306,71 +306,67 @@ export default function Preview() {
         </div>
       </div>
 
-      {/* Steps Section - 89px height */}
+      {/* Steps Section - 89px height - CENTERED */}
       <div className="h-[89px] px-4 py-3 border-b border-[#DEDEDD] bg-white">
-        <div className="w-full px-4 py-3 flex items-center justify-between border-b border-[#DEDEDD] bg-white">
-          <div className="flex-1 flex items-center justify-between">
-            <button
-              onClick={handlePrevious}
-              className="flex items-center gap-1 rounded hover:bg-gray-50 transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
-              <span className="text-[13px] font-medium text-[#505258]">
-                Previous
-              </span>
-            </button>
-
-            <div className="w-[667px] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {/* Form Builder Step - Completed */}
-                <div className="flex flex-col items-center gap-1.5">
-                  <div className="p-1.5 rounded-full border-2 border-[#258750]">
-                    <div className="w-8 h-8 rounded-full bg-[#258750] flex items-center justify-center">
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 18 18"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M7.16241 11.2116L13.438 4.93608C13.6089 4.76515 13.8117 4.67969 14.0463 4.67969C14.281 4.67969 14.4837 4.76515 14.6547 4.93608C14.8256 5.107 14.9111 5.30979 14.9111 5.54444C14.9111 5.77908 14.8256 5.98186 14.6547 6.15278L7.76363 13.0438C7.59271 13.2147 7.3923 13.3002 7.16241 13.3002C6.93253 13.3002 6.73212 13.2147 6.5612 13.0438L3.34516 9.82778C3.17423 9.65686 3.09115 9.45408 3.0959 9.21944C3.10066 8.98479 3.1885 8.782 3.35943 8.61108C3.53035 8.44015 3.73314 8.35469 3.96779 8.35469C4.20243 8.35469 4.40521 8.44015 4.57613 8.61108L7.16241 11.2116Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </div>
+        <div className="w-full px-4 py-3 flex items-center justify-center border-b border-[#DEDEDD] bg-white">
+          {/* Centered Steps */}
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-8">
+              {/* Form Builder Step - Completed */}
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="p-1.5 rounded-full border-2 border-[#258750]">
+                  <div className="w-8 h-8 rounded-full bg-[#258750] flex items-center justify-center">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M7.16241 11.2116L13.438 4.93608C13.6089 4.76515 13.8117 4.67969 14.0463 4.67969C14.281 4.67969 14.4837 4.76515 14.6547 4.93608C14.8256 5.107 14.9111 5.30979 14.9111 5.54444C14.9111 5.77908 14.8256 5.98186 14.6547 6.15278L7.76363 13.0438C7.59271 13.2147 7.3923 13.3002 7.16241 13.3002C6.93253 13.3002 6.73212 13.2147 6.5612 13.0438L3.34516 9.82778C3.17423 9.65686 3.09115 9.45408 3.0959 9.21944C3.10066 8.98479 3.1885 8.782 3.35943 8.61108C3.53035 8.44015 3.73314 8.35469 3.96779 8.35469C4.20243 8.35469 4.40521 8.44015 4.57613 8.61108L7.16241 11.2116Z"
+                        fill="white"
+                      />
+                    </svg>
                   </div>
-                  <span className="text-[13px] font-medium text-[#172B4D]">
-                    Form builder
-                  </span>
                 </div>
+                <span className="text-[13px] font-medium text-[#172B4D]">
+                  Form builder
+                </span>
+              </div>
 
-                {/* Connection Line */}
-                <div className="w-[120px] flex flex-col items-start pt-[22px] gap-2.5">
-                  <div className="w-[120px] h-px bg-[#DEDEDD] mt-[22px]"></div>
-                </div>
+              {/* Connection Line */}
+              <div className="w-[120px] h-px bg-[#DEDEDD]"></div>
 
-                {/* Preview Step - Current */}
-                <div className="flex flex-col items-center gap-1.5">
-                  <div className="p-1.5 rounded-full border-2 border-[#0073EA]">
-                    <div className="w-8 h-8 rounded-full bg-[#0073EA] flex items-center justify-center">
-                      <span className="text-white text-base font-bold leading-4">
-                        2
-                      </span>
-                    </div>
+              {/* Preview Step - Current */}
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="p-1.5 rounded-full border-2 border-[#0073EA]">
+                  <div className="w-8 h-8 rounded-full bg-[#0073EA] flex items-center justify-center">
+                    <span className="text-white text-base font-bold leading-4">
+                      2
+                    </span>
                   </div>
-                  <span className="text-[13px] font-medium text-[#172B4D]">
-                    Preview
-                  </span>
                 </div>
+                <span className="text-[13px] font-medium text-[#172B4D]">
+                  Preview
+                </span>
               </div>
             </div>
+          </div>
 
-            <div className="flex items-center gap-1 rounded">
-              <span className="text-[13px] font-medium text-[#505258]">
-                Next
-              </span>
-            </div>
+          {/* Previous and Next buttons positioned absolutely */}
+          <button
+            onClick={handlePrevious}
+            className="absolute left-8 flex items-center gap-1 rounded hover:bg-gray-50 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
+            <span className="text-[13px] font-medium text-[#505258]">
+              Previous
+            </span>
+          </button>
+
+          <div className="absolute right-8 flex items-center gap-1 rounded">
+            <span className="text-[13px] font-medium text-[#505258]">Next</span>
           </div>
         </div>
       </div>
@@ -392,8 +388,8 @@ export default function Preview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        Showing {orderedSections.length} sections in the order
-                        configured by admin.
+                        Showing {orderedSections.length} sections configured by
+                        admin.
                       </p>
                     </div>
                   </div>
@@ -427,8 +423,8 @@ export default function Preview() {
         {/* Main Content Area */}
         <div className="w-[987px] flex flex-col items-center gap-6 p-4 pt-4">
           <div className="flex flex-col items-center gap-4 w-full">
-            {/* Render sections in configured order */}
-            {orderedSections.map((section, index) => (
+            {/* Render sections in configured order - NO ORDER BADGES */}
+            {orderedSections.map((section) => (
               <div
                 key={section.id}
                 className="flex flex-col gap-4 w-full rounded bg-white"
@@ -443,9 +439,6 @@ export default function Preview() {
                       <h2 className="text-base font-bold text-[#172B4D] leading-3">
                         {section.title}
                       </h2>
-                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        Order: {index + 1}
-                      </span>
                     </div>
                     <div className="flex items-center gap-2.5 w-full pl-7">
                       <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
@@ -467,86 +460,59 @@ export default function Preview() {
 }
 
 // Section Components
-const PersonalInformationSection = () => (
-  <div className="flex flex-col w-full">
+const PersonalInformationSection = ({
+  addedFields,
+}: {
+  addedFields: AddedField[];
+}) => {
+  // If no fields are added, show a message
+  if (!addedFields || addedFields.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-[13px] text-[#676879]">
+          No fields selected for this section
+        </p>
+      </div>
+    );
+  }
+
+  // Group fields into rows (2 fields per row)
+  const fieldRows = [];
+  for (let i = 0; i < addedFields.length; i += 2) {
+    fieldRows.push(addedFields.slice(i, i + 2));
+  }
+
+  return (
     <div className="flex flex-col w-full">
       <div className="flex flex-col gap-6 w-full">
-        <div className="flex flex-col w-full">
-          <div className="flex gap-6 w-full">
-            <div className="flex flex-col flex-1">
-              <div className="flex gap-2 w-full pb-2">
-                <div className="flex flex-col justify-center flex-1 h-2.5">
-                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                    First Name
-                  </span>
+        {fieldRows.map((row, rowIndex) => (
+          <div key={rowIndex} className="flex gap-6 w-full">
+            {row.map((field) => (
+              <div key={field.id} className="flex flex-col flex-1">
+                <div className="flex gap-2 w-full pb-2">
+                  <div className="flex flex-col justify-center flex-1 h-2.5">
+                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                      {field.name}
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-[13px] text-[#676879] leading-5">
-                    Input
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-col flex-1">
-              <div className="flex gap-2 w-full pb-2">
-                <div className="flex flex-col justify-center flex-1 h-2.5">
-                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                    Last Name
-                  </span>
-                </div>
-              </div>
-              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-[13px] text-[#676879] leading-5">
-                    Input
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-6 w-full">
-            <div className="flex flex-col flex-1">
-              <div className="flex gap-2 w-full pb-2">
-                <div className="flex flex-col justify-center flex-1 h-2.5">
-                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                    Email
-                  </span>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1 w-full">
                 <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
                   <div className="flex items-center gap-2 flex-1">
                     <span className="text-[13px] text-[#676879] leading-5">
-                      Input
+                      {field.placeholder}
                     </span>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="w-[452px] flex flex-col">
-              <div className="flex gap-2 w-full pb-2">
-                <div className="flex flex-col justify-center flex-1 h-2.5">
-                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                    Date Of Birth
-                  </span>
-                </div>
-              </div>
-              <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-[13px] text-[#676879] leading-5">
-                    DD/MM/YYYY
-                  </span>
-                </div>
-              </div>
-            </div>
+            ))}
+            {/* Fill empty space if odd number of fields in last row */}
+            {row.length === 1 && <div className="flex-1"></div>}
           </div>
-        </div>
+        ))}
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const DocumentVerificationSection = () => (
   <div className="flex flex-col gap-6 w-full">

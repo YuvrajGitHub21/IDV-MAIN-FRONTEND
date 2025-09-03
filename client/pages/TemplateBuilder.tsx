@@ -107,7 +107,9 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 };
 
 // Document Verification Configuration Component
-const DocumentVerificationSection: React.FC = () => {
+const DocumentVerificationSection: React.FC<{ onNext?: () => void }> = ({
+  onNext,
+}) => {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
@@ -116,6 +118,11 @@ const DocumentVerificationSection: React.FC = () => {
   ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const handleNext = () => {
+    setIsExpanded(false);
+    onNext?.();
+  };
 
   // Load form state on mount
   useEffect(() => {
@@ -196,6 +203,16 @@ const DocumentVerificationSection: React.FC = () => {
           Document Verification
         </h2>
       </div>
+
+      {/* Description when collapsed */}
+      {!isExpanded && (
+        <div className="px-4 lg:px-9 pb-3">
+          <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+            Define how users can submit ID documents and what happens if files
+            are unclear.
+          </p>
+        </div>
+      )}
 
       {/* Content */}
       {isExpanded && (
@@ -406,6 +423,17 @@ const DocumentVerificationSection: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Next Button */}
+          <div className="flex justify-end pt-6">
+            <Button
+              className="bg-[#0073EA] hover:bg-blue-700 text-white px-6 py-2"
+              onClick={handleNext}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         </div>
       )}
     </div>
@@ -413,12 +441,19 @@ const DocumentVerificationSection: React.FC = () => {
 };
 
 // Biometric Verification Configuration Component
-const BiometricVerificationSection: React.FC = () => {
+const BiometricVerificationSection: React.FC<{ onNext?: () => void }> = ({
+  onNext,
+}) => {
   const [maxRetries, setMaxRetries] = useState("4");
   const [askUserRetry, setAskUserRetry] = useState(false);
   const [blockAfterRetries, setBlockAfterRetries] = useState(false);
   const [dataRetention, setDataRetention] = useState("6 Months");
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const handleNext = () => {
+    setIsExpanded(false);
+    onNext?.();
+  };
 
   // Load form state on mount
   useEffect(() => {
@@ -471,6 +506,16 @@ const BiometricVerificationSection: React.FC = () => {
           Biometric Verification
         </h2>
       </div>
+
+      {/* Description when collapsed */}
+      {!isExpanded && (
+        <div className="px-4 lg:px-9 pb-3">
+          <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+            Configure selfie capture retries, liveness score thresholds, and
+            biometric data storage.
+          </p>
+        </div>
+      )}
 
       {/* Content */}
       {isExpanded && (
@@ -608,6 +653,17 @@ const BiometricVerificationSection: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Next Button */}
+          <div className="flex justify-end pt-6">
+            <Button
+              className="bg-[#0073EA] hover:bg-blue-700 text-white px-6 py-2"
+              onClick={handleNext}
+            >
+              Next
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
           </div>
         </div>
       )}
@@ -1013,6 +1069,16 @@ export default function TemplateBuilder() {
                   </h2>
                 </div>
 
+                {/* Description when collapsed */}
+                {!personalInfoExpanded && (
+                  <div className="px-4 lg:px-9 pb-3">
+                    <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+                      Set up fields to collect basic user details like name,
+                      contact.
+                    </p>
+                  </div>
+                )}
+
                 {/* Content */}
                 {personalInfoExpanded && (
                   <div className="p-8">
@@ -1186,6 +1252,17 @@ export default function TemplateBuilder() {
                         </div>
                       </div>
                     )}
+
+                    {/* Next Button */}
+                    <div className="flex justify-end pt-6">
+                      <Button
+                        className="bg-[#0073EA] hover:bg-blue-700 text-white px-6 py-2"
+                        onClick={() => setPersonalInfoExpanded(false)}
+                      >
+                        Next
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>

@@ -56,12 +56,19 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
   });
 
   return (
-    <div ref={(n) => drag(drop(n))} className={cn("relative mb-4 cursor-move", isDragging && "opacity-50")}>
+    <div
+      ref={(n) => drag(drop(n))}
+      className={cn("relative mb-4 cursor-move", isDragging && "opacity-50")}
+    >
       <div className="p-3 rounded border border-gray-200 bg-white">
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+            <h3 className="font-bold text-sm text-gray-900 mb-1">
+              {step.title}
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {step.description}
+            </p>
           </div>
           {!step.isRequired && (
             <button
@@ -89,7 +96,9 @@ export default function DocumentVerification() {
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
   // Verification steps state (shared via localStorage)
-  const [verificationSteps, setVerificationSteps] = useState<VerificationStep[]>([]);
+  const [verificationSteps, setVerificationSteps] = useState<
+    VerificationStep[]
+  >([]);
   const availableSteps: VerificationStep[] = [
     {
       id: "document-verification",
@@ -101,7 +110,8 @@ export default function DocumentVerification() {
     {
       id: "biometric-verification",
       title: "Biometric Verification",
-      description: "Set selfie retries, liveness threshold, and biometric storage",
+      description:
+        "Set selfie retries, liveness threshold, and biometric storage",
       isRequired: false,
       isEnabled: false,
     },
@@ -123,7 +133,8 @@ export default function DocumentVerification() {
       {
         id: "personal-info",
         title: "Personal Information",
-        description: "Set up fields to collect basic user details like name, contact.",
+        description:
+          "Set up fields to collect basic user details like name, contact.",
         isRequired: true,
         isEnabled: true,
       },
@@ -138,10 +149,18 @@ export default function DocumentVerification() {
   }, []);
 
   useEffect(() => {
-    const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
+    const hasDoc = verificationSteps.some(
+      (s) => s.id === "document-verification",
+    );
     try {
-      localStorage.setItem("arcon_has_document_verification", JSON.stringify(hasDoc));
-      localStorage.setItem("arcon_verification_steps", JSON.stringify(verificationSteps));
+      localStorage.setItem(
+        "arcon_has_document_verification",
+        JSON.stringify(hasDoc),
+      );
+      localStorage.setItem(
+        "arcon_verification_steps",
+        JSON.stringify(verificationSteps),
+      );
     } catch {}
   }, [verificationSteps]);
 
@@ -159,7 +178,9 @@ export default function DocumentVerification() {
     const step = availableSteps.find((s) => s.id === stepId);
     if (!step) return;
     setVerificationSteps((prev) =>
-      prev.find((s) => s.id === stepId) ? prev : [...prev, { ...step, isEnabled: true }],
+      prev.find((s) => s.id === stepId)
+        ? prev
+        : [...prev, { ...step, isEnabled: true }],
     );
   };
 
@@ -169,7 +190,9 @@ export default function DocumentVerification() {
   };
 
   const getAvailableStepsToAdd = () =>
-    availableSteps.filter((s) => !verificationSteps.find((vs) => vs.id === s.id));
+    availableSteps.filter(
+      (s) => !verificationSteps.find((vs) => vs.id === s.id),
+    );
 
   const handlePrevious = () => {
     navigate("/dashboard");
@@ -373,8 +396,12 @@ export default function DocumentVerification() {
                     <div className="p-3 rounded border border-gray-200 bg-white">
                       <div className="flex items-start gap-3">
                         <div className="flex-1">
-                          <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                          <h3 className="font-bold text-sm text-gray-900 mb-1">
+                            {step.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {step.description}
+                          </p>
                         </div>
                         <button
                           className="p-1 h-auto text-blue-600 hover:text-blue-800"

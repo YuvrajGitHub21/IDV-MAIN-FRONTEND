@@ -465,21 +465,39 @@ const PersonalInformationSection = ({
 }: {
   addedFields: AddedField[];
 }) => {
-  // If no fields are added, show a message
-  if (!addedFields || addedFields.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <p className="text-[13px] text-[#676879]">
-          No fields selected for this section
-        </p>
-      </div>
-    );
-  }
+  // Always include the 3 mandatory fields first
+  const mandatoryFields = [
+    {
+      id: "firstName",
+      name: "First Name",
+      placeholder: "Enter your first name",
+    },
+    {
+      id: "lastName",
+      name: "Last Name",
+      placeholder: "Enter your last name",
+    },
+    {
+      id: "email",
+      name: "Email Address",
+      placeholder: "Enter your email address",
+    },
+  ];
+
+  // Combine mandatory fields with admin-selected optional fields
+  const allFields = [
+    ...mandatoryFields,
+    ...(addedFields || []).map(field => ({
+      id: field.id,
+      name: field.name,
+      placeholder: field.placeholder,
+    }))
+  ];
 
   // Group fields into rows (2 fields per row)
   const fieldRows = [];
-  for (let i = 0; i < addedFields.length; i += 2) {
-    fieldRows.push(addedFields.slice(i, i + 2));
+  for (let i = 0; i < allFields.length; i += 2) {
+    fieldRows.push(allFields.slice(i, i + 2));
   }
 
   return (

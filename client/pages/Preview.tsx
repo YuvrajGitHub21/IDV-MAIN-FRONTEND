@@ -736,128 +736,53 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
   );
 };
 
-const BiometricVerificationSection = () => (
-  <div className="w-[923px] flex flex-col gap-6">
-    {/* Retry Attempts */}
-    <div className="flex flex-col gap-5 w-full">
-      <div className="flex items-center w-full bg-white">
-        <div className="flex flex-col items-center gap-4 flex-1">
-          <div className="flex flex-col gap-2 w-full">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-[#172B4D] leading-3">
-                Retry Attempts for Selfie Capture
-              </h3>
-            </div>
-            <div className="flex items-center gap-2 w-full">
-              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                Define how many times a user can retry if the selfie capture
-                fails.
-              </p>
-            </div>
-          </div>
-          <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
-            <div className="pb-5 flex flex-col w-full">
-              <div className="flex items-center gap-2 w-full">
-                <div className="flex flex-col gap-2 flex-1">
-                  <div className="flex flex-col justify-center w-full h-2.5">
-                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                      Set the maximum number of retries
-                    </span>
-                  </div>
-                </div>
-                <div className="w-80 flex gap-3 bg-[#F6F7FB]">
-                  <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4] bg-[#F6F7FB]">
-                    <div className="flex items-center gap-2 flex-1">
-                      <span className="text-[13px] text-[#676879] leading-5">
-                        4
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+const BiometricVerificationSection = ({ config }: { config: any }) => {
+  // If no config is loaded, show placeholder
+  if (!config) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-[13px] text-[#676879]">Loading configuration...</p>
       </div>
-    </div>
+    );
+  }
 
-    {/* Liveness Confidence Threshold */}
-    <div className="flex flex-col gap-5 w-full">
-      <div className="flex items-center w-full bg-white">
-        <div className="flex flex-col items-center gap-4 flex-1">
-          <div className="flex gap-6 w-full">
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-[#172B4D] leading-3">
-                  Liveness Confidence Threshold (%)
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 w-full">
-                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                  Choose what should happen if a user's liveness score does not
-                  meet the required threshold.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="pt-6 px-6 pb-0 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
-            <div className="pb-5 flex flex-col w-full">
-              <div className="flex gap-2 w-full">
-                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
-                  <Check className="w-2.5 h-2.5 text-white" />
+  return (
+    <div className="w-[923px] flex flex-col gap-6">
+      {/* Retry Attempts - show admin's selected value */}
+      {config.maxRetries && (
+        <div className="flex flex-col gap-5 w-full">
+          <div className="flex items-center w-full bg-white">
+            <div className="flex flex-col items-center gap-4 flex-1">
+              <div className="flex flex-col gap-2 w-full">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                    Retry Attempts for Selfie Capture
+                  </h3>
                 </div>
-                <div className="w-[508px] flex flex-col gap-2">
-                  <div className="flex flex-col justify-center w-full h-2.5">
-                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                      Ask the user to try again
-                    </span>
-                  </div>
-                  <p className="w-full text-[13px] text-[#505258] leading-5">
-                    Prompt the user to reattempt the selfie.
+                <div className="flex items-center gap-2 w-full">
+                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                    Maximum retry attempts configured by admin.
                   </p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Biometric Data Retention */}
-    <div className="flex flex-col gap-5 w-full">
-      <div className="flex items-center w-full bg-white">
-        <div className="flex flex-col items-center gap-4 flex-1">
-          <div className="flex gap-6 w-full">
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-[#172B4D] leading-3">
-                  Biometric Data Retention
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 w-full">
-                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                  Choose whether to store biometric/selfie data and define
-                  retention duration.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
-            <div className="pb-5 flex flex-col items-center w-full">
-              <div className="flex items-center gap-2 w-full">
-                <div className="flex flex-col gap-2 flex-1">
-                  <div className="flex flex-col justify-center w-full h-2.5">
-                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                      Enable biometric data storage
-                    </span>
-                  </div>
-                </div>
-                <div className="w-80 flex gap-3">
-                  <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4]">
-                    <div className="flex items-center gap-2 flex-1">
-                      <span className="text-[13px] text-[#676879] leading-5">
-                        6 Months
-                      </span>
+              <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+                <div className="pb-5 flex flex-col w-full">
+                  <div className="flex items-center gap-2 w-full">
+                    <div className="flex flex-col gap-2 flex-1">
+                      <div className="flex flex-col justify-center w-full h-2.5">
+                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                          Maximum number of retries
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-80 flex gap-3 bg-[#F6F7FB]">
+                      <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4] bg-[#F6F7FB]">
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className="text-[13px] text-[#676879] leading-5">
+                            {config.maxRetries}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -865,7 +790,118 @@ const BiometricVerificationSection = () => (
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Liveness Confidence Threshold - show if admin enabled */}
+      {(config.askUserRetry || config.blockAfterRetries) && (
+        <div className="flex flex-col gap-5 w-full">
+          <div className="flex items-center w-full bg-white">
+            <div className="flex flex-col items-center gap-4 flex-1">
+              <div className="flex gap-6 w-full">
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                      Liveness Confidence Threshold (%)
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2 w-full">
+                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                      Admin-configured action for low liveness scores.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-6 px-6 pb-0 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+                {config.askUserRetry && (
+                  <div className="pb-5 flex flex-col w-full">
+                    <div className="flex gap-2 w-full">
+                      <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                        <Check className="w-2.5 h-2.5 text-white" />
+                      </div>
+                      <div className="w-[508px] flex flex-col gap-2">
+                        <div className="flex flex-col justify-center w-full h-2.5">
+                          <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                            Ask the user to try again
+                          </span>
+                        </div>
+                        <p className="w-full text-[13px] text-[#505258] leading-5">
+                          Prompt the user to reattempt the selfie.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {config.blockAfterRetries && (
+                  <div className="pb-5 flex flex-col w-full">
+                    <div className="flex gap-2 w-full">
+                      <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                        <Check className="w-2.5 h-2.5 text-white" />
+                      </div>
+                      <div className="w-[508px] flex flex-col gap-2">
+                        <div className="flex flex-col justify-center w-full h-2.5">
+                          <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                            Block further attempts after retries fail
+                          </span>
+                        </div>
+                        <p className="w-full text-[13px] text-[#505258] leading-5">
+                          Send submission for manual verification.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Biometric Data Retention - show admin's setting */}
+      {config.dataRetention && (
+        <div className="flex flex-col gap-5 w-full">
+          <div className="flex items-center w-full bg-white">
+            <div className="flex flex-col items-center gap-4 flex-1">
+              <div className="flex gap-6 w-full">
+                <div className="flex flex-col gap-2 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                      Biometric Data Retention
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2 w-full">
+                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                      Data storage duration configured by admin.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+                <div className="pb-5 flex flex-col items-center w-full">
+                  <div className="flex items-center gap-2 w-full">
+                    <div className="flex flex-col gap-2 flex-1">
+                      <div className="flex flex-col justify-center w-full h-2.5">
+                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                          Biometric data storage duration
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-80 flex gap-3">
+                      <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4]">
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className="text-[13px] text-[#676879] leading-5">
+                            {config.dataRetention}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};

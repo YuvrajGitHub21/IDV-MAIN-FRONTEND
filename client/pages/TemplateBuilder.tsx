@@ -765,6 +765,9 @@ export default function TemplateBuilder() {
 
   const [addedFields, setAddedFields] = useState<AddedField[]>([]);
   const [personalInfoExpanded, setPersonalInfoExpanded] = useState(true);
+  const [documentVerificationExpanded, setDocumentVerificationExpanded] = useState(false);
+  const [biometricVerificationExpanded, setBiometricVerificationExpanded] = useState(false);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
   // System fields state
   const [systemFieldAlerts, setSystemFieldAlerts] = useState<{

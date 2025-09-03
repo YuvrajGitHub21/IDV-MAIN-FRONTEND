@@ -1063,6 +1063,15 @@ export default function TemplateBuilder() {
                   </h2>
                 </div>
 
+                {/* Description when collapsed */}
+                {!personalInfoExpanded && (
+                  <div className="px-4 lg:px-9 pb-3">
+                    <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+                      Set up fields to collect basic user details like name, contact.
+                    </p>
+                  </div>
+                )}
+
                 {/* Content */}
                 {personalInfoExpanded && (
                   <div className="p-8">

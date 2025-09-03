@@ -322,55 +322,6 @@ export default function SignUp() {
                 ? "Create your account with email and password."
                 : "Set up document verification preferences."}
             </p>
-
-            {/* Step Progress */}
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="flex flex-col items-center gap-1.5">
-                <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                    currentStep === 1
-                      ? "border-arcon-blue bg-arcon-blue"
-                      : "border-arcon-blue bg-arcon-blue"
-                  }`}
-                >
-                  <span className="text-white font-bold text-sm">1</span>
-                </div>
-                <span className="text-xs font-medium text-arcon-gray-primary">
-                  Personal Info
-                </span>
-              </div>
-
-              <div className="w-16 h-px bg-arcon-gray-border"></div>
-
-              <div className="flex flex-col items-center gap-1.5">
-                <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
-                    currentStep === 2
-                      ? "border-arcon-blue bg-arcon-blue"
-                      : "border-arcon-gray-border bg-white"
-                  }`}
-                >
-                  <span
-                    className={`font-bold text-sm ${
-                      currentStep === 2
-                        ? "text-white"
-                        : "text-arcon-gray-secondary"
-                    }`}
-                  >
-                    2
-                  </span>
-                </div>
-                <span
-                  className={`text-xs font-medium ${
-                    currentStep === 2
-                      ? "text-arcon-gray-primary"
-                      : "text-arcon-gray-secondary"
-                  }`}
-                >
-                  Documents
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* Form Content */}

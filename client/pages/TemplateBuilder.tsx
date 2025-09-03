@@ -6,6 +6,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
@@ -17,6 +18,7 @@ import {
   Trash2,
   GripVertical,
   Info,
+  ChevronDown,
 } from "lucide-react";
 
 interface VerificationStep {
@@ -100,6 +102,500 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+// Document Verification Configuration Component
+const DocumentVerificationSection: React.FC = () => {
+  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
+  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
+  const [documentHandling, setDocumentHandling] = useState("");
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(["India"]);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  // Load form state on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_doc_verification_form");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          if (typeof parsed.allowUploadFromDevice === "boolean")
+            setAllowUploadFromDevice(parsed.allowUploadFromDevice);
+          if (typeof parsed.allowCaptureWebcam === "boolean")
+            setAllowCaptureWebcam(parsed.allowCaptureWebcam);
+          if (typeof parsed.documentHandling === "string")
+            setDocumentHandling(parsed.documentHandling);
+          if (Array.isArray(parsed.selectedCountries))
+            setSelectedCountries(parsed.selectedCountries);
+          if (Array.isArray(parsed.selectedDocuments))
+            setSelectedDocuments(parsed.selectedDocuments);
+        }
+      }
+    } catch {}
+  }, []);
+
+  // Persist form state whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "arcon_doc_verification_form",
+        JSON.stringify({
+          allowUploadFromDevice,
+          allowCaptureWebcam,
+          documentHandling,
+          selectedCountries,
+          selectedDocuments,
+        }),
+      );
+    } catch {}
+  }, [
+    allowUploadFromDevice,
+    allowCaptureWebcam,
+    documentHandling,
+    selectedCountries,
+    selectedDocuments,
+  ]);
+
+  const toggleDocument = (docType: string) => {
+    setSelectedDocuments((prev) =>
+      prev.includes(docType)
+        ? prev.filter((d) => d !== docType)
+        : [...prev, docType],
+    );
+  };
+
+  const removeCountry = (country: string) => {
+    setSelectedCountries((prev) => prev.filter((c) => c !== country));
+  };
+
+  const documentTypes = [
+    "Aadhar Card",
+    "Pan Card",
+    "Driving License",
+    "Passport",
+  ];
+
+  return (
+    <div className="border border-gray-300 rounded">
+      {/* Header */}
+      <div className="flex items-center gap-2 p-3 border-b border-gray-300 bg-white">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-0 h-auto"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <Minus className="w-5 h-5 text-gray-700" />
+        </Button>
+        <h2 className="font-bold text-base text-gray-900">
+          Document Verification
+        </h2>
+      </div>
+
+      {/* Content */}
+      {isExpanded && (
+        <div className="p-8 space-y-6">
+          {/* User Upload Options */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                User Upload Options
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Select how users are allowed to submit documents during the process.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6 space-y-5">
+              {/* Upload from Device */}
+              <div className="pb-5 border-b border-gray-200">
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="upload-device"
+                    checked={allowUploadFromDevice}
+                    onCheckedChange={(checked) => setAllowUploadFromDevice(checked === true)}
+                    className="mt-0.5 w-4 h-4"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <Label
+                      htmlFor="upload-device"
+                      className="text-sm font-medium text-gray-900 block mb-2"
+                    >
+                      Allow Upload from Device
+                    </Label>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Let users upload existing documents directly from their device.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Capture via Webcam */}
+              <div>
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="capture-webcam"
+                    checked={allowCaptureWebcam}
+                    onCheckedChange={(checked) => setAllowCaptureWebcam(checked === true)}
+                    className="mt-0.5 w-4 h-4"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <Label
+                      htmlFor="capture-webcam"
+                      className="text-sm font-medium text-gray-900 block mb-2"
+                    >
+                      Allow Capture via Webcam
+                    </Label>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Enable webcam access to allow users to capture documents in real time.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Unreadable Document Handling */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                Unreadable Document Handling
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Choose what action the system should take if a submitted document is not clear or unreadable.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6">
+              <RadioGroup
+                value={documentHandling}
+                onValueChange={setDocumentHandling}
+              >
+                <div className="space-y-5">
+                  {/* Reject Immediately */}
+                  <div className="pb-5 border-b border-gray-200">
+                    <div className="flex items-start gap-2">
+                      <RadioGroupItem
+                        value="reject"
+                        id="reject"
+                        className="mt-0.5 w-4 h-4"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <Label
+                          htmlFor="reject"
+                          className="text-sm font-medium text-gray-900 block mb-2"
+                        >
+                          Reject Immediately
+                        </Label>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          Skip retry and reject unclear documents without further attempts.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Allow Retries */}
+                  <div>
+                    <div className="flex items-start gap-2">
+                      <RadioGroupItem
+                        value="retry"
+                        id="retry"
+                        className="mt-0.5 w-4 h-4"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <Label
+                          htmlFor="retry"
+                          className="text-sm font-medium text-gray-900 block mb-2"
+                        >
+                          Allow Retries Before Rejection
+                        </Label>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          Let users reattempt uploading the document before it's finally rejected.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+          </div>
+
+          {/* Supported Countries */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                Supported Countries for Identity Verification
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Only documents from these countries are supported.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
+              {/* Country Selection */}
+              <div>
+                <Label className="text-sm font-medium text-gray-900 block mb-2">
+                  Which countries are supported?
+                </Label>
+                <div className="relative max-w-80">
+                  <Button
+                    variant="outline"
+                    className="w-full h-8 justify-between text-sm text-gray-600 border-gray-300 bg-white"
+                  >
+                    Select Countries
+                    <ChevronDown className="w-2.5 h-2.5" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Selected Countries */}
+              {selectedCountries.map((country) => (
+                <div key={country} className="bg-white rounded p-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-black">
+                      {country}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-8 h-8 p-0 hover:bg-gray-100"
+                      onClick={() => removeCountry(country)}
+                    >
+                      <Trash2 className="w-4 h-4 text-gray-600" />
+                    </Button>
+                  </div>
+
+                  {/* Document Types */}
+                  <div className="bg-gray-50 rounded p-3 flex flex-wrap gap-2">
+                    {documentTypes.map((docType) => (
+                      <div
+                        key={docType}
+                        className="flex items-center gap-2 bg-gray-50 rounded-full px-2 py-2"
+                      >
+                        <Checkbox
+                          id={`${country}-${docType}`}
+                          checked={selectedDocuments.includes(docType)}
+                          onCheckedChange={() => toggleDocument(docType)}
+                          className="w-4 h-4"
+                        />
+                        <Label
+                          htmlFor={`${country}-${docType}`}
+                          className="text-sm font-medium text-gray-600 cursor-pointer"
+                        >
+                          {docType}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Biometric Verification Configuration Component
+const BiometricVerificationSection: React.FC = () => {
+  const [maxRetries, setMaxRetries] = useState("4");
+  const [askUserRetry, setAskUserRetry] = useState(false);
+  const [blockAfterRetries, setBlockAfterRetries] = useState(false);
+  const [dataRetention, setDataRetention] = useState("6 Months");
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  // Load form state on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_biometric_verification_form");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          if (typeof parsed.maxRetries === "string")
+            setMaxRetries(parsed.maxRetries);
+          if (typeof parsed.askUserRetry === "boolean")
+            setAskUserRetry(parsed.askUserRetry);
+          if (typeof parsed.blockAfterRetries === "boolean")
+            setBlockAfterRetries(parsed.blockAfterRetries);
+          if (typeof parsed.dataRetention === "string")
+            setDataRetention(parsed.dataRetention);
+        }
+      }
+    } catch {}
+  }, []);
+
+  // Persist form state whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "arcon_biometric_verification_form",
+        JSON.stringify({
+          maxRetries,
+          askUserRetry,
+          blockAfterRetries,
+          dataRetention,
+        }),
+      );
+    } catch {}
+  }, [maxRetries, askUserRetry, blockAfterRetries, dataRetention]);
+
+  return (
+    <div className="border border-gray-300 rounded">
+      {/* Header */}
+      <div className="flex items-center gap-2 p-3 border-b border-gray-300 bg-white">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-0 h-auto"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <Minus className="w-5 h-5 text-gray-700" />
+        </Button>
+        <h2 className="font-bold text-base text-gray-900">
+          Biometric Verification
+        </h2>
+      </div>
+
+      {/* Content */}
+      {isExpanded && (
+        <div className="p-8 space-y-6">
+          {/* Retry Attempts for Selfie Capture */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                Retry Attempts for Selfie Capture
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Define how many times a user can retry if the selfie capture fails.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6 space-y-5">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-900">
+                  Set the maximum number of retries
+                </Label>
+                <div className="w-full max-w-80">
+                  <div className="relative">
+                    <select
+                      value={maxRetries}
+                      onChange={(e) => setMaxRetries(e.target.value)}
+                      className="w-full h-8 px-3 text-sm text-gray-600 border border-gray-300 bg-white rounded appearance-none pr-8"
+                    >
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-2.5 h-2.5 text-gray-600 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Liveness Confidence Threshold */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                Liveness Confidence Threshold (%)
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Choose what should happen if a user's liveness score does not meet the required threshold.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6 space-y-5">
+              {/* Ask user to retry */}
+              <div className="pb-5 border-b border-gray-200">
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="ask-retry"
+                    checked={askUserRetry}
+                    onCheckedChange={setAskUserRetry}
+                    className="mt-0.5 w-4 h-4"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <Label
+                      htmlFor="ask-retry"
+                      className="text-sm font-medium text-gray-900 block mb-2"
+                    >
+                      Ask the user to try again
+                    </Label>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Prompt the user to reattempt the selfie.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Block further attempts */}
+              <div>
+                <div className="flex items-start gap-2">
+                  <Checkbox
+                    id="block-attempts"
+                    checked={blockAfterRetries}
+                    onCheckedChange={setBlockAfterRetries}
+                    className="mt-0.5 w-4 h-4"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <Label
+                      htmlFor="block-attempts"
+                      className="text-sm font-medium text-gray-900 block mb-2"
+                    >
+                      Block further attempts after allowed retries fail.
+                    </Label>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Send submission for manual verification.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Biometric Data Retention */}
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                Biometric Data Retention
+              </h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Choose whether to store biometric/selfie data and define retention duration.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-6 space-y-5">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-900">
+                  Enable biometric data storage
+                </Label>
+                <div className="w-full max-w-80">
+                  <div className="relative">
+                    <select
+                      value={dataRetention}
+                      onChange={(e) => setDataRetention(e.target.value)}
+                      className="w-full h-8 px-3 text-sm text-gray-600 border border-gray-300 bg-white rounded appearance-none pr-8"
+                    >
+                      <option value="1 Month">1 Month</option>
+                      <option value="3 Months">3 Months</option>
+                      <option value="6 Months">6 Months</option>
+                      <option value="1 Year">1 Year</option>
+                      <option value="2 Years">2 Years</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-2.5 h-2.5 text-gray-600 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

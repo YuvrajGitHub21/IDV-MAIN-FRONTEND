@@ -266,7 +266,14 @@ export default function DocumentVerification() {
   };
 
   const handleNext = () => {
-    console.log("Navigate to preview");
+    const hasBio = verificationSteps.some((s) => s.id === "biometric-verification");
+    if (!hasBio) {
+      const bio = availableSteps.find((s) => s.id === "biometric-verification");
+      if (bio) {
+        setVerificationSteps((prev) => [...prev, { ...bio, isEnabled: true }]);
+      }
+    }
+    navigate("/biometric-verification");
   };
 
   const handleSave = () => {

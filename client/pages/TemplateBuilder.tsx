@@ -531,7 +531,7 @@ const BiometricVerificationSection: React.FC = () => {
                   <Checkbox
                     id="ask-retry"
                     checked={askUserRetry}
-                    onCheckedChange={setAskUserRetry}
+                    onCheckedChange={(checked) => setAskUserRetry(checked === true)}
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
@@ -554,7 +554,7 @@ const BiometricVerificationSection: React.FC = () => {
                   <Checkbox
                     id="block-attempts"
                     checked={blockAfterRetries}
-                    onCheckedChange={setBlockAfterRetries}
+                    onCheckedChange={(checked) => setBlockAfterRetries(checked === true)}
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">

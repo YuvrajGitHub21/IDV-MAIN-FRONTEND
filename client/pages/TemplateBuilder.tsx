@@ -433,12 +433,6 @@ const BiometricVerificationSection: React.FC<{ isExpanded: boolean; onToggle: ()
   const [askUserRetry, setAskUserRetry] = useState(false);
   const [blockAfterRetries, setBlockAfterRetries] = useState(false);
   const [dataRetention, setDataRetention] = useState("6 Months");
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  const handleNext = () => {
-    setIsExpanded(false);
-    onNext?.();
-  };
 
   // Load form state on mount
   useEffect(() => {

@@ -107,10 +107,10 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 };
 
 // Document Verification Configuration Component
-const DocumentVerificationSection: React.FC<{ isExpanded: boolean; onToggle: () => void }> = ({
-  isExpanded,
-  onToggle,
-}) => {
+const DocumentVerificationSection: React.FC<{
+  isExpanded: boolean;
+  onToggle: () => void;
+}> = ({ isExpanded, onToggle }) => {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
@@ -425,10 +425,10 @@ const DocumentVerificationSection: React.FC<{ isExpanded: boolean; onToggle: () 
 };
 
 // Biometric Verification Configuration Component
-const BiometricVerificationSection: React.FC<{ isExpanded: boolean; onToggle: () => void }> = ({
-  isExpanded,
-  onToggle,
-}) => {
+const BiometricVerificationSection: React.FC<{
+  isExpanded: boolean;
+  onToggle: () => void;
+}> = ({ isExpanded, onToggle }) => {
   const [maxRetries, setMaxRetries] = useState("4");
   const [askUserRetry, setAskUserRetry] = useState(false);
   const [blockAfterRetries, setBlockAfterRetries] = useState(false);
@@ -733,8 +733,10 @@ export default function TemplateBuilder() {
 
   const [addedFields, setAddedFields] = useState<AddedField[]>([]);
   const [personalInfoExpanded, setPersonalInfoExpanded] = useState(true);
-  const [documentVerificationExpanded, setDocumentVerificationExpanded] = useState(false);
-  const [biometricVerificationExpanded, setBiometricVerificationExpanded] = useState(false);
+  const [documentVerificationExpanded, setDocumentVerificationExpanded] =
+    useState(false);
+  const [biometricVerificationExpanded, setBiometricVerificationExpanded] =
+    useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
   // System fields state
@@ -818,15 +820,22 @@ export default function TemplateBuilder() {
 
   const handleNext = () => {
     const sections = [
-      { name: 'personal-info', setExpanded: setPersonalInfoExpanded },
-      { name: 'document-verification', setExpanded: setDocumentVerificationExpanded },
-      { name: 'biometric-verification', setExpanded: setBiometricVerificationExpanded }
+      { name: "personal-info", setExpanded: setPersonalInfoExpanded },
+      {
+        name: "document-verification",
+        setExpanded: setDocumentVerificationExpanded,
+      },
+      {
+        name: "biometric-verification",
+        setExpanded: setBiometricVerificationExpanded,
+      },
     ];
 
     // Get only the sections that are added to the verification steps
-    const activeSections = sections.filter(section =>
-      section.name === 'personal-info' ||
-      verificationSteps.some(step => step.id === section.name)
+    const activeSections = sections.filter(
+      (section) =>
+        section.name === "personal-info" ||
+        verificationSteps.some((step) => step.id === section.name),
     );
 
     if (currentSectionIndex < activeSections.length) {
@@ -867,20 +876,27 @@ export default function TemplateBuilder() {
   // Auto-expand next section when current section is completed
   useEffect(() => {
     const sections = [
-      { name: 'personal-info', setExpanded: setPersonalInfoExpanded },
-      { name: 'document-verification', setExpanded: setDocumentVerificationExpanded },
-      { name: 'biometric-verification', setExpanded: setBiometricVerificationExpanded }
+      { name: "personal-info", setExpanded: setPersonalInfoExpanded },
+      {
+        name: "document-verification",
+        setExpanded: setDocumentVerificationExpanded,
+      },
+      {
+        name: "biometric-verification",
+        setExpanded: setBiometricVerificationExpanded,
+      },
     ];
 
-    const activeSections = sections.filter(section =>
-      section.name === 'personal-info' ||
-      verificationSteps.some(step => step.id === section.name)
+    const activeSections = sections.filter(
+      (section) =>
+        section.name === "personal-info" ||
+        verificationSteps.some((step) => step.id === section.name),
     );
 
     // When a new verification step is added, expand it if it's the next in sequence
     if (currentSectionIndex < activeSections.length) {
       const nextSection = activeSections[currentSectionIndex];
-      if (nextSection && nextSection.name !== 'personal-info') {
+      if (nextSection && nextSection.name !== "personal-info") {
         nextSection.setExpanded(true);
       }
     }
@@ -988,15 +1004,18 @@ export default function TemplateBuilder() {
           >
             {(() => {
               const sections = [
-                { name: 'personal-info' },
-                { name: 'document-verification' },
-                { name: 'biometric-verification' }
+                { name: "personal-info" },
+                { name: "document-verification" },
+                { name: "biometric-verification" },
               ];
-              const activeSections = sections.filter(section =>
-                section.name === 'personal-info' ||
-                verificationSteps.some(step => step.id === section.name)
+              const activeSections = sections.filter(
+                (section) =>
+                  section.name === "personal-info" ||
+                  verificationSteps.some((step) => step.id === section.name),
               );
-              return currentSectionIndex >= activeSections.length ? "Preview" : "Next";
+              return currentSectionIndex >= activeSections.length
+                ? "Preview"
+                : "Next";
             })()}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
@@ -1292,7 +1311,9 @@ export default function TemplateBuilder() {
                 <DocumentVerificationSection
                   isExpanded={documentVerificationExpanded}
                   onToggle={() =>
-                    setDocumentVerificationExpanded(!documentVerificationExpanded)
+                    setDocumentVerificationExpanded(
+                      !documentVerificationExpanded,
+                    )
                   }
                 />
               )}
@@ -1304,7 +1325,9 @@ export default function TemplateBuilder() {
                 <BiometricVerificationSection
                   isExpanded={biometricVerificationExpanded}
                   onToggle={() =>
-                    setBiometricVerificationExpanded(!biometricVerificationExpanded)
+                    setBiometricVerificationExpanded(
+                      !biometricVerificationExpanded,
+                    )
                   }
                 />
               )}

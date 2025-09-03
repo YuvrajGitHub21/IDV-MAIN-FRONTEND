@@ -555,7 +555,9 @@ const BiometricVerificationSection: React.FC<{
                   <Checkbox
                     id="ask-retry"
                     checked={askUserRetry}
-                    onCheckedChange={(checked) => setAskUserRetry(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setAskUserRetry(checked === true)
+                    }
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
@@ -578,7 +580,9 @@ const BiometricVerificationSection: React.FC<{
                   <Checkbox
                     id="block-attempts"
                     checked={blockAfterRetries}
-                    onCheckedChange={(checked) => setBlockAfterRetries(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setBlockAfterRetries(checked === true)
+                    }
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
@@ -852,7 +856,22 @@ export default function TemplateBuilder() {
       } else {
         // All sections completed, navigate to preview
         console.log("Template ready for preview");
-        // TODO: Implement preview page navigation
+        navigate("/preview", {
+          state: {
+            templateName: location.state?.templateName || "New Template",
+            verificationSteps,
+            addedFields,
+            templateData: {
+              personalInfo: true,
+              documentVerification: verificationSteps.some(
+                (s) => s.id === "document-verification",
+              ),
+              biometricVerification: verificationSteps.some(
+                (s) => s.id === "biometric-verification",
+              ),
+            },
+          },
+        });
       }
     }
   };

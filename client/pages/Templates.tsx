@@ -106,7 +106,18 @@ export default function Templates() {
 
   const handleTemplateAction = (action: string, templateId: string) => {
     console.log(`Action: ${action} for template: ${templateId}`);
-    // Add your template action logic here
+
+    switch (action) {
+      case "preview":
+        navigate(`/preview/${templateId}`);
+        break;
+      case "edit":
+        navigate("/template-builder", { state: { templateId } });
+        break;
+      default:
+        // Add your other template action logic here
+        console.log(`Action ${action} not yet implemented`);
+    }
   };
 
   const handleLogout = () => {
@@ -181,7 +192,10 @@ export default function Templates() {
           <div className="relative flex flex-col h-full pt-2 pb-4 z-50">
             <nav className="flex-1 px-0 space-y-1">
               {/* Home */}
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer" onClick={home_page}>
+              <div
+                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                onClick={home_page}
+              >
                 <svg
                   className="w-5 h-5"
                   width="22"
@@ -252,7 +266,10 @@ export default function Templates() {
               </div>
 
               {/* Integration */}
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer" onClick={goToNotFound}>
+              <div
+                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                onClick={goToNotFound}
+              >
                 <svg
                   className="w-5 h-5"
                   width="22"
@@ -273,7 +290,10 @@ export default function Templates() {
               </div>
 
               {/* Analytics */}
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer" onClick={goToNotFound}>
+              <div
+                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                onClick={goToNotFound}
+              >
                 <svg
                   className="w-5 h-5"
                   width="22"
@@ -294,7 +314,10 @@ export default function Templates() {
               </div>
 
               {/* Roles */}
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer" onClick={goToNotFound}>
+              <div
+                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                onClick={goToNotFound}
+              >
                 <svg
                   className="w-5 h-5"
                   width="22"
@@ -315,7 +338,10 @@ export default function Templates() {
               </div>
 
               {/* Users */}
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer" onClick={goToNotFound}>
+              <div
+                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                onClick={goToNotFound}
+              >
                 <div className="w-5 h-5 relative">
                   <svg
                     className="absolute inset-0"

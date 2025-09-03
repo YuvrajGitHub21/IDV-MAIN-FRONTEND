@@ -262,7 +262,9 @@ export default function TemplateBuilder() {
   };
 
   const handleNext = () => {
-    const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
+    const hasDoc = verificationSteps.some(
+      (s) => s.id === "document-verification",
+    );
     if (hasDoc) {
       navigate("/document-verification");
     } else {

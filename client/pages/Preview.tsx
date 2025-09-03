@@ -557,166 +557,184 @@ const PersonalInformationSection = ({
   );
 };
 
-const DocumentVerificationSection = () => (
-  <div className="flex flex-col gap-6 w-full">
-    {/* User Upload Options */}
-    <div className="flex items-center w-full rounded-t-lg bg-white">
-      <div className="flex flex-col items-center gap-4 flex-1">
-        <div className="flex gap-6 w-full">
-          <div className="flex flex-col gap-2 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-[#172B4D] leading-3">
-                User Upload Options
-              </h3>
+const DocumentVerificationSection = ({ config }: { config: any }) => {
+  // If no config is loaded, show placeholder
+  if (!config) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-[13px] text-[#676879]">Loading configuration...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      {/* User Upload Options - only show if admin selected any */}
+      {(config.allowUploadFromDevice || config.allowCaptureWebcam) && (
+        <div className="flex items-center w-full rounded-t-lg bg-white">
+          <div className="flex flex-col items-center gap-4 flex-1">
+            <div className="flex gap-6 w-full">
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                    User Upload Options
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2 w-full">
+                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                    Selected upload methods for document submission.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 w-full">
-              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                Select how users are allowed to submit documents during the
-                process.
-              </p>
+            <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+              {config.allowUploadFromDevice && (
+                <div className="pb-5 flex flex-col w-full border-b border-[#D0D4E4]">
+                  <div className="flex gap-2 w-full">
+                    <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                      <Check className="w-2.5 h-2.5 text-white" />
+                    </div>
+                    <div className="w-[538px] flex flex-col gap-2">
+                      <div className="flex flex-col justify-center w-full h-2.5">
+                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                          Allow Upload from Device
+                        </span>
+                      </div>
+                      <p className="w-full text-[13px] text-[#505258] leading-5">
+                        Let users upload existing documents directly from their device.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {config.allowCaptureWebcam && (
+                <div className="h-[58px] pb-5 flex flex-col w-full">
+                  <div className="pb-5 flex flex-col w-full">
+                    <div className="flex gap-2 w-full">
+                      <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                        <Check className="w-2.5 h-2.5 text-white" />
+                      </div>
+                      <div className="w-[538px] flex flex-col gap-2">
+                        <div className="flex flex-col justify-center w-full h-2.5">
+                          <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                            Allow Capture via Webcam
+                          </span>
+                        </div>
+                        <p className="w-full text-[13px] text-[#505258] leading-5">
+                          Enable webcam access to allow users to capture documents in real time.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
-        <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
-          <div className="pb-5 flex flex-col w-full border-b border-[#D0D4E4]">
-            <div className="flex gap-2 w-full">
-              <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
-                <Check className="w-2.5 h-2.5 text-white" />
-              </div>
-              <div className="w-[538px] flex flex-col gap-2">
-                <div className="flex flex-col justify-center w-full h-2.5">
-                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                    Allow Upload from Device
-                  </span>
+      )}
+
+      {/* Document Handling - only show if admin selected a handling method */}
+      {config.documentHandling && (
+        <div className="flex items-center w-full bg-white">
+          <div className="flex flex-col items-center gap-4 flex-1">
+            <div className="flex gap-6 w-full">
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                    Unreadable Document Handling
+                  </h3>
                 </div>
-                <p className="w-full text-[13px] text-[#505258] leading-5">
-                  Let users upload existing documents directly from their
-                  device.
+                <div className="flex items-center gap-2 w-full">
+                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                    Action taken if submitted document is unclear.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
+              <div className="h-[58px] pb-5 flex flex-col w-full">
+                <div className="pb-5 flex flex-col w-full">
+                  <div className="flex gap-2 w-full">
+                    <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
+                      <Check className="w-2.5 h-2.5 text-white" />
+                    </div>
+                    <div className="w-[538px] flex flex-col gap-2">
+                      <div className="flex flex-col justify-center w-full h-2.5">
+                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                          {config.documentHandling === 'retry' ? 'Allow Retries Before Rejection' : 'Reject Immediately'}
+                        </span>
+                      </div>
+                      <p className="w-full text-[13px] text-[#505258] leading-5">
+                        {config.documentHandling === 'retry'
+                          ? 'Let users reattempt uploading the document before it\'s finally rejected.'
+                          : 'Skip retry and reject unclear documents without further attempts.'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Supported Documents - only show if admin selected documents */}
+      {config.selectedDocuments && config.selectedDocuments.length > 0 && (
+        <div className="flex flex-col items-center gap-4 w-full">
+          <div className="flex gap-6 w-full">
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                  Supported Documents for Identity Verification
+                </h3>
+              </div>
+              <div className="flex items-center gap-2 w-full">
+                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                  Only these document types are accepted.
                 </p>
               </div>
             </div>
           </div>
-          <div className="h-[58px] pb-5 flex flex-col w-full">
-            <div className="pb-5 flex flex-col w-full">
-              <div className="flex gap-2 w-full">
-                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
-                  <Check className="w-2.5 h-2.5 text-white" />
-                </div>
-                <div className="w-[538px] flex flex-col gap-2">
-                  <div className="flex flex-col justify-center w-full h-2.5">
-                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                      Allow Capture via Webcam
-                    </span>
-                  </div>
-                  <p className="w-full text-[13px] text-[#505258] leading-5">
-                    Enable webcam access to allow users to capture documents in
-                    real time.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Unreadable Document Handling */}
-    <div className="flex items-center w-full bg-white">
-      <div className="flex flex-col items-center gap-4 flex-1">
-        <div className="flex gap-6 w-full">
-          <div className="flex flex-col gap-2 flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-[#172B4D] leading-3">
-                Unreadable Document Handling
-              </h3>
-            </div>
-            <div className="flex items-center gap-2 w-full">
-              <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-                Choose what action the system should take if a submitted
-                document is not clear or unreadable.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="pt-6 pr-0 pb-0 pl-6 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
-          <div className="h-[58px] pb-5 flex flex-col w-full">
-            <div className="pb-5 flex flex-col w-full">
-              <div className="flex gap-2 w-full">
-                <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
-                  <Check className="w-2.5 h-2.5 text-white" />
-                </div>
-                <div className="w-[538px] flex flex-col gap-2">
-                  <div className="flex flex-col justify-center w-full h-2.5">
-                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                      Allow Retries Before Rejection
-                    </span>
-                  </div>
-                  <p className="w-full text-[13px] text-[#505258] leading-5">
-                    Let users reattempt uploading the document before it's
-                    finally rejected.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {/* Supported Countries */}
-    <div className="flex flex-col items-center gap-4 w-full">
-      <div className="flex gap-6 w-full">
-        <div className="flex flex-col gap-2 flex-1">
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-[#172B4D] leading-3">
-              Supported Countries for Identity Verification
-            </h3>
-          </div>
-          <div className="flex items-center gap-2 w-full">
-            <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
-              Only document from these countries are supported.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
-        <div className="flex flex-col gap-2 w-full">
-          <div className="flex flex-col gap-2 w-full">
-            <div className="flex flex-col justify-center w-full h-2.5">
-              <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                Which countries are supported?
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
-          <div className="h-[42px] flex items-center gap-6 w-full">
-            <span className="text-sm font-medium text-black leading-[22px]">
-              India
-            </span>
-          </div>
-          <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
-            {["Aadhar Card", "Driving License", "Pan Card", "Passport"].map(
-              (doc) => (
-                <div
-                  key={doc}
-                  className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]"
-                >
-                  <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
-                    <Check className="w-3 h-3 text-white" />
-                  </div>
-                  <span className="text-[13px] font-medium text-[#505258]">
-                    {doc}
+          <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex flex-col gap-2 w-full">
+                <div className="flex flex-col justify-center w-full h-2.5">
+                  <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                    Which documents are supported?
                   </span>
                 </div>
-              ),
-            )}
+              </div>
+            </div>
+            <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
+              <div className="h-[42px] flex items-center gap-6 w-full">
+                <span className="text-sm font-medium text-black leading-[22px]">
+                  India
+                </span>
+              </div>
+              <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
+                {config.selectedDocuments.map((doc: string) => (
+                  <div
+                    key={doc}
+                    className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]"
+                  >
+                    <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-[13px] font-medium text-[#505258]">
+                      {doc}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 const BiometricVerificationSection = () => (
   <div className="w-[923px] flex flex-col gap-6">

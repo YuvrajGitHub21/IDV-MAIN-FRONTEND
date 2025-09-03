@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login as authLogin, setAccessToken } from "@/lib/http";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -43,22 +42,28 @@ export default function Login() {
     setErrors({});
 
     try {
-      const data = await authLogin(formData.email, formData.password);
-      // Keep token in memory only (already set by authLogin)
-      // Optionally store a display name (non-sensitive)
-      const firstName = data?.data?.user?.firstName ?? data?.user?.firstName;
-      if (firstName && typeof window !== "undefined") {
-        try {
-          localStorage.setItem("name", firstName);
-        } catch (_) {
-          // ignore storage failures
-        }
+      const response = await fetch("http://localhost:5294/api/Auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem("access", data.data.accessToken);
+        localStorage.setItem("name", data.data.user.firstName);
+        navigate("/dashboard", { replace: true });
+      } else {
+        const errorData = await response.json();
+        setErrors({ submit: errorData.message || "Login failed" });
       }
-      navigate("/dashboard", { replace: true });
-    } catch (error: any) {
-      setAccessToken(null); // ensure memory token cleared on failed login
-      const message = error?.message || "Login failed";
-      setErrors({ submit: message });
+    } catch (error) {
+      setErrors({ submit: "Network error. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -267,7 +272,7 @@ export default function Login() {
               </label>
               <div className="relative">
                 <input
-                  type="text"
+                  type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}

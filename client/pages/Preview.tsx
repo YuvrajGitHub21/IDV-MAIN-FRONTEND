@@ -184,7 +184,7 @@ export default function Preview() {
           description:
             "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
           enabled: step.isEnabled,
-          component: <DocumentVerificationSection />,
+          component: <DocumentVerificationSection config={docVerificationConfig} />,
         });
       } else if (step.id === "biometric-verification") {
         sections.push({

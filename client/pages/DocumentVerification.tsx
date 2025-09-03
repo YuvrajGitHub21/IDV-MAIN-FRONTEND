@@ -18,6 +18,8 @@ import {
   Trash2,
 } from "lucide-react";
 
+// 5th change
+
 interface VerificationStep {
   id: string;
   title: string;

@@ -279,16 +279,8 @@ export default function TemplateBuilder() {
   };
 
   const handleNext = () => {
-    const hasDoc = verificationSteps.some(
-      (s) => s.id === "document-verification",
-    );
-    if (!hasDoc) {
-      const doc = availableSteps.find((s) => s.id === "document-verification");
-      if (doc) {
-        setVerificationSteps((prev) => [...prev, { ...doc, isEnabled: true }]);
-      }
-    }
-    navigate("/document-verification");
+    console.log("Navigate to preview");
+    // TODO: Add navigation to preview step
   };
 
   useEffect(() => {
@@ -487,7 +479,8 @@ export default function TemplateBuilder() {
           </div>
 
           {/* Main Content Area */}
-          <div className="flex-1 p-4 bg-white">
+        <div className="flex-1 p-4 bg-white overflow-auto">
+          <div className="space-y-6">
             {/* Personal Information Section */}
             <div className="border border-gray-300 rounded">
               {/* Header */}
@@ -679,9 +672,20 @@ export default function TemplateBuilder() {
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+            )}
           </div>
+
+          {/* Document Verification Section */}
+          {verificationSteps.some(step => step.id === 'document-verification') && (
+            <DocumentVerificationSection />
+          )}
+
+          {/* Biometric Verification Section */}
+          {verificationSteps.some(step => step.id === 'biometric-verification') && (
+            <BiometricVerificationSection />
+          )}
+        </div>
+        </div>
 
           {/* Right Sidebar - Add Fields */}
           <div className="w-72 border-l border-gray-200 bg-white">

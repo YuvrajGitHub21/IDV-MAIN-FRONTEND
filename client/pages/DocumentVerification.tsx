@@ -172,7 +172,7 @@ export default function DocumentVerification() {
         }
       }
     } catch {}
-    // Fallback: ensure personal-info and document-verification visible
+    // Fallback: ensure Personal Information is always present
     setVerificationSteps([
       {
         id: "personal-info",
@@ -180,13 +180,6 @@ export default function DocumentVerification() {
         description:
           "Set up fields to collect basic user details like name, contact.",
         isRequired: true,
-        isEnabled: true,
-      },
-      {
-        id: "document-verification",
-        title: "Document Verification",
-        description: "Set ID submission rules and handling for unclear files.",
-        isRequired: false,
         isEnabled: true,
       },
     ]);

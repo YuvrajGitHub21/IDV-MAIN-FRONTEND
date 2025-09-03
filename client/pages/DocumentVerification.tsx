@@ -56,12 +56,19 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
   });
 
   return (
-    <div ref={(n) => drag(drop(n))} className={cn("relative mb-4 cursor-move", isDragging && "opacity-50")}>
+    <div
+      ref={(n) => drag(drop(n))}
+      className={cn("relative mb-4 cursor-move", isDragging && "opacity-50")}
+    >
       <div className="p-3 rounded border border-gray-200 bg-white">
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+            <h3 className="font-bold text-sm text-gray-900 mb-1">
+              {step.title}
+            </h3>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {step.description}
+            </p>
           </div>
           {!step.isRequired && (
             <button
@@ -88,8 +95,54 @@ export default function DocumentVerification() {
   ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
+  // Load form state on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_doc_verification_form");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          if (typeof parsed.allowUploadFromDevice === "boolean")
+            setAllowUploadFromDevice(parsed.allowUploadFromDevice);
+          if (typeof parsed.allowCaptureWebcam === "boolean")
+            setAllowCaptureWebcam(parsed.allowCaptureWebcam);
+          if (typeof parsed.documentHandling === "string")
+            setDocumentHandling(parsed.documentHandling);
+          if (Array.isArray(parsed.selectedCountries))
+            setSelectedCountries(parsed.selectedCountries);
+          if (Array.isArray(parsed.selectedDocuments))
+            setSelectedDocuments(parsed.selectedDocuments);
+        }
+      }
+    } catch {}
+  }, []);
+
+  // Persist form state whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "arcon_doc_verification_form",
+        JSON.stringify({
+          allowUploadFromDevice,
+          allowCaptureWebcam,
+          documentHandling,
+          selectedCountries,
+          selectedDocuments,
+        }),
+      );
+    } catch {}
+  }, [
+    allowUploadFromDevice,
+    allowCaptureWebcam,
+    documentHandling,
+    selectedCountries,
+    selectedDocuments,
+  ]);
+
   // Verification steps state (shared via localStorage)
-  const [verificationSteps, setVerificationSteps] = useState<VerificationStep[]>([]);
+  const [verificationSteps, setVerificationSteps] = useState<
+    VerificationStep[]
+  >([]);
   const availableSteps: VerificationStep[] = [
     {
       id: "document-verification",
@@ -101,7 +154,8 @@ export default function DocumentVerification() {
     {
       id: "biometric-verification",
       title: "Biometric Verification",
-      description: "Set selfie retries, liveness threshold, and biometric storage",
+      description:
+        "Set selfie retries, liveness threshold, and biometric storage",
       isRequired: false,
       isEnabled: false,
     },
@@ -112,36 +166,54 @@ export default function DocumentVerification() {
       const raw = localStorage.getItem("arcon_verification_steps");
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.every((s: any) => s && s.id)) {
-          setVerificationSteps(parsed);
+        if (Array.isArray(parsed)) {
+          const hasPI = parsed.some((s: any) => s?.id === "personal-info");
+          const normalized = hasPI
+            ? parsed
+            : [
+                {
+                  id: "personal-info",
+                  title: "Personal Information",
+                  description:
+                    "Set up fields to collect basic user details like name, contact.",
+                  isRequired: true,
+                  isEnabled: true,
+                },
+                ...parsed,
+              ];
+          setVerificationSteps(
+            normalized.filter((s: any) => s && typeof s.id === "string"),
+          );
           return;
         }
       }
     } catch {}
-    // Fallback: ensure personal-info and document-verification visible
+    // Fallback: ensure Personal Information is always present
     setVerificationSteps([
       {
         id: "personal-info",
         title: "Personal Information",
-        description: "Set up fields to collect basic user details like name, contact.",
+        description:
+          "Set up fields to collect basic user details like name, contact.",
         isRequired: true,
-        isEnabled: true,
-      },
-      {
-        id: "document-verification",
-        title: "Document Verification",
-        description: "Set ID submission rules and handling for unclear files.",
-        isRequired: false,
         isEnabled: true,
       },
     ]);
   }, []);
 
   useEffect(() => {
-    const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
+    const hasDoc = verificationSteps.some(
+      (s) => s.id === "document-verification",
+    );
     try {
-      localStorage.setItem("arcon_has_document_verification", JSON.stringify(hasDoc));
-      localStorage.setItem("arcon_verification_steps", JSON.stringify(verificationSteps));
+      localStorage.setItem(
+        "arcon_has_document_verification",
+        JSON.stringify(hasDoc),
+      );
+      localStorage.setItem(
+        "arcon_verification_steps",
+        JSON.stringify(verificationSteps),
+      );
     } catch {}
   }, [verificationSteps]);
 
@@ -159,7 +231,9 @@ export default function DocumentVerification() {
     const step = availableSteps.find((s) => s.id === stepId);
     if (!step) return;
     setVerificationSteps((prev) =>
-      prev.find((s) => s.id === stepId) ? prev : [...prev, { ...step, isEnabled: true }],
+      prev.find((s) => s.id === stepId)
+        ? prev
+        : [...prev, { ...step, isEnabled: true }],
     );
   };
 
@@ -169,10 +243,12 @@ export default function DocumentVerification() {
   };
 
   const getAvailableStepsToAdd = () =>
-    availableSteps.filter((s) => !verificationSteps.find((vs) => vs.id === s.id));
+    availableSteps.filter(
+      (s) => !verificationSteps.find((vs) => vs.id === s.id),
+    );
 
   const handlePrevious = () => {
-    navigate("/dashboard");
+    navigate("/template-builder");
   };
 
   const handleNext = () => {
@@ -373,8 +449,12 @@ export default function DocumentVerification() {
                     <div className="p-3 rounded border border-gray-200 bg-white">
                       <div className="flex items-start gap-3">
                         <div className="flex-1">
-                          <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                          <h3 className="font-bold text-sm text-gray-900 mb-1">
+                            {step.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {step.description}
+                          </p>
                         </div>
                         <button
                           className="p-1 h-auto text-blue-600 hover:text-blue-800"

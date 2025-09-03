@@ -85,7 +85,7 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 
 export default function BiometricVerification() {
   const navigate = useNavigate();
-  
+
   // Form state
   const [maxRetries, setMaxRetries] = useState("4");
   const [askUserRetry, setAskUserRetry] = useState(false);
@@ -99,10 +99,14 @@ export default function BiometricVerification() {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === "object") {
-          if (typeof parsed.maxRetries === "string") setMaxRetries(parsed.maxRetries);
-          if (typeof parsed.askUserRetry === "boolean") setAskUserRetry(parsed.askUserRetry);
-          if (typeof parsed.blockAfterRetries === "boolean") setBlockAfterRetries(parsed.blockAfterRetries);
-          if (typeof parsed.dataRetention === "string") setDataRetention(parsed.dataRetention);
+          if (typeof parsed.maxRetries === "string")
+            setMaxRetries(parsed.maxRetries);
+          if (typeof parsed.askUserRetry === "boolean")
+            setAskUserRetry(parsed.askUserRetry);
+          if (typeof parsed.blockAfterRetries === "boolean")
+            setBlockAfterRetries(parsed.blockAfterRetries);
+          if (typeof parsed.dataRetention === "string")
+            setDataRetention(parsed.dataRetention);
         }
       }
     } catch {}
@@ -124,7 +128,9 @@ export default function BiometricVerification() {
   }, [maxRetries, askUserRetry, blockAfterRetries, dataRetention]);
 
   // Verification steps state (shared via localStorage)
-  const [verificationSteps, setVerificationSteps] = useState<VerificationStep[]>([]);
+  const [verificationSteps, setVerificationSteps] = useState<
+    VerificationStep[]
+  >([]);
   const availableSteps: VerificationStep[] = [
     {
       id: "document-verification",
@@ -148,7 +154,8 @@ export default function BiometricVerification() {
               {
                 id: "personal-info",
                 title: "Personal Information",
-                description: "Set up fields to collect basic user details like name, contact.",
+                description:
+                  "Set up fields to collect basic user details like name, contact.",
                 isRequired: true,
                 isEnabled: true,
               },
@@ -161,7 +168,8 @@ export default function BiometricVerification() {
               {
                 id: "biometric-verification",
                 title: "Biometric Verification",
-                description: "Set selfie retries, liveness threshold, and biometric storage",
+                description:
+                  "Set selfie retries, liveness threshold, and biometric storage",
                 isRequired: false,
                 isEnabled: true,
               },
@@ -177,7 +185,8 @@ export default function BiometricVerification() {
       {
         id: "personal-info",
         title: "Personal Information",
-        description: "Set up fields to collect basic user details like name, contact.",
+        description:
+          "Set up fields to collect basic user details like name, contact.",
         isRequired: true,
         isEnabled: true,
       },
@@ -185,10 +194,18 @@ export default function BiometricVerification() {
   }, []);
 
   useEffect(() => {
-    const hasBio = verificationSteps.some((s) => s.id === "biometric-verification");
+    const hasBio = verificationSteps.some(
+      (s) => s.id === "biometric-verification",
+    );
     try {
-      localStorage.setItem("arcon_has_biometric_verification", JSON.stringify(hasBio));
-      localStorage.setItem("arcon_verification_steps", JSON.stringify(verificationSteps));
+      localStorage.setItem(
+        "arcon_has_biometric_verification",
+        JSON.stringify(hasBio),
+      );
+      localStorage.setItem(
+        "arcon_verification_steps",
+        JSON.stringify(verificationSteps),
+      );
     } catch {}
   }, [verificationSteps]);
 
@@ -206,7 +223,9 @@ export default function BiometricVerification() {
     const step = availableSteps.find((s) => s.id === stepId);
     if (!step) return;
     setVerificationSteps((prev) =>
-      prev.find((s) => s.id === stepId) ? prev : [...prev, { ...step, isEnabled: true }],
+      prev.find((s) => s.id === stepId)
+        ? prev
+        : [...prev, { ...step, isEnabled: true }],
     );
   };
 
@@ -216,7 +235,9 @@ export default function BiometricVerification() {
   };
 
   const getAvailableStepsToAdd = () =>
-    availableSteps.filter((s) => !verificationSteps.find((vs) => vs.id === s.id));
+    availableSteps.filter(
+      (s) => !verificationSteps.find((vs) => vs.id === s.id),
+    );
 
   const handlePrevious = () => {
     navigate("/document-verification");
@@ -334,7 +355,9 @@ export default function BiometricVerification() {
           {/* Step 2 - Inactive */}
           <div className="flex flex-col items-center gap-1.5">
             <div className="flex items-center justify-center w-8 sm:w-10 h-8 sm:h-10 rounded-full border border-[#D0D4E4] bg-white">
-              <span className="text-gray-600 font-bold text-xs sm:text-sm">2</span>
+              <span className="text-gray-600 font-bold text-xs sm:text-sm">
+                2
+              </span>
             </div>
             <span className="text-xs sm:text-sm text-gray-600 text-center">
               Preview
@@ -438,7 +461,8 @@ export default function BiometricVerification() {
               </div>
               <div className="px-4 lg:px-9 pb-3">
                 <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Set up fields to collect basic user details like name, contact.
+                  Set up fields to collect basic user details like name,
+                  contact.
                 </p>
               </div>
             </div>
@@ -453,7 +477,8 @@ export default function BiometricVerification() {
               </div>
               <div className="px-4 lg:px-9 pb-3">
                 <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Define how users can submit ID documents and what happens if files are unclear.
+                  Define how users can submit ID documents and what happens if
+                  files are unclear.
                 </p>
               </div>
             </div>
@@ -468,7 +493,8 @@ export default function BiometricVerification() {
               </div>
               <div className="px-4 lg:px-9 pb-3">
                 <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                  Configure selfie capture retries, liveness score thresholds, and biometric data storage.
+                  Configure selfie capture retries, liveness score thresholds,
+                  and biometric data storage.
                 </p>
               </div>
 
@@ -481,7 +507,8 @@ export default function BiometricVerification() {
                       Retry Attempts for Selfie Capture
                     </h4>
                     <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
-                      Define how many times a user can retry if the selfie capture fails.
+                      Define how many times a user can retry if the selfie
+                      capture fails.
                     </p>
                   </div>
 
@@ -517,7 +544,8 @@ export default function BiometricVerification() {
                       Liveness Confidence Threshold (%)
                     </h4>
                     <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
-                      Choose what should happen if a user's liveness score does not meet the required threshold.
+                      Choose what should happen if a user's liveness score does
+                      not meet the required threshold.
                     </p>
                   </div>
 
@@ -577,7 +605,8 @@ export default function BiometricVerification() {
                       Biometric Data Retention
                     </h4>
                     <p className="text-xs lg:text-[13px] text-[#172B4D] leading-relaxed">
-                      Choose whether to store biometric/selfie data and define retention duration.
+                      Choose whether to store biometric/selfie data and define
+                      retention duration.
                     </p>
                   </div>
 

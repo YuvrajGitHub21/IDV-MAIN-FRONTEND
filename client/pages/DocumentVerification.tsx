@@ -156,7 +156,8 @@ export default function DocumentVerification() {
     {
       id: "biometric-verification",
       title: "Biometric Verification",
-      description: "Set selfie retries, liveness threshold, and biometric storage",
+      description:
+        "Set selfie retries, liveness threshold, and biometric storage",
       isRequired: false,
       isEnabled: true,
     },
@@ -265,7 +266,9 @@ export default function DocumentVerification() {
   };
 
   const handleNext = () => {
-    const hasBio = verificationSteps.some((s) => s.id === "biometric-verification");
+    const hasBio = verificationSteps.some(
+      (s) => s.id === "biometric-verification",
+    );
     if (!hasBio) {
       const bio = availableSteps.find((s) => s.id === "biometric-verification");
       if (bio) {

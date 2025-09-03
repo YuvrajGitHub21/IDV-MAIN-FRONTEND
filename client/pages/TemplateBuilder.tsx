@@ -849,10 +849,35 @@ export default function TemplateBuilder() {
   };
 
   const handleNext = () => {
-    // Navigate to preview or next step in the flow
-    // For now, log that we're ready for preview
-    console.log("Template ready for preview");
-    // TODO: Implement preview page navigation
+    const sections = [
+      { name: 'personal-info', setExpanded: setPersonalInfoExpanded },
+      { name: 'document-verification', setExpanded: setDocumentVerificationExpanded },
+      { name: 'biometric-verification', setExpanded: setBiometricVerificationExpanded }
+    ];
+
+    // Get only the sections that are added to the verification steps
+    const activeSections = sections.filter(section =>
+      section.name === 'personal-info' ||
+      verificationSteps.some(step => step.id === section.name)
+    );
+
+    if (currentSectionIndex < activeSections.length) {
+      // Collapse current section
+      activeSections[currentSectionIndex].setExpanded(false);
+
+      // Move to next section or preview
+      const nextIndex = currentSectionIndex + 1;
+      setCurrentSectionIndex(nextIndex);
+
+      if (nextIndex < activeSections.length) {
+        // Expand next section
+        activeSections[nextIndex].setExpanded(true);
+      } else {
+        // All sections completed, navigate to preview
+        console.log("Template ready for preview");
+        // TODO: Implement preview page navigation
+      }
+    }
   };
 
   useEffect(() => {

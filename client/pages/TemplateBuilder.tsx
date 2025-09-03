@@ -438,12 +438,17 @@ const DocumentVerificationSection: React.FC<{onNext?: () => void}> = ({onNext}) 
 };
 
 // Biometric Verification Configuration Component
-const BiometricVerificationSection: React.FC = () => {
+const BiometricVerificationSection: React.FC<{onNext?: () => void}> = ({onNext}) => {
   const [maxRetries, setMaxRetries] = useState("4");
   const [askUserRetry, setAskUserRetry] = useState(false);
   const [blockAfterRetries, setBlockAfterRetries] = useState(false);
   const [dataRetention, setDataRetention] = useState("6 Months");
   const [isExpanded, setIsExpanded] = useState(true);
+
+  const handleNext = () => {
+    setIsExpanded(false);
+    onNext?.();
+  };
 
   // Load form state on mount
   useEffect(() => {

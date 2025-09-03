@@ -986,7 +986,18 @@ export default function TemplateBuilder() {
             className="text-gray-600 text-sm"
             onClick={handleNext}
           >
-            Next
+            {(() => {
+              const sections = [
+                { name: 'personal-info' },
+                { name: 'document-verification' },
+                { name: 'biometric-verification' }
+              ];
+              const activeSections = sections.filter(section =>
+                section.name === 'personal-info' ||
+                verificationSteps.some(step => step.id === section.name)
+              );
+              return currentSectionIndex >= activeSections.length ? "Preview" : "Next";
+            })()}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </div>

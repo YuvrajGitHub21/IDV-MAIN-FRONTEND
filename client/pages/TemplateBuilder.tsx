@@ -111,7 +111,9 @@ const DocumentVerificationSection: React.FC = () => {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
-  const [selectedCountries, setSelectedCountries] = useState<string[]>(["India"]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([
+    "India",
+  ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -205,7 +207,8 @@ const DocumentVerificationSection: React.FC = () => {
                 User Upload Options
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Select how users are allowed to submit documents during the process.
+                Select how users are allowed to submit documents during the
+                process.
               </p>
             </div>
 
@@ -216,7 +219,9 @@ const DocumentVerificationSection: React.FC = () => {
                   <Checkbox
                     id="upload-device"
                     checked={allowUploadFromDevice}
-                    onCheckedChange={(checked) => setAllowUploadFromDevice(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setAllowUploadFromDevice(checked === true)
+                    }
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
@@ -227,7 +232,8 @@ const DocumentVerificationSection: React.FC = () => {
                       Allow Upload from Device
                     </Label>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      Let users upload existing documents directly from their device.
+                      Let users upload existing documents directly from their
+                      device.
                     </p>
                   </div>
                 </div>
@@ -239,7 +245,9 @@ const DocumentVerificationSection: React.FC = () => {
                   <Checkbox
                     id="capture-webcam"
                     checked={allowCaptureWebcam}
-                    onCheckedChange={(checked) => setAllowCaptureWebcam(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setAllowCaptureWebcam(checked === true)
+                    }
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
@@ -250,7 +258,8 @@ const DocumentVerificationSection: React.FC = () => {
                       Allow Capture via Webcam
                     </Label>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      Enable webcam access to allow users to capture documents in real time.
+                      Enable webcam access to allow users to capture documents
+                      in real time.
                     </p>
                   </div>
                 </div>
@@ -265,7 +274,8 @@ const DocumentVerificationSection: React.FC = () => {
                 Unreadable Document Handling
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Choose what action the system should take if a submitted document is not clear or unreadable.
+                Choose what action the system should take if a submitted
+                document is not clear or unreadable.
               </p>
             </div>
 
@@ -291,7 +301,8 @@ const DocumentVerificationSection: React.FC = () => {
                           Reject Immediately
                         </Label>
                         <p className="text-sm text-gray-600 leading-relaxed">
-                          Skip retry and reject unclear documents without further attempts.
+                          Skip retry and reject unclear documents without
+                          further attempts.
                         </p>
                       </div>
                     </div>
@@ -313,7 +324,8 @@ const DocumentVerificationSection: React.FC = () => {
                           Allow Retries Before Rejection
                         </Label>
                         <p className="text-sm text-gray-600 leading-relaxed">
-                          Let users reattempt uploading the document before it's finally rejected.
+                          Let users reattempt uploading the document before it's
+                          finally rejected.
                         </p>
                       </div>
                     </div>
@@ -470,7 +482,8 @@ const BiometricVerificationSection: React.FC = () => {
                 Retry Attempts for Selfie Capture
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Define how many times a user can retry if the selfie capture fails.
+                Define how many times a user can retry if the selfie capture
+                fails.
               </p>
             </div>
 
@@ -506,7 +519,8 @@ const BiometricVerificationSection: React.FC = () => {
                 Liveness Confidence Threshold (%)
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Choose what should happen if a user's liveness score does not meet the required threshold.
+                Choose what should happen if a user's liveness score does not
+                meet the required threshold.
               </p>
             </div>
 
@@ -566,7 +580,8 @@ const BiometricVerificationSection: React.FC = () => {
                 Biometric Data Retention
               </h4>
               <p className="text-sm text-gray-600 leading-relaxed">
-                Choose whether to store biometric/selfie data and define retention duration.
+                Choose whether to store biometric/selfie data and define
+                retention duration.
               </p>
             </div>
 
@@ -975,213 +990,215 @@ export default function TemplateBuilder() {
           </div>
 
           {/* Main Content Area */}
-        <div className="flex-1 p-4 bg-white overflow-auto">
-          <div className="space-y-6">
-            {/* Personal Information Section */}
-            <div className="border border-gray-300 rounded">
-              {/* Header */}
-              <div className="flex items-center gap-2 p-3 border-b border-gray-300 bg-white">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-0 h-auto"
-                  onClick={() => setPersonalInfoExpanded(!personalInfoExpanded)}
-                >
-                  <Minus className="w-5 h-5 text-gray-700" />
-                </Button>
-                <h2 className="font-bold text-base text-gray-900">
-                  Personal Information
-                </h2>
+          <div className="flex-1 p-4 bg-white overflow-auto">
+            <div className="space-y-6">
+              {/* Personal Information Section */}
+              <div className="border border-gray-300 rounded">
+                {/* Header */}
+                <div className="flex items-center gap-2 p-3 border-b border-gray-300 bg-white">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-0 h-auto"
+                    onClick={() =>
+                      setPersonalInfoExpanded(!personalInfoExpanded)
+                    }
+                  >
+                    <Minus className="w-5 h-5 text-gray-700" />
+                  </Button>
+                  <h2 className="font-bold text-base text-gray-900">
+                    Personal Information
+                  </h2>
+                </div>
+
+                {/* Content */}
+                {personalInfoExpanded && (
+                  <div className="p-8">
+                    <div className="mb-6">
+                      <h3 className="font-bold text-base text-gray-900 mb-2">
+                        System-required Fields
+                      </h3>
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        The following fields are fixed and required in every
+                        template. Continue adding your own fields below.
+                      </p>
+                    </div>
+
+                    {/* Required Fields */}
+                    <div className="space-y-4 mb-8">
+                      {/* First Name */}
+                      <div
+                        className={cn(
+                          "rounded-lg border-r border-b border-l bg-white",
+                          systemFieldAlerts.firstName
+                            ? "border-blue-500"
+                            : "border-gray-300",
+                        )}
+                      >
+                        {systemFieldAlerts.firstName && (
+                          <div className="h-2 bg-blue-500 rounded-t-lg"></div>
+                        )}
+                        <div className="p-4">
+                          {systemFieldAlerts.firstName && (
+                            <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
+                              <Info className="w-5 h-5 text-red-500" />
+                              <span className="text-sm text-gray-900 font-medium">
+                                This field is system-required and cannot be
+                                modified.
+                              </span>
+                            </div>
+                          )}
+                          <div className="mb-2">
+                            <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
+                              <span className="text-sm font-semibold text-gray-900">
+                                First Name
+                              </span>
+                            </div>
+                          </div>
+                          <Input
+                            value={systemFieldValues.firstName}
+                            onFocus={() => handleSystemFieldFocus("firstName")}
+                            onBlur={() => handleSystemFieldBlur("firstName")}
+                            className="border-gray-300 text-gray-600"
+                            readOnly
+                          />
+                        </div>
+                      </div>
+
+                      {/* Last Name */}
+                      <div
+                        className={cn(
+                          "rounded-lg border-r border-b border-l bg-white",
+                          systemFieldAlerts.lastName
+                            ? "border-blue-500"
+                            : "border-gray-300",
+                        )}
+                      >
+                        {systemFieldAlerts.lastName && (
+                          <div className="h-2 bg-blue-500 rounded-t-lg"></div>
+                        )}
+                        <div className="p-4">
+                          {systemFieldAlerts.lastName && (
+                            <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
+                              <Info className="w-5 h-5 text-red-500" />
+                              <span className="text-sm text-gray-900 font-medium">
+                                This field is system-required and cannot be
+                                modified.
+                              </span>
+                            </div>
+                          )}
+                          <div className="mb-2">
+                            <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
+                              <span className="text-sm font-semibold text-gray-900">
+                                Last Name
+                              </span>
+                            </div>
+                          </div>
+                          <Input
+                            value={systemFieldValues.lastName}
+                            onFocus={() => handleSystemFieldFocus("lastName")}
+                            onBlur={() => handleSystemFieldBlur("lastName")}
+                            className="border-gray-300 text-gray-600"
+                            readOnly
+                          />
+                        </div>
+                      </div>
+
+                      {/* Email Address */}
+                      <div
+                        className={cn(
+                          "rounded-lg border-r border-b border-l bg-white",
+                          systemFieldAlerts.email
+                            ? "border-blue-500"
+                            : "border-gray-300",
+                        )}
+                      >
+                        {systemFieldAlerts.email && (
+                          <div className="h-2 bg-blue-500 rounded-t-lg"></div>
+                        )}
+                        <div className="p-4">
+                          {systemFieldAlerts.email && (
+                            <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
+                              <Info className="w-5 h-5 text-red-500" />
+                              <span className="text-sm text-gray-900 font-medium">
+                                This field is system-required and cannot be
+                                modified.
+                              </span>
+                            </div>
+                          )}
+                          <div className="mb-2">
+                            <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
+                              <span className="text-sm font-semibold text-gray-900">
+                                Email Address
+                              </span>
+                            </div>
+                          </div>
+                          <Input
+                            value={systemFieldValues.email}
+                            onFocus={() => handleSystemFieldFocus("email")}
+                            onBlur={() => handleSystemFieldBlur("email")}
+                            className="border-gray-300 text-gray-600"
+                            readOnly
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Added Fields Section */}
+                    {addedFields.length > 0 && (
+                      <div>
+                        <div className="mb-4">
+                          <h3 className="font-bold text-base text-gray-900 mb-2">
+                            Added Fields
+                          </h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            Extra fields to collect specific to your
+                            verification flow.
+                          </p>
+                        </div>
+
+                        <div className="space-y-4">
+                          {addedFields.map((field) => (
+                            <div
+                              key={field.id}
+                              className="border border-gray-300 rounded-lg p-5 bg-white"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <Label className="font-semibold text-sm text-gray-900">
+                                  {field.name}
+                                </Label>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="p-1 h-auto text-red-500 hover:text-red-700"
+                                  onClick={() => removeAddedField(field.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {field.placeholder}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Content */}
-              {personalInfoExpanded && (
-                <div className="p-8">
-                  <div className="mb-6">
-                    <h3 className="font-bold text-base text-gray-900 mb-2">
-                      System-required Fields
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      The following fields are fixed and required in every
-                      template. Continue adding your own fields below.
-                    </p>
-                  </div>
+              {/* Document Verification Section */}
+              {verificationSteps.some(
+                (step) => step.id === "document-verification",
+              ) && <DocumentVerificationSection />}
 
-                  {/* Required Fields */}
-                  <div className="space-y-4 mb-8">
-                    {/* First Name */}
-                    <div
-                      className={cn(
-                        "rounded-lg border-r border-b border-l bg-white",
-                        systemFieldAlerts.firstName
-                          ? "border-blue-500"
-                          : "border-gray-300",
-                      )}
-                    >
-                      {systemFieldAlerts.firstName && (
-                        <div className="h-2 bg-blue-500 rounded-t-lg"></div>
-                      )}
-                      <div className="p-4">
-                        {systemFieldAlerts.firstName && (
-                          <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
-                            <Info className="w-5 h-5 text-red-500" />
-                            <span className="text-sm text-gray-900 font-medium">
-                              This field is system-required and cannot be
-                              modified.
-                            </span>
-                          </div>
-                        )}
-                        <div className="mb-2">
-                          <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                            <span className="text-sm font-semibold text-gray-900">
-                              First Name
-                            </span>
-                          </div>
-                        </div>
-                        <Input
-                          value={systemFieldValues.firstName}
-                          onFocus={() => handleSystemFieldFocus("firstName")}
-                          onBlur={() => handleSystemFieldBlur("firstName")}
-                          className="border-gray-300 text-gray-600"
-                          readOnly
-                        />
-                      </div>
-                    </div>
-
-                    {/* Last Name */}
-                    <div
-                      className={cn(
-                        "rounded-lg border-r border-b border-l bg-white",
-                        systemFieldAlerts.lastName
-                          ? "border-blue-500"
-                          : "border-gray-300",
-                      )}
-                    >
-                      {systemFieldAlerts.lastName && (
-                        <div className="h-2 bg-blue-500 rounded-t-lg"></div>
-                      )}
-                      <div className="p-4">
-                        {systemFieldAlerts.lastName && (
-                          <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
-                            <Info className="w-5 h-5 text-red-500" />
-                            <span className="text-sm text-gray-900 font-medium">
-                              This field is system-required and cannot be
-                              modified.
-                            </span>
-                          </div>
-                        )}
-                        <div className="mb-2">
-                          <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                            <span className="text-sm font-semibold text-gray-900">
-                              Last Name
-                            </span>
-                          </div>
-                        </div>
-                        <Input
-                          value={systemFieldValues.lastName}
-                          onFocus={() => handleSystemFieldFocus("lastName")}
-                          onBlur={() => handleSystemFieldBlur("lastName")}
-                          className="border-gray-300 text-gray-600"
-                          readOnly
-                        />
-                      </div>
-                    </div>
-
-                    {/* Email Address */}
-                    <div
-                      className={cn(
-                        "rounded-lg border-r border-b border-l bg-white",
-                        systemFieldAlerts.email
-                          ? "border-blue-500"
-                          : "border-gray-300",
-                      )}
-                    >
-                      {systemFieldAlerts.email && (
-                        <div className="h-2 bg-blue-500 rounded-t-lg"></div>
-                      )}
-                      <div className="p-4">
-                        {systemFieldAlerts.email && (
-                          <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
-                            <Info className="w-5 h-5 text-red-500" />
-                            <span className="text-sm text-gray-900 font-medium">
-                              This field is system-required and cannot be
-                              modified.
-                            </span>
-                          </div>
-                        )}
-                        <div className="mb-2">
-                          <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                            <span className="text-sm font-semibold text-gray-900">
-                              Email Address
-                            </span>
-                          </div>
-                        </div>
-                        <Input
-                          value={systemFieldValues.email}
-                          onFocus={() => handleSystemFieldFocus("email")}
-                          onBlur={() => handleSystemFieldBlur("email")}
-                          className="border-gray-300 text-gray-600"
-                          readOnly
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Added Fields Section */}
-                  {addedFields.length > 0 && (
-                    <div>
-                      <div className="mb-4">
-                        <h3 className="font-bold text-base text-gray-900 mb-2">
-                          Added Fields
-                        </h3>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          Extra fields to collect specific to your verification
-                          flow.
-                        </p>
-                      </div>
-
-                      <div className="space-y-4">
-                        {addedFields.map((field) => (
-                          <div
-                            key={field.id}
-                            className="border border-gray-300 rounded-lg p-5 bg-white"
-                          >
-                            <div className="flex items-center justify-between mb-3">
-                              <Label className="font-semibold text-sm text-gray-900">
-                                {field.name}
-                              </Label>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="p-1 h-auto text-red-500 hover:text-red-700"
-                                onClick={() => removeAddedField(field.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {field.placeholder}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-            )}
+              {/* Biometric Verification Section */}
+              {verificationSteps.some(
+                (step) => step.id === "biometric-verification",
+              ) && <BiometricVerificationSection />}
+            </div>
           </div>
-
-          {/* Document Verification Section */}
-          {verificationSteps.some(step => step.id === 'document-verification') && (
-            <DocumentVerificationSection />
-          )}
-
-          {/* Biometric Verification Section */}
-          {verificationSteps.some(step => step.id === 'biometric-verification') && (
-            <BiometricVerificationSection />
-          )}
-        </div>
-        </div>
 
           {/* Right Sidebar - Add Fields */}
           <div className="w-72 border-l border-gray-200 bg-white">

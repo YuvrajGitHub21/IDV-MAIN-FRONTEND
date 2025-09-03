@@ -23,7 +23,7 @@ interface TemplateData {
   templateName: string;
   verificationSteps: VerificationStep[];
   addedFields: AddedField[];
-  sections: {
+  templateData?: {
     personalInfo: boolean;
     documentVerification: boolean;
     biometricVerification: boolean;

@@ -107,7 +107,9 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 };
 
 // Document Verification Configuration Component
-const DocumentVerificationSection: React.FC<{onNext?: () => void}> = ({onNext}) => {
+const DocumentVerificationSection: React.FC<{ onNext?: () => void }> = ({
+  onNext,
+}) => {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
@@ -206,7 +208,8 @@ const DocumentVerificationSection: React.FC<{onNext?: () => void}> = ({onNext}) 
       {!isExpanded && (
         <div className="px-4 lg:px-9 pb-3">
           <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-            Define how users can submit ID documents and what happens if files are unclear.
+            Define how users can submit ID documents and what happens if files
+            are unclear.
           </p>
         </div>
       )}
@@ -438,7 +441,9 @@ const DocumentVerificationSection: React.FC<{onNext?: () => void}> = ({onNext}) 
 };
 
 // Biometric Verification Configuration Component
-const BiometricVerificationSection: React.FC<{onNext?: () => void}> = ({onNext}) => {
+const BiometricVerificationSection: React.FC<{ onNext?: () => void }> = ({
+  onNext,
+}) => {
   const [maxRetries, setMaxRetries] = useState("4");
   const [askUserRetry, setAskUserRetry] = useState(false);
   const [blockAfterRetries, setBlockAfterRetries] = useState(false);
@@ -506,7 +511,8 @@ const BiometricVerificationSection: React.FC<{onNext?: () => void}> = ({onNext})
       {!isExpanded && (
         <div className="px-4 lg:px-9 pb-3">
           <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-            Configure selfie capture retries, liveness score thresholds, and biometric data storage.
+            Configure selfie capture retries, liveness score thresholds, and
+            biometric data storage.
           </p>
         </div>
       )}
@@ -1067,7 +1073,8 @@ export default function TemplateBuilder() {
                 {!personalInfoExpanded && (
                   <div className="px-4 lg:px-9 pb-3">
                     <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-                      Set up fields to collect basic user details like name, contact.
+                      Set up fields to collect basic user details like name,
+                      contact.
                     </p>
                   </div>
                 )}

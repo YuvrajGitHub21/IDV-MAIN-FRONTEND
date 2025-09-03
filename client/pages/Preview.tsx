@@ -23,7 +23,7 @@ interface TemplateData {
   templateName: string;
   verificationSteps: VerificationStep[];
   addedFields: AddedField[];
-  sections: {
+  templateData?: {
     personalInfo: boolean;
     documentVerification: boolean;
     biometricVerification: boolean;
@@ -49,7 +49,7 @@ export default function Preview() {
     templateName: "New Template",
     verificationSteps: [],
     addedFields: [],
-    sections: {
+    templateData: {
       personalInfo: true,
       documentVerification: false,
       biometricVerification: false,
@@ -383,13 +383,15 @@ export default function Preview() {
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
                       <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
-                        Admin View
+                        Template Preview
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        Showing {orderedSections.length} sections configured by
-                        admin.
+                        Showing exactly what admin selected:{" "}
+                        {orderedSections.length} sections with{" "}
+                        {3 + (templateData.addedFields?.length || 0)} fields
+                        total.
                       </p>
                     </div>
                   </div>
@@ -400,12 +402,13 @@ export default function Preview() {
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
                       <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
-                        Receiver's View
+                        User Experience
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        How users will see the verification process.
+                        This is exactly how users will experience the
+                        verification process.
                       </p>
                     </div>
                   </div>
@@ -465,21 +468,39 @@ const PersonalInformationSection = ({
 }: {
   addedFields: AddedField[];
 }) => {
-  // If no fields are added, show a message
-  if (!addedFields || addedFields.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <p className="text-[13px] text-[#676879]">
-          No fields selected for this section
-        </p>
-      </div>
-    );
-  }
+  // Always include the 3 mandatory fields first
+  const mandatoryFields = [
+    {
+      id: "firstName",
+      name: "First Name",
+      placeholder: "Enter your first name",
+    },
+    {
+      id: "lastName",
+      name: "Last Name",
+      placeholder: "Enter your last name",
+    },
+    {
+      id: "email",
+      name: "Email Address",
+      placeholder: "Enter your email address",
+    },
+  ];
+
+  // Combine mandatory fields with admin-selected optional fields
+  const allFields = [
+    ...mandatoryFields,
+    ...(addedFields || []).map((field) => ({
+      id: field.id,
+      name: field.name,
+      placeholder: field.placeholder,
+    })),
+  ];
 
   // Group fields into rows (2 fields per row)
   const fieldRows = [];
-  for (let i = 0; i < addedFields.length; i += 2) {
-    fieldRows.push(addedFields.slice(i, i + 2));
+  for (let i = 0; i < allFields.length; i += 2) {
+    fieldRows.push(allFields.slice(i, i + 2));
   }
 
   return (

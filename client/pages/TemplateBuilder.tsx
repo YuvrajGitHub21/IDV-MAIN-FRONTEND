@@ -140,6 +140,19 @@ export default function TemplateBuilder() {
     },
   ]);
 
+  // Load persisted verification steps on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_verification_steps");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.every((s) => s && s.id)) {
+          setVerificationSteps(parsed);
+        }
+      }
+    } catch {}
+  }, []);
+
   const [optionalFields, setOptionalFields] = useState<FieldOption[]>([
     {
       id: "date-of-birth",

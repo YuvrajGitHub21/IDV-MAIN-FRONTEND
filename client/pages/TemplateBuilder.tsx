@@ -502,6 +502,15 @@ const BiometricVerificationSection: React.FC<{onNext?: () => void}> = ({onNext})
         </h2>
       </div>
 
+      {/* Description when collapsed */}
+      {!isExpanded && (
+        <div className="px-4 lg:px-9 pb-3">
+          <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
+            Configure selfie capture retries, liveness score thresholds, and biometric data storage.
+          </p>
+        </div>
+      )}
+
       {/* Content */}
       {isExpanded && (
         <div className="p-8 space-y-6">

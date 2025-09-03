@@ -261,7 +261,9 @@ export default function TemplateBuilder() {
   };
 
   useEffect(() => {
-    const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
+    const hasDoc = verificationSteps.some(
+      (s) => s.id === "document-verification",
+    );
     try {
       localStorage.setItem(
         "arcon_has_document_verification",

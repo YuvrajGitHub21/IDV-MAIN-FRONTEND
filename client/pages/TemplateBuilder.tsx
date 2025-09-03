@@ -118,12 +118,6 @@ const DocumentVerificationSection: React.FC<{ isExpanded: boolean; onToggle: () 
     "India",
   ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  const handleNext = () => {
-    setIsExpanded(false);
-    onNext?.();
-  };
 
   // Load form state on mount
   useEffect(() => {

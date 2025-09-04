@@ -120,7 +120,9 @@ export default function ReceiverView() {
 
   // Upload methods based on admin selection/preview
   // Show both options by default if no admin config exists
-  const allowUploadFromDevice = docConfig ? !!docConfig.allowUploadFromDevice : true;
+  const allowUploadFromDevice = docConfig
+    ? !!docConfig.allowUploadFromDevice
+    : true;
   const allowCaptureWebcam = docConfig ? !!docConfig.allowCaptureWebcam : true;
 
   // Camera capture state for Document upload

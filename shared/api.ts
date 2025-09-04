@@ -10,3 +10,17 @@
 export interface DemoResponse {
   message: string;
 }
+
+export interface Invitee {
+  id: string;
+  name: string;
+  email: string;
+  initials: string;
+  avatarColor: string;
+  department: string;
+  selected: boolean;
+}
+
+export interface InviteesResponse {
+  employees: Invitee[];
+}

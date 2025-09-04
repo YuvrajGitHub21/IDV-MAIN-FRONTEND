@@ -62,6 +62,10 @@ export default function Templates() {
     if (filterCreatedBy) filters.createdBy = filterCreatedBy;
     if (filterSortBy) filters.sortBy = filterSortBy;
     if (filterSortOrder) filters.sortOrder = filterSortOrder;
+    if (filterCreatedFrom) filters.createdFrom = filterCreatedFrom;
+    if (filterCreatedTo) filters.createdTo = filterCreatedTo;
+    if (filterUpdatedFrom) filters.updatedFrom = filterUpdatedFrom;
+    if (filterUpdatedTo) filters.updatedTo = filterUpdatedTo;
     fetchTemplates(filters);
   }, [
     searchQuery,
@@ -71,6 +75,10 @@ export default function Templates() {
     filterCreatedBy,
     filterSortBy,
     filterSortOrder,
+    filterCreatedFrom,
+    filterCreatedTo,
+    filterUpdatedFrom,
+    filterUpdatedTo,
     fetchTemplates,
   ]);
 

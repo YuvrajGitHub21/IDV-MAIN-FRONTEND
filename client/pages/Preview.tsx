@@ -392,9 +392,13 @@ export default function Preview() {
             </span>
           </button>
 
-          <div className="absolute right-8 flex items-center gap-1 rounded">
-            <span className="text-[13px] font-medium text-[#505258]">Next</span>
-          </div>
+          {activeView === "receiver" && (
+            <div className="absolute right-8 flex items-center gap-1 rounded">
+              <span className="text-[13px] font-medium text-[#505258]">
+                Next
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

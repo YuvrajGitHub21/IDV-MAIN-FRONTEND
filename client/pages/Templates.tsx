@@ -17,6 +17,9 @@ export default function Templates() {
   const [pageSize, setPageSize] = useState(12);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [filterIsActive, setFilterIsActive] = useState<boolean | undefined>(undefined);
+  const [filterCreatedBy, setFilterCreatedBy] = useState<string | undefined>(undefined);
   const navigate = useNavigate();
 
   // Use custom hooks for API integration

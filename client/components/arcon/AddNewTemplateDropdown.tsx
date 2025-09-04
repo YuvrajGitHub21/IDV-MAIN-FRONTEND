@@ -86,7 +86,7 @@ export function AddNewTemplateDropdown({
               "flex items-center px-2 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
               "font-medium",
             )}
-            onClick={onChooseTemplate}
+            onClick={handleChooseTemplateClick}
           >
             Choose Template
           </DropdownMenuItem>

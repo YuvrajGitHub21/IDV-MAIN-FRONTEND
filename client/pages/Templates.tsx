@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -32,6 +31,18 @@ export default function Templates() {
   const [filterSortOrder, setFilterSortOrder] = useState<
     "asc" | "desc" | undefined
   >(undefined);
+  const [filterCreatedFrom, setFilterCreatedFrom] = useState<
+    string | undefined
+  >(undefined);
+  const [filterCreatedTo, setFilterCreatedTo] = useState<string | undefined>(
+    undefined,
+  );
+  const [filterUpdatedFrom, setFilterUpdatedFrom] = useState<
+    string | undefined
+  >(undefined);
+  const [filterUpdatedTo, setFilterUpdatedTo] = useState<string | undefined>(
+    undefined,
+  );
   const navigate = useNavigate();
 
   // Use custom hooks for API integration
@@ -58,6 +69,10 @@ export default function Templates() {
     if (filterCreatedBy) filters.createdBy = filterCreatedBy;
     if (filterSortBy) filters.sortBy = filterSortBy;
     if (filterSortOrder) filters.sortOrder = filterSortOrder;
+    if (filterCreatedFrom) filters.createdFrom = filterCreatedFrom;
+    if (filterCreatedTo) filters.createdTo = filterCreatedTo;
+    if (filterUpdatedFrom) filters.updatedFrom = filterUpdatedFrom;
+    if (filterUpdatedTo) filters.updatedTo = filterUpdatedTo;
     fetchTemplates(filters);
   }, [
     searchQuery,
@@ -67,6 +82,10 @@ export default function Templates() {
     filterCreatedBy,
     filterSortBy,
     filterSortOrder,
+    filterCreatedFrom,
+    filterCreatedTo,
+    filterUpdatedFrom,
+    filterUpdatedTo,
     fetchTemplates,
   ]);
 
@@ -512,6 +531,14 @@ export default function Templates() {
                     sortOrder={filterSortOrder}
                     onChangeSortBy={(s) => setFilterSortBy(s)}
                     onChangeSortOrder={(o) => setFilterSortOrder(o)}
+                    createdFrom={filterCreatedFrom}
+                    createdTo={filterCreatedTo}
+                    updatedFrom={filterUpdatedFrom}
+                    updatedTo={filterUpdatedTo}
+                    onChangeCreatedFrom={(d) => setFilterCreatedFrom(d)}
+                    onChangeCreatedTo={(d) => setFilterCreatedTo(d)}
+                    onChangeUpdatedFrom={(d) => setFilterUpdatedFrom(d)}
+                    onChangeUpdatedTo={(d) => setFilterUpdatedTo(d)}
                   />
                 </div>
 

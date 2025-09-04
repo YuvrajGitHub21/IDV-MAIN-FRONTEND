@@ -8,6 +8,8 @@ import {
   Check,
   X,
   RefreshCw,
+  Send,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -256,6 +258,28 @@ export default function ReceiverView() {
             <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">
               New Template
             </h1>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => {
+                console.log("ReceiverView: Save & Send Invite", formData);
+              }}
+              className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-white hover:bg-blue-50 transition-colors"
+            >
+              <Send className="w-4 h-4 text-[#0073EA]" strokeWidth={1.33} />
+              <span className="text-[13px] font-medium text-[#0073EA]">
+                Save & Send Invite
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                console.log("ReceiverView: Save", formData);
+              }}
+              className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-[#0073EA] hover:bg-blue-700 transition-colors"
+            >
+              <Save className="w-4 h-4 text-white" strokeWidth={1.5} />
+              <span className="text-[13px] font-medium text-white">Save</span>
+            </button>
           </div>
         </div>
       </div>

@@ -42,9 +42,9 @@ export default function SignUp() {
 
     setIsLoading(true);
     setErrors({});
-
+  const API = import.meta.env.VITE_API_BASE;
     try {
-      const response = await fetch("http://localhost:5294/api/Auth/register", {
+      const response = await fetch(`${API}/api/Auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -35,17 +35,28 @@ export function AddNewTemplateDropdown({
   return (
     <>
       <DropdownMenu>
-        <div className="flex">
-          <Button
-            className="bg-blue-600 text-white px-3 py-1.5 text-sm font-medium hover:bg-blue-700"
+        <div className="flex items-center">
+          <button
+            className="h-8 px-3 bg-[#0073EA] hover:bg-[#0060B9] text-white text-xs font-medium font-roboto rounded-l border-r border-[#0060B9] transition-colors"
             onClick={handleCreateNewClick}
           >
             Add New
-          </Button>
+          </button>
           <DropdownMenuTrigger asChild>
-            <Button className="bg-blue-600 border-l border-blue-500 text-white px-2 py-1.5 hover:bg-blue-700">
-              <ChevronDown className="w-4 h-4" />
-            </Button>
+            <button className="h-8 px-2 bg-[#0073EA] hover:bg-[#0060B9] text-white rounded-r transition-colors flex items-center justify-center">
+              <svg
+                width="9"
+                height="6"
+                viewBox="0 0 9 6"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1.0575 0.222656L4.5 3.65766L7.9425 0.222656L9 1.28016L4.5 5.78016L0 1.28016L1.0575 0.222656Z"
+                  fill="white"
+                />
+              </svg>
+            </button>
           </DropdownMenuTrigger>
         </div>
         <DropdownMenuContent

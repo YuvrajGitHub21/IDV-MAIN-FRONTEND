@@ -3,6 +3,7 @@ import { X, Search, Filter, Download, Upload, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import DepartmentFilterDropdown from "./DepartmentFilterDropdown";
 
 interface Employee {
   id: string;
@@ -123,6 +124,7 @@ export default function SendInviteDialog({
   const [selectAll, setSelectAll] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   if (!isOpen) return null;
 
@@ -225,14 +227,24 @@ export default function SendInviteDialog({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="border-0 p-0 text-sm focus-visible:ring-0"
                 />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-[#505258] text-sm"
-                >
-                  <Filter className="w-4 h-4 mr-1" />
-                  Filter
-                </Button>
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-[#505258] text-sm"
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  >
+                    <Filter className="w-4 h-4 mr-1" />
+                    Filter
+                  </Button>
+                  <DepartmentFilterDropdown
+                    isOpen={showFilterDropdown}
+                    onClose={() => setShowFilterDropdown(false)}
+                    selectedDepartments={selectedDepartments}
+                    onDepartmentChange={setSelectedDepartments}
+                    departments={DEPARTMENTS}
+                  />
+                </div>
               </div>
 
               {/* Stats and Select All */}

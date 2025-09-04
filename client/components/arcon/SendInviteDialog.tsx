@@ -163,15 +163,27 @@ export default function SendInviteDialog({
       setUploadedFile(file);
       // Simulate upload progress
       setUploadProgress(0);
-      const interval = setInterval(() => {
+
+      // Clear any existing interval
+      if (uploadIntervalRef.current) {
+        clearInterval(uploadIntervalRef.current);
+        uploadIntervalRef.current = null;
+      }
+
+      const id = window.setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 100) {
-            clearInterval(interval);
+            if (uploadIntervalRef.current) {
+              clearInterval(uploadIntervalRef.current);
+              uploadIntervalRef.current = null;
+            }
             return 100;
           }
           return prev + 20;
         });
       }, 200);
+
+      uploadIntervalRef.current = id;
     }
   };
 

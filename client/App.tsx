@@ -15,6 +15,7 @@ import TemplateBuilder from "./pages/TemplateBuilder";
 import DocumentVerification from "./pages/DocumentVerification";
 import BiometricVerification from "./pages/BiometricVerification";
 import Preview from "./pages/Preview";
+import ReceiverView from "./pages/ReceiverView";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 
@@ -42,6 +43,11 @@ const App = () => (
               <Route path="/template-builder" element={<TemplateBuilder />} />
               <Route path="/preview" element={<Preview />} />
               <Route path="/preview/:templateId" element={<Preview />} />
+              <Route path="/receiver-view" element={<ReceiverView />} />
+              <Route
+                path="/receiver-view/:templateId"
+                element={<ReceiverView />}
+              />
 
               <Route path="/home" element={<Home />} />
 

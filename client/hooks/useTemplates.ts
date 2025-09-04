@@ -123,9 +123,6 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
 const getToken = () =>
   typeof window !== "undefined" ? localStorage.getItem("access") : null;
 
-const getfirstName = () =>
-  typeof window !== "undefined" ? localStorage.getItem("name") : null;
-
 /* ===================== Helpers ===================== */
 // derive ISO date from MongoDB ObjectId
 const objectIdToIso = (id?: string): string => {
@@ -148,6 +145,7 @@ const mapTemplateDoc = (doc: any): TemplateItem => {
 
   // Created by / dates from new dashboard fields
   const createdBy = String(doc?.created_by ?? "Unknown User");
+
   const createdAtUtc = (() => {
     const raw = doc?.created_template_date;
     if (raw) {
@@ -156,6 +154,7 @@ const mapTemplateDoc = (doc: any): TemplateItem => {
     }
     return objectIdToIso(id);
   })();
+
   const updatedAtUtc = (() => {
     const raw = doc?.last_updated;
     if (!raw) return undefined;
@@ -352,18 +351,16 @@ export const useTemplates = () => {
       const page = filters.page ?? 1;
       const pageSize = filters.pageSize ?? 12;
 
-      // Use the existing fetchPage helper which correctly constructs query params
       const res = await fetchPage({
         search: filters.search,
         page,
         pageSize,
       });
 
-      // Handle errors and probe mode below
       if (!res.ok) {
         const text = await res.text().catch(() => "");
 
-        // 💡 If it's the known schema-mismatch error, try probe mode to salvage data
+        // Try probe mode if this is the known schema mismatch coming from Mongo driver
         if (res.status >= 500 && isSchemaMismatchError(text)) {
           const salvaged = await probeCollectGoodItems(
             { search: filters.search },
@@ -379,7 +376,6 @@ export const useTemplates = () => {
           }
         }
 
-        // generic error → fallback
         return fallback(
           `API Error: ${res.status} ${res.statusText}${
             text ? ` — ${text.slice(0, 200)}` : ""
@@ -387,7 +383,6 @@ export const useTemplates = () => {
         );
       }
 
-      // success
       const json = await res.json();
       const { items, total } = normalizeListResponse(json);
       setTemplates(items);
@@ -458,7 +453,7 @@ export async function createTemplateMin(
   return { id, name };
 }
 
-/* ===================== Users hook (unchanged) ===================== */
+/* ===================== Users hook (patched to not override names) ===================== */
 export const useUsers = () => {
   const [users, setUsers] = useState<Record<string, string>>(mockUsers);
   const [loading, setLoading] = useState(false);
@@ -472,7 +467,7 @@ export const useUsers = () => {
       setError(null);
 
       try {
-        const useRealAPI = false;
+        const useRealAPI = false; // keep toggleable
         if (useRealAPI) {
           const token = getToken();
           if (!token) throw new Error("No auth token found");
@@ -500,9 +495,10 @@ export const useUsers = () => {
           setUsers((prev) => ({ ...prev, [userId]: fullName }));
           return fullName;
         } else {
-          const userName = getfirstName() || "Unknown User";
-          setUsers((prev) => ({ ...prev, [userId]: userName }));
-          return userName;
+          // IMPORTANT: Do not force localStorage name. Mirror provided id/name.
+          const display = userId || "Unknown User";
+          setUsers((prev) => ({ ...prev, [userId]: display }));
+          return display;
         }
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to fetch user";

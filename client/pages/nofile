@@ -1,0 +1,79 @@
+{
+  "Page": 0,
+  "PageSize": 0,
+  "Total": 0,
+  "Items": [
+    {
+      "Id": "string",
+      "template_id": 0,
+      "nameOfTemplate": "string",
+      "Personal_info": {
+        "section_id": 0,
+        "firstName": true,
+        "LastName": true,
+        "Email": true,
+        "Added_fields": {
+          "dob": true,
+          "Current_address": true,
+          "permanent_address": true,
+          "Gender": true
+        }
+      },
+      "Doc_verification": {
+        "section_id": 0,
+        "user_uploads": {
+          "Allow_uploads": true,
+          "allow_capture": true
+        },
+        "Unreadable_docs": {
+          "reject_immediately": true,
+          "Allow_retries": true
+        },
+        "Countries_array": [
+          {
+            "country_name": "string",
+            "listOfdocs": {
+              "additionalProp1": true,
+              "additionalProp2": true,
+              "additionalProp3": true
+            }
+          }
+        ]
+      },
+      "Biometric_verification": {
+        "section_id": 0,
+        "number_of_retries": [
+          0
+        ],
+        "liveness": {
+          "try_again": true,
+          "Block_further": true
+        },
+        "biometric_data_retention": {
+          "duration": [
+            "string"
+          ]
+        }
+      },
+      "Section_status": {
+        "persoanl_info": true,
+        "doc_verification": true,
+        "Biometric_verification": true
+      },
+      "Template_status": true,
+      "sections_order": [
+        "string"
+      ],
+      "current_step": 0,
+      "invitees": [
+        {
+          "id": "string",
+          "user_name": "string"
+        }
+      ],
+      "created_template_date": "2025-09-04T20:39:22.188Z",
+      "created_by": "string",
+      "last_updated": "2025-09-04T20:39:22.188Z"
+    }
+  ]
+}

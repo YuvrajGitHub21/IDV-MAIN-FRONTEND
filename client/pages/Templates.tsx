@@ -55,13 +55,23 @@ export default function Templates() {
   } = useTemplates();
   const { users, fetchMultipleUsers } = useUsers();
 
-  // Build creators list from templates and known users
+  // helper: detect Mongo-like ObjectId strings
+  const isObjectId = (s: string) => /^[0-9a-fA-F]{24}$/.test(s);
+
+  // Build creators list from templates and known users (for filter dropdown)
   const creators = React.useMemo(() => {
     const ids = Array.from(new Set(templates.map((t) => t.createdBy))).filter(
       Boolean,
     );
-    return ids.map((id) => ({ id, name: users[id] || id }));
+    // If createdBy is a plain name, show it as both id & label; if it's an ID, try resolve to users map.
+    return ids.map((id) => ({ id, name: isObjectId(id) ? (users[id] || id) : id }));
   }, [templates, users]);
+
+  // Resolve creator display name for the table
+  const resolveCreatorName = (createdBy: string) => {
+    if (!createdBy) return "User Not Found";
+    return isObjectId(createdBy) ? (users[createdBy] || "User Not Found") : createdBy;
+  };
 
   useEffect(() => {
     const filters: any = { search: searchQuery, page: currentPage, pageSize };
@@ -89,13 +99,17 @@ export default function Templates() {
     fetchTemplates,
   ]);
 
-  // Fetch user data for all unique creators when templates change
+  // Fetch user data for all creator values that look like ObjectIds
   useEffect(() => {
     if (templates.length > 0) {
-      const uniqueUserIds = [
-        ...new Set(templates.map((template) => template.createdBy)),
-      ];
-      fetchMultipleUsers(uniqueUserIds);
+      const objectIds = Array.from(
+        new Set(
+          templates.map((template) => template.createdBy).filter((id) => isObjectId(id))
+        )
+      );
+      if (objectIds.length) {
+        fetchMultipleUsers(objectIds);
+      }
     }
   }, [templates, fetchMultipleUsers]);
 
@@ -151,13 +165,10 @@ export default function Templates() {
   // Handle template actions
   const handleCreateNewTemplate = (templateName: string) => {
     console.log("Create new template with name:", templateName);
-    // Add your create new template logic here
-    // For example: navigate to template builder with the template name
   };
 
   const handleChooseTemplate = () => {
     console.log("Choose template");
-    // Add your choose template logic here
   };
 
   const handleTemplateAction = (action: string, templateId: string) => {
@@ -171,18 +182,14 @@ export default function Templates() {
         navigate("/template-builder", { state: { templateId } });
         break;
       default:
-        // Add your other template action logic here
         console.log(`Action ${action} not yet implemented`);
     }
   };
 
   const handleLogout = () => {
-    // Clear authentication tokens and user data from localStorage
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     localStorage.removeItem("user");
-
-    // Navigate to login page
     navigate("/login", { replace: true });
   };
 
@@ -669,13 +676,13 @@ export default function Templates() {
                             {formatDate(template.createdAtUtc)}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
-                            {users[template.createdBy] || "Unknown User"}
+                            {resolveCreatorName(template.createdBy)}
                           </td>
                           <td className="px-2 py-2 text-sm">
                             {getStatusBadge(template.isActive)}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
-                            {formatDate(template.createdAtUtc)}
+                            {formatDate(template.updatedAtUtc ?? template.createdAtUtc)}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
                             <TemplateActionsDropdown
@@ -740,8 +747,7 @@ export default function Templates() {
                             {template.name}
                           </h3>
                           <p className="text-sm text-gray-600 mt-1">
-                            Created by{" "}
-                            {users[template.createdBy] || "Unknown User"}
+                            Created by {resolveCreatorName(template.createdBy)}
                           </p>
                           <p className="text-sm text-gray-600">
                             {formatDate(template.createdAtUtc)}

@@ -679,9 +679,39 @@ export default function TemplateBuilder() {
     },
   ]);
 
-  // Load persisted verification steps on mount
+  // Load persisted verification steps on mount or use incoming state when navigating back from Preview
   useEffect(() => {
     try {
+      // If we navigated back from Preview, use the passed state to preserve order
+      const incoming = (location && (location as any).state) || {};
+      if (incoming && Array.isArray(incoming.verificationSteps)) {
+        const parsed = incoming.verificationSteps;
+        const hasPI = parsed.some((s: any) => s?.id === "personal-info");
+        const normalized = hasPI
+          ? parsed
+          : [
+              {
+                id: "personal-info",
+                title: "Personal Information",
+                description:
+                  "Set up fields to collect basic user details like name, contact.",
+                isRequired: true,
+                isEnabled: true,
+              },
+              ...parsed,
+            ];
+        setVerificationSteps(
+          normalized.filter((s: any) => s && typeof s.id === "string"),
+        );
+
+        // Also restore added fields if present
+        if (Array.isArray(incoming.addedFields)) {
+          setAddedFields(incoming.addedFields);
+        }
+
+        return;
+      }
+
       const raw = localStorage.getItem("arcon_verification_steps");
       if (raw) {
         const parsed = JSON.parse(raw);

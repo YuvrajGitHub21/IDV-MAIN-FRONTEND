@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent } from "@/components/ui/card";
+import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 
 interface FormData {
   firstName: string;
@@ -49,6 +50,7 @@ export default function ReceiverView() {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [emailVerified, setEmailVerified] = useState(false);
+  const [showSendInviteDialog, setShowSendInviteDialog] = useState(false);
 
   // Load admin/preview configuration for Document Verification
   const [docConfig, setDocConfig] = useState<any>(null);
@@ -263,6 +265,7 @@ export default function ReceiverView() {
             <button
               onClick={() => {
                 console.log("ReceiverView: Save & Send Invite", formData);
+                setShowSendInviteDialog(true);
               }}
               className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-white hover:bg-blue-50 transition-colors"
             >
@@ -875,6 +878,12 @@ export default function ReceiverView() {
           </div>
         </div>
       </div>
+
+      {/* Send Invite Dialog */}
+      <SendInviteDialog
+        isOpen={showSendInviteDialog}
+        onClose={() => setShowSendInviteDialog(false)}
+      />
     </div>
   );
 }

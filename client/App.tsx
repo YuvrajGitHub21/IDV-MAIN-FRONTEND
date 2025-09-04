@@ -18,6 +18,7 @@ import Preview from "./pages/Preview";
 import ReceiverView from "./pages/ReceiverView";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
+import ChooseTemplate from "./pages/ChooseTemplate";
 
 const queryClient = new QueryClient();
 // 1st change

@@ -129,6 +129,16 @@ export default function SendInviteDialog({
 
   if (!isOpen) return null;
 
+  // Ensure we clear any running interval when component unmounts or dialog closes
+  useEffect(() => {
+    return () => {
+      if (uploadIntervalRef.current) {
+        clearInterval(uploadIntervalRef.current);
+        uploadIntervalRef.current = null;
+      }
+    };
+  }, []);
+
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =
       emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

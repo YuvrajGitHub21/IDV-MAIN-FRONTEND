@@ -26,8 +26,12 @@ export default function Templates() {
   const [filterCreatedBy, setFilterCreatedBy] = useState<string | undefined>(
     undefined,
   );
-  const [filterSortBy, setFilterSortBy] = useState<"createdAt" | "updatedAt" | undefined>(undefined);
-  const [filterSortOrder, setFilterSortOrder] = useState<"asc" | "desc" | undefined>(undefined);
+  const [filterSortBy, setFilterSortBy] = useState<
+    "createdAt" | "updatedAt" | undefined
+  >(undefined);
+  const [filterSortOrder, setFilterSortOrder] = useState<
+    "asc" | "desc" | undefined
+  >(undefined);
   const navigate = useNavigate();
 
   // Use custom hooks for API integration

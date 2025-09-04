@@ -79,7 +79,11 @@ export default function TemplateFilterDropdown({
           <div className="flex gap-2">
             <select
               value={sortBy ?? ""}
-              onChange={(e) => onChangeSortBy(e.target.value ? (e.target.value as any) : undefined)}
+              onChange={(e) =>
+                onChangeSortBy(
+                  e.target.value ? (e.target.value as any) : undefined,
+                )
+              }
               className="flex-1 border border-gray-200 rounded px-2 py-1 text-sm"
             >
               <option value="">Default</option>
@@ -89,7 +93,11 @@ export default function TemplateFilterDropdown({
 
             <select
               value={sortOrder ?? ""}
-              onChange={(e) => onChangeSortOrder(e.target.value ? (e.target.value as any) : undefined)}
+              onChange={(e) =>
+                onChangeSortOrder(
+                  e.target.value ? (e.target.value as any) : undefined,
+                )
+              }
               className="w-28 border border-gray-200 rounded px-2 py-1 text-sm"
             >
               <option value="">Order</option>

@@ -125,12 +125,11 @@ const mockUsers: Record<string, string> = {
 /* ===================== Config ===================== */
 const API_BASE = "http://localhost:5294";
 
-// // For Pranathi 
+// // For Pranathi
 // const HARDCODED_CREATED_BY = "40945cdc-c62b-4c39-99e1-650c990af422";
 
 // For Yuvraj
 const HARDCODED_CREATED_BY = "31e844b2-cba4-48b2-a687-419934046176";
-
 
 const getToken = () =>
   typeof window !== "undefined" ? localStorage.getItem("access") : null;
@@ -165,7 +164,8 @@ function getFallbackData(filters: TemplateFilters = {}) {
 
   // Sorting
   if (filters.sortBy) {
-    const key = filters.sortBy === "createdAt" ? "createdAtUtc" : "updatedAtUtc";
+    const key =
+      filters.sortBy === "createdAt" ? "createdAtUtc" : "updatedAtUtc";
     filtered.sort((a, b) => {
       const av = a[key] ? new Date(a[key] as string).getTime() : 0;
       const bv = b[key] ? new Date(b[key] as string).getTime() : 0;
@@ -222,7 +222,8 @@ export const useTemplates = () => {
       searchParams.append("PageSize", String(pageSize));
       if (filters.search) searchParams.append("Search", filters.search);
       if (filters.sortBy) searchParams.append("SortBy", filters.sortBy);
-      if (filters.sortOrder) searchParams.append("SortOrder", filters.sortOrder);
+      if (filters.sortOrder)
+        searchParams.append("SortOrder", filters.sortOrder);
 
       const res = await fetch(
         `${API_BASE}/api/form-templates?${searchParams.toString()}`,
@@ -317,8 +318,7 @@ export const useUsers = () => {
           return userName;
         }
       } catch (e) {
-        const msg =
-          e instanceof Error ? e.message : "Failed to fetch user";
+        const msg = e instanceof Error ? e.message : "Failed to fetch user";
         setError(msg);
         console.error("Error fetching user:", e);
         return "Unknown User";

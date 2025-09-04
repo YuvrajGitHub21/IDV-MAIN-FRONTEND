@@ -42,7 +42,7 @@ export default function SignUp() {
 
     setIsLoading(true);
     setErrors({});
-  const API = import.meta.env.VITE_API_BASE;
+    const API = import.meta.env.VITE_API_BASE;
     try {
       const response = await fetch(`${API}/api/Auth/register`, {
         method: "POST",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X, Search, Filter, Download, Upload, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,6 +93,31 @@ export default function SendInviteDialog({
 }: SendInviteDialogProps) {
   const [activeTab, setActiveTab] = useState<"select" | "bulk">("select");
   const [employees, setEmployees] = useState<Employee[]>(SAMPLE_EMPLOYEES);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isMounted = true;
+    const controller = new AbortController();
+
+    async function loadInvitees() {
+      try {
+        const res = await fetch("/api/invitees", { signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: { employees: Employee[] } = await res.json();
+        if (isMounted && Array.isArray(data.employees)) {
+          setEmployees(data.employees);
+        }
+      } catch (_err) {
+        // Keep static fallback if API fails
+      }
+    }
+
+    loadInvitees();
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, [isOpen]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);

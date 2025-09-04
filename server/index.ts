@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import { handleGetInvitees } from "./routes/invitees";
 
 export function createServer() {
   const app = express();
@@ -18,6 +19,9 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Invitees (static for now, to be replaced by DB-backed data)
+  app.get("/api/invitees", handleGetInvitees);
 
   return app;
 }

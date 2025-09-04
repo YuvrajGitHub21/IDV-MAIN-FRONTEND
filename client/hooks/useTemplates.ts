@@ -55,6 +55,7 @@ const rawMockTemplates: TemplateItem[] = [
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-07-14T00:00:00Z",
+    updatedAtUtc: "2024-07-15T12:00:00Z",
   },
   {
     id: "2",
@@ -64,6 +65,7 @@ const rawMockTemplates: TemplateItem[] = [
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-06-22T00:00:00Z",
+    updatedAtUtc: "2024-06-23T08:30:00Z",
   },
   {
     id: "3",
@@ -73,6 +75,7 @@ const rawMockTemplates: TemplateItem[] = [
     templateRules: "Rules",
     isActive: false,
     createdAtUtc: "2024-06-18T00:00:00Z",
+    updatedAtUtc: "2024-06-19T14:10:00Z",
   },
   {
     id: "4",
@@ -82,6 +85,7 @@ const rawMockTemplates: TemplateItem[] = [
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-05-04T00:00:00Z",
+    updatedAtUtc: "2024-06-01T09:20:00Z",
   },
   {
     id: "5",
@@ -91,6 +95,7 @@ const rawMockTemplates: TemplateItem[] = [
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-07-14T00:00:00Z",
+    updatedAtUtc: "2024-07-16T16:45:00Z",
   },
   {
     id: "6",
@@ -100,6 +105,7 @@ const rawMockTemplates: TemplateItem[] = [
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-07-14T00:00:00Z",
+    updatedAtUtc: "2024-07-14T10:00:00Z",
   },
 ];
 

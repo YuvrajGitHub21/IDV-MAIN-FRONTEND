@@ -10,6 +10,7 @@ import {
 import { AddNewTemplateDropdown } from "@/components/arcon/AddNewTemplateDropdown";
 import { TemplateActionsDropdown } from "@/components/arcon/TemplateActionsDropdown";
 import { InviteesAvatarGroup } from "@/components/arcon/InviteesAvatarGroup";
+import TemplateFilterDropdown from "@/components/arcon/TemplateFilterDropdown";
 
 export default function Templates() {
   const [searchQuery, setSearchQuery] = useState("");

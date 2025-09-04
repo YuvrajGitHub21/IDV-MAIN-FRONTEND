@@ -13,6 +13,14 @@ interface TemplateFilterDropdownProps {
   sortOrder: "asc" | "desc" | undefined;
   onChangeSortBy: (s: "createdAt" | "updatedAt" | undefined) => void;
   onChangeSortOrder: (o: "asc" | "desc" | undefined) => void;
+  createdFrom?: string;
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
+  onChangeCreatedFrom?: (d: string | undefined) => void;
+  onChangeCreatedTo?: (d: string | undefined) => void;
+  onChangeUpdatedFrom?: (d: string | undefined) => void;
+  onChangeUpdatedTo?: (d: string | undefined) => void;
 }
 
 export default function TemplateFilterDropdown({
@@ -104,6 +112,65 @@ export default function TemplateFilterDropdown({
               <option value="asc">Asc</option>
               <option value="desc">Desc</option>
             </select>
+          </div>
+        </div>
+
+        <div className="mb-2 grid grid-cols-2 gap-2">
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">
+              Created From
+            </div>
+            <input
+              type="date"
+              value={createdFrom ?? ""}
+              onChange={(e) =>
+                onChangeCreatedFrom &&
+                onChangeCreatedFrom(e.target.value || undefined)
+              }
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">
+              Created To
+            </div>
+            <input
+              type="date"
+              value={createdTo ?? ""}
+              onChange={(e) =>
+                onChangeCreatedTo &&
+                onChangeCreatedTo(e.target.value || undefined)
+              }
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">
+              Updated From
+            </div>
+            <input
+              type="date"
+              value={updatedFrom ?? ""}
+              onChange={(e) =>
+                onChangeUpdatedFrom &&
+                onChangeUpdatedFrom(e.target.value || undefined)
+              }
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">
+              Updated To
+            </div>
+            <input
+              type="date"
+              value={updatedTo ?? ""}
+              onChange={(e) =>
+                onChangeUpdatedTo &&
+                onChangeUpdatedTo(e.target.value || undefined)
+              }
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            />
           </div>
         </div>
 

@@ -37,6 +37,12 @@ export interface TemplateFilters {
   search?: string;
   page?: number;
   pageSize?: number;
+  sortBy?: SortBy;
+  sortOrder?: SortOrder;
+  createdFrom?: string; // ISO date YYYY-MM-DD
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
 }
  
 /* ===================== Fallback data (unchanged) ===================== */
@@ -204,7 +210,46 @@ function getFallbackData(filters: TemplateFilters = {}) {
   if (filters.createdBy) {
     filtered = filtered.filter((t) => t.createdBy === filters.createdBy);
   }
- 
+
+  // Created date range filter
+  if (filters.createdFrom) {
+    const from = new Date(filters.createdFrom).getTime();
+    filtered = filtered.filter(
+      (t) => new Date(t.createdAtUtc).getTime() >= from,
+    );
+  }
+  if (filters.createdTo) {
+    const to = new Date(filters.createdTo).getTime();
+    filtered = filtered.filter((t) => new Date(t.createdAtUtc).getTime() <= to);
+  }
+
+  // Updated date range filter
+  if (filters.updatedFrom) {
+    const from = new Date(filters.updatedFrom).getTime();
+    filtered = filtered.filter(
+      (t) => new Date(t.updatedAtUtc ?? t.createdAtUtc).getTime() >= from,
+    );
+  }
+  if (filters.updatedTo) {
+    const to = new Date(filters.updatedTo).getTime();
+    filtered = filtered.filter(
+      (t) => new Date(t.updatedAtUtc ?? t.createdAtUtc).getTime() <= to,
+    );
+  }
+
+  // Sorting
+  if (filters.sortBy) {
+    const key =
+      filters.sortBy === "createdAt" ? "createdAtUtc" : "updatedAtUtc";
+    filtered.sort((a, b) => {
+      const av = a[key] ? new Date(a[key] as string).getTime() : 0;
+      const bv = b[key] ? new Date(b[key] as string).getTime() : 0;
+      if (filters.sortOrder === "asc") return av - bv;
+      return bv - av;
+    });
+  }
+
+  // Pagination
   const page = filters.page || 1;
   const pageSize = filters.pageSize || 12;
   const startIndex = (page - 1) * pageSize;
@@ -233,6 +278,35 @@ export const useTemplates = () => {
  
     try {
       const page = filters.page ?? 1;
+      const pageSize = filters.pageSize ?? 20;
+
+      searchParams.append("IsActive", String(isActive));
+      searchParams.append("CreatedBy", HARDCODED_CREATED_BY); // hardcoded as requested
+      searchParams.append("Page", String(page));
+      searchParams.append("PageSize", String(pageSize));
+      if (filters.search) searchParams.append("Search", filters.search);
+      if (filters.sortBy) searchParams.append("SortBy", filters.sortBy);
+      if (filters.sortOrder)
+        searchParams.append("SortOrder", filters.sortOrder);
+      if (filters.createdFrom)
+        searchParams.append("CreatedFrom", filters.createdFrom);
+      if (filters.createdTo)
+        searchParams.append("CreatedTo", filters.createdTo);
+      if (filters.updatedFrom)
+        searchParams.append("UpdatedFrom", filters.updatedFrom);
+      if (filters.updatedTo)
+        searchParams.append("UpdatedTo", filters.updatedTo);
+
+      const res = await fetch(
+        `${API_BASE}/api/form-templates?${searchParams.toString()}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
       const pageSize = filters.pageSize ?? 12;
  
       // normal call
@@ -241,7 +315,6 @@ export const useTemplates = () => {
         page,
         pageSize,
       });
- 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
  

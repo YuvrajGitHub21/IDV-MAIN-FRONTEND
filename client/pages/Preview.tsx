@@ -123,20 +123,19 @@ export default function Preview() {
     } catch {}
   }, []);
 
-  // Fallback template data if user navigates here from builder without saving
-  const templateData: TemplateData =
-    (location.state as TemplateData) || {
-      templateName: "New Template",
-      verificationSteps: [],
-      addedFields: [],
-      templateData: {
-        personalInfo: true,
-        documentVerification: false,
-        biometricVerification: false,
-      },
-    };
+  // Get template data from location state (fallback)
+  const templateData: TemplateData = location.state || {
+    templateName: "New Template",
+    verificationSteps: [],
+    addedFields: [],
+    templateData: {
+      personalInfo: true,
+      documentVerification: false,
+      biometricVerification: false,
+    },
+  };
 
-  /* ---------- helpers: map Mongo doc -> UI ---------- */
+  // ---------- NEW: bridge helpers to map Mongo doc -> UI components ----------
   const getPersonalShowBase = (tpl: any) => {
     const p = tpl?.Personal_info || tpl?.personal_info || {};
     return {
@@ -298,20 +297,16 @@ export default function Preview() {
     };
   }, [templateData, templateId, dbTemplate]);
 
-  /* ---------- Build sections to render (DB first, fallback to builder) ---------- */
+  // ---------- Build sections to render (DB first, fallback to builder state) ----------
   const createSectionComponents = (): SectionConfig[] => {
     if (dbTemplate) {
       const sections: SectionConfig[] = [];
-      const showPersonal = sectionStatus
-        ? !!(sectionStatus.persoanl_info ?? sectionStatus.personal_info)
-        : true;
-      const showDoc = sectionStatus
-        ? !!sectionStatus.doc_verification
-        : !!(dbTemplate?.Doc_verification ?? dbTemplate?.doc_verification);
-      const showBio = sectionStatus
-        ? !!(sectionStatus.Biometric_verification ?? sectionStatus.biometric_verification)
-        : !!(dbTemplate?.Biometric_verification ?? dbTemplate?.biometric_verification);
+      const showPersonal = sectionStatus ? !!sectionStatus.persoanl_info : true;
+      const showDoc = sectionStatus ? !!sectionStatus.doc_verification : !!dbTemplate?.Doc_verification;
+      const showBio =
+        sectionStatus ? !!sectionStatus.Biometric_verification : !!dbTemplate?.Biometric_verification;
 
+      // Personal Info
       if (showPersonal) {
         sections.push({
           id: "personal-info",
@@ -328,6 +323,7 @@ export default function Preview() {
         });
       }
 
+      // Document Verification
       if (showDoc) {
         sections.push({
           id: "document-verification",
@@ -335,12 +331,11 @@ export default function Preview() {
           description:
             "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
           enabled: true,
-          component: (
-            <DocumentVerificationSection config={getDocConfigFromDb(dbTemplate)} />
-          ),
+          component: <DocumentVerificationSection config={getDocConfigFromDb(dbTemplate)} />,
         });
       }
 
+      // Biometric Verification
       if (showBio) {
         sections.push({
           id: "biometric-verification",
@@ -348,16 +343,14 @@ export default function Preview() {
           description:
             "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
           enabled: true,
-          component: (
-            <BiometricVerificationSection config={getBiometricConfigFromDb(dbTemplate)} />
-          ),
+          component: <BiometricVerificationSection config={getBiometricConfigFromDb(dbTemplate)} />,
         });
       }
 
       return sections;
     }
 
-    // Fallback to original builder-based preview
+    // Fallback to your original builder-based preview
     const sections: SectionConfig[] = [];
 
     sections.push({
@@ -398,6 +391,7 @@ export default function Preview() {
 
     return sections;
   };
+
 
   const orderedSections = createSectionComponents();
 

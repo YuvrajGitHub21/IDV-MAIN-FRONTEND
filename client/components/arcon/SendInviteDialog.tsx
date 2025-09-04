@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { X, Search, Filter, Download, Upload, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,9 +124,20 @@ export default function SendInviteDialog({
   const [selectAll, setSelectAll] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const uploadIntervalRef = useRef<number | null>(null);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   if (!isOpen) return null;
+
+  // Ensure we clear any running interval when component unmounts or dialog closes
+  useEffect(() => {
+    return () => {
+      if (uploadIntervalRef.current) {
+        clearInterval(uploadIntervalRef.current);
+        uploadIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =
@@ -162,15 +173,27 @@ export default function SendInviteDialog({
       setUploadedFile(file);
       // Simulate upload progress
       setUploadProgress(0);
-      const interval = setInterval(() => {
+
+      // Clear any existing interval
+      if (uploadIntervalRef.current) {
+        clearInterval(uploadIntervalRef.current);
+        uploadIntervalRef.current = null;
+      }
+
+      const id = window.setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 100) {
-            clearInterval(interval);
+            if (uploadIntervalRef.current) {
+              clearInterval(uploadIntervalRef.current);
+              uploadIntervalRef.current = null;
+            }
             return 100;
           }
           return prev + 20;
         });
       }, 200);
+
+      uploadIntervalRef.current = id;
     }
   };
 
@@ -407,7 +430,17 @@ export default function SendInviteDialog({
                         </div>
                       </div>
                     </div>
-                    <button className="w-7 h-7 rounded-full bg-[#F6F7FB] flex items-center justify-center">
+                    <button
+                      onClick={() => {
+                        if (uploadIntervalRef.current) {
+                          clearInterval(uploadIntervalRef.current);
+                          uploadIntervalRef.current = null;
+                        }
+                        setUploadedFile(null);
+                        setUploadProgress(0);
+                      }}
+                      className="w-7 h-7 rounded-full bg-[#F6F7FB] flex items-center justify-center"
+                    >
                       <X className="w-4 h-4 text-[#676879]" />
                     </button>
                   </div>

@@ -9,8 +9,7 @@ export interface TemplateItem {
   templateRules: string | null;
   isActive: boolean;
   createdAtUtc: string;
-  // If API later adds this:
-  // updatedAtUtc?: string | null;
+  updatedAtUtc?: string | null;
 }
 
 export interface TemplatesResponse {
@@ -33,12 +32,17 @@ export interface UserResponse {
   errors: string[];
 }
 
+export type SortBy = "createdAt" | "updatedAt";
+export type SortOrder = "asc" | "desc";
+
 export interface TemplateFilters {
   isActive?: boolean;
   createdBy?: string; // ignored (we hardcode below)
   search?: string;
   page?: number;
   pageSize?: number;
+  sortBy?: SortBy;
+  sortOrder?: SortOrder;
 }
 
 /* ===================== Original mock data (kept for fallback) ===================== */

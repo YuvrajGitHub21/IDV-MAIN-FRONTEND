@@ -26,6 +26,12 @@ export default function Templates() {
   const [filterCreatedBy, setFilterCreatedBy] = useState<string | undefined>(
     undefined,
   );
+  const [filterSortBy, setFilterSortBy] = useState<
+    "createdAt" | "updatedAt" | undefined
+  >(undefined);
+  const [filterSortOrder, setFilterSortOrder] = useState<
+    "asc" | "desc" | undefined
+  >(undefined);
   const navigate = useNavigate();
 
   // Use custom hooks for API integration
@@ -50,6 +56,8 @@ export default function Templates() {
     const filters: any = { search: searchQuery, page: currentPage, pageSize };
     if (filterIsActive !== undefined) filters.isActive = filterIsActive;
     if (filterCreatedBy) filters.createdBy = filterCreatedBy;
+    if (filterSortBy) filters.sortBy = filterSortBy;
+    if (filterSortOrder) filters.sortOrder = filterSortOrder;
     fetchTemplates(filters);
   }, [
     searchQuery,
@@ -57,6 +65,8 @@ export default function Templates() {
     pageSize,
     filterIsActive,
     filterCreatedBy,
+    filterSortBy,
+    filterSortOrder,
     fetchTemplates,
   ]);
 
@@ -498,6 +508,10 @@ export default function Templates() {
                     creators={creators}
                     selectedCreator={filterCreatedBy}
                     onChangeCreator={(id) => setFilterCreatedBy(id)}
+                    sortBy={filterSortBy}
+                    sortOrder={filterSortOrder}
+                    onChangeSortBy={(s) => setFilterSortBy(s)}
+                    onChangeSortOrder={(o) => setFilterSortOrder(o)}
                   />
                 </div>
 

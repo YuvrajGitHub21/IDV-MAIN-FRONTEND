@@ -9,6 +9,10 @@ interface TemplateFilterDropdownProps {
   creators: { id: string; name: string }[];
   selectedCreator: string | undefined;
   onChangeCreator: (id: string | undefined) => void;
+  sortBy: "createdAt" | "updatedAt" | undefined;
+  sortOrder: "asc" | "desc" | undefined;
+  onChangeSortBy: (s: "createdAt" | "updatedAt" | undefined) => void;
+  onChangeSortOrder: (o: "asc" | "desc" | undefined) => void;
 }
 
 export default function TemplateFilterDropdown({
@@ -19,6 +23,10 @@ export default function TemplateFilterDropdown({
   creators,
   selectedCreator,
   onChangeCreator,
+  sortBy,
+  sortOrder,
+  onChangeSortBy,
+  onChangeSortOrder,
 }: TemplateFilterDropdownProps) {
   if (!isOpen) return null;
 
@@ -64,6 +72,39 @@ export default function TemplateFilterDropdown({
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="mb-2">
+          <div className="text-sm font-medium text-gray-700 mb-1">Sort by</div>
+          <div className="flex gap-2">
+            <select
+              value={sortBy ?? ""}
+              onChange={(e) =>
+                onChangeSortBy(
+                  e.target.value ? (e.target.value as any) : undefined,
+                )
+              }
+              className="flex-1 border border-gray-200 rounded px-2 py-1 text-sm"
+            >
+              <option value="">Default</option>
+              <option value="createdAt">Created At</option>
+              <option value="updatedAt">Last Updated</option>
+            </select>
+
+            <select
+              value={sortOrder ?? ""}
+              onChange={(e) =>
+                onChangeSortOrder(
+                  e.target.value ? (e.target.value as any) : undefined,
+                )
+              }
+              className="w-28 border border-gray-200 rounded px-2 py-1 text-sm"
+            >
+              <option value="">Order</option>
+              <option value="asc">Asc</option>
+              <option value="desc">Desc</option>
+            </select>
+          </div>
         </div>
 
         <div className="flex justify-end gap-2 mt-3">

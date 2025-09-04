@@ -1,5 +1,13 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronLeft, Camera, Upload, Info, Check, X, RefreshCw } from "lucide-react";
+import {
+  ChevronLeft,
+  Camera,
+  Upload,
+  Info,
+  Check,
+  X,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,7 +76,8 @@ export default function ReceiverView() {
   const handleSubmit = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!formData.firstName.trim())
+      newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
     if (!emailVerified) newErrors.email = "Email verification is required";
@@ -169,7 +178,9 @@ export default function ReceiverView() {
     if (!capturedDataUrl) return;
     const res = await fetch(capturedDataUrl);
     const blob = await res.blob();
-    const file = new File([blob], "captured.jpg", { type: blob.type || "image/jpeg" });
+    const file = new File([blob], "captured.jpg", {
+      type: blob.type || "image/jpeg",
+    });
     setFormData((prev) => ({ ...prev, document: file }));
     setShowCamera(false);
   };
@@ -189,7 +200,9 @@ export default function ReceiverView() {
         />
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-[#F65F7C] flex items-center justify-center">
-            <span className="text-white text-xs font-medium leading-[10px]">OS</span>
+            <span className="text-white text-xs font-medium leading-[10px]">
+              OS
+            </span>
           </div>
         </div>
       </header>
@@ -215,10 +228,14 @@ export default function ReceiverView() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-xs text-[#505258] font-medium">Template</span>
+              <span className="text-xs text-[#505258] font-medium">
+                Template
+              </span>
             </div>
             <span className="text-xs text-[#505258] font-medium">/</span>
-            <span className="text-xs text-[#505258] font-medium">Create New Template</span>
+            <span className="text-xs text-[#505258] font-medium">
+              Create New Template
+            </span>
           </div>
         </div>
 
@@ -231,7 +248,9 @@ export default function ReceiverView() {
             >
               <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
             </button>
-            <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">New Template</h1>
+            <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">
+              New Template
+            </h1>
           </div>
         </div>
       </div>
@@ -254,7 +273,9 @@ export default function ReceiverView() {
             {/* Receiver's View Tab - Active */}
             <div className="w-full px-[26px] py-3 flex items-center gap-2.5 rounded bg-[#E6F1FD]">
               <div className="flex-1 flex flex-col gap-2">
-                <h3 className="text-sm font-bold text-[#292F4C]">Receiver's View</h3>
+                <h3 className="text-sm font-bold text-[#292F4C]">
+                  Receiver's View
+                </h3>
                 <p className="text-[13px] text-[#505258] leading-[18px]">
                   Fill the form as the end user.
                 </p>
@@ -285,10 +306,13 @@ export default function ReceiverView() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <h2 className="text-base font-bold text-[#172B4D]">Personal Information</h2>
+                  <h2 className="text-base font-bold text-[#172B4D]">
+                    Personal Information
+                  </h2>
                 </div>
                 <p className="text-[13px] text-[#172B4D] ml-6">
-                  Please provide your basic personal information to begin the identity verification process.
+                  Please provide your basic personal information to begin the
+                  identity verification process.
                 </p>
               </div>
 
@@ -296,35 +320,56 @@ export default function ReceiverView() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* First Name */}
                   <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-[13px] font-medium text-[#172B4D]">First Name</Label>
+                    <Label
+                      htmlFor="firstName"
+                      className="text-[13px] font-medium text-[#172B4D]"
+                    >
+                      First Name
+                    </Label>
                     <Input
                       id="firstName"
                       value={formData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
                       placeholder="Enter First Name"
                       className="h-[38px] border-[#C3C6D4] text-[13px]"
                     />
-                    {errors.firstName && <p className="text-red-500 text-xs">{errors.firstName}</p>}
+                    {errors.firstName && (
+                      <p className="text-red-500 text-xs">{errors.firstName}</p>
+                    )}
                   </div>
 
                   {/* Last Name */}
                   <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-[13px] font-medium text-[#172B4D]">Last Name</Label>
+                    <Label
+                      htmlFor="lastName"
+                      className="text-[13px] font-medium text-[#172B4D]"
+                    >
+                      Last Name
+                    </Label>
                     <Input
                       id="lastName"
                       value={formData.lastName}
-                      onChange={(e) => handleInputChange("lastName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
                       placeholder="Enter Last Name"
                       className="h-[38px] border-[#C3C6D4] text-[13px]"
                     />
-                    {errors.lastName && <p className="text-red-500 text-xs">{errors.lastName}</p>}
+                    {errors.lastName && (
+                      <p className="text-red-500 text-xs">{errors.lastName}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-[13px] font-medium text-[#172B4D]">
+                    <Label
+                      htmlFor="email"
+                      className="text-[13px] font-medium text-[#172B4D]"
+                    >
                       Email <span className="text-[#D83A52]">*</span>
                     </Label>
                     <div className="relative">
@@ -332,7 +377,9 @@ export default function ReceiverView() {
                         id="email"
                         type="email"
                         value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                         placeholder="Enter Your Email Address"
                         className="h-[38px] border-[#C3C6D4] text-[13px] pr-20"
                       />
@@ -352,17 +399,26 @@ export default function ReceiverView() {
                         Email verification is required to continue
                       </div>
                     )}
-                    {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="text-red-500 text-xs">{errors.email}</p>
+                    )}
                   </div>
 
                   {/* Date of Birth */}
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth" className="text-[13px] font-medium text-[#172B4D]">Date Of Birth</Label>
+                    <Label
+                      htmlFor="dateOfBirth"
+                      className="text-[13px] font-medium text-[#172B4D]"
+                    >
+                      Date Of Birth
+                    </Label>
                     <Input
                       id="dateOfBirth"
                       type="date"
                       value={formData.dateOfBirth}
-                      onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("dateOfBirth", e.target.value)
+                      }
                       className="h-[38px] border-[#C3C6D4] text-[13px]"
                     />
                   </div>
@@ -389,20 +445,32 @@ export default function ReceiverView() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <h2 className="text-base font-bold text-[#172B4D]">Document Verification</h2>
+                  <h2 className="text-base font-bold text-[#172B4D]">
+                    Document Verification
+                  </h2>
                 </div>
                 <p className="text-[13px] text-[#172B4D] ml-6">
-                  Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.
+                  Choose a valid government-issued ID (like a passport, driver's
+                  license, or national ID) and upload a clear photo of it.
                 </p>
               </div>
 
               <CardContent className="p-8 space-y-6">
                 {/* Country Selection */}
                 <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-[#172B4D]">Country</Label>
+                  <Label className="text-[13px] font-medium text-[#172B4D]">
+                    Country
+                  </Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Select value={formData.country} onValueChange={(value) => handleInputChange("country", value)}>
-                      <SelectTrigger className="h-[38px] border-[#C3C6D4] text-[13px]"><SelectValue placeholder="Select Country" /></SelectTrigger>
+                    <Select
+                      value={formData.country}
+                      onValueChange={(value) =>
+                        handleInputChange("country", value)
+                      }
+                    >
+                      <SelectTrigger className="h-[38px] border-[#C3C6D4] text-[13px]">
+                        <SelectValue placeholder="Select Country" />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="India">India</SelectItem>
                         <SelectItem value="USA">USA</SelectItem>
@@ -410,7 +478,9 @@ export default function ReceiverView() {
                       </SelectContent>
                     </Select>
                     <Select>
-                      <SelectTrigger className="h-[38px] border-[#C3C6D4] text-[13px]"><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectTrigger className="h-[38px] border-[#C3C6D4] text-[13px]">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="option1">Option 1</SelectItem>
                         <SelectItem value="option2">Option 2</SelectItem>
@@ -422,30 +492,53 @@ export default function ReceiverView() {
                 {/* ID Type Selection - show only admin-selected or preview items */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-base font-bold text-[#172B4D] mb-1">Select the ID Type</h3>
-                    <p className="text-[13px] text-[#676879]">Select the ID you'd like to use for verification.</p>
+                    <h3 className="text-base font-bold text-[#172B4D] mb-1">
+                      Select the ID Type
+                    </h3>
+                    <p className="text-[13px] text-[#676879]">
+                      Select the ID you'd like to use for verification.
+                    </p>
                   </div>
 
                   <RadioGroup
                     value={formData.idType}
-                    onValueChange={(value) => handleInputChange("idType", value)}
+                    onValueChange={(value) =>
+                      handleInputChange("idType", value)
+                    }
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
                   >
                     {filteredIdOptions.map((opt) => (
                       <div key={opt.value} className="relative">
-                        <RadioGroupItem value={opt.value} id={opt.value} className="sr-only" />
+                        <RadioGroupItem
+                          value={opt.value}
+                          id={opt.value}
+                          className="sr-only"
+                        />
                         <Label
                           htmlFor={opt.value}
                           className={`flex flex-col items-start gap-3 p-4 border rounded cursor-pointer transition-all ${
-                            formData.idType === opt.value ? "border-[#0073EA] bg-[#E6F1FD]" : "border-[#C3C6D4] bg-white"
+                            formData.idType === opt.value
+                              ? "border-[#0073EA] bg-[#E6F1FD]"
+                              : "border-[#C3C6D4] bg-white"
                           }`}
                         >
-                          <div className="w-8 h-8 rounded flex items-center justify-center" style={{ backgroundColor: opt.iconBg }}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <div
+                            className="w-8 h-8 rounded flex items-center justify-center"
+                            style={{ backgroundColor: opt.iconBg }}
+                          >
+                            <svg
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
                               <circle cx="12" cy="12" r="10" fill="white" />
                             </svg>
                           </div>
-                          <span className="text-sm font-medium text-[#172B4D]">{opt.label}</span>
+                          <span className="text-sm font-medium text-[#172B4D]">
+                            {opt.label}
+                          </span>
                         </Label>
                         {formData.idType === opt.value && (
                           <div className="absolute top-2 right-2 w-[18px] h-[18px] rounded-full border-2 border-[#0073EA] bg-white flex items-center justify-center">
@@ -455,13 +548,17 @@ export default function ReceiverView() {
                       </div>
                     ))}
                   </RadioGroup>
-                  {errors.idType && <p className="text-red-500 text-xs">{errors.idType}</p>}
+                  {errors.idType && (
+                    <p className="text-red-500 text-xs">{errors.idType}</p>
+                  )}
                 </div>
 
                 {/* Upload Methods - only show those enabled by admin/preview */}
                 {(allowCaptureWebcam || allowUploadFromDevice) && (
                   <div className="space-y-4">
-                    <h3 className="text-base font-bold text-[#172B4D]">Choose a method to upload your document</h3>
+                    <h3 className="text-base font-bold text-[#172B4D]">
+                      Choose a method to upload your document
+                    </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {allowCaptureWebcam && (
@@ -474,8 +571,12 @@ export default function ReceiverView() {
                             <Camera className="w-6 h-6 text-[#676879]" />
                           </div>
                           <div className="text-center">
-                            <h4 className="text-[13px] font-medium text-[#323238] mb-2">Camera</h4>
-                            <p className="text-[13px] text-[#676879]">Use your device camera to capture the document.</p>
+                            <h4 className="text-[13px] font-medium text-[#323238] mb-2">
+                              Camera
+                            </h4>
+                            <p className="text-[13px] text-[#676879]">
+                              Use your device camera to capture the document.
+                            </p>
                           </div>
                         </button>
                       )}
@@ -490,8 +591,13 @@ export default function ReceiverView() {
                             <Upload className="w-6 h-6 text-[#676879]" />
                           </div>
                           <div className="text-center">
-                            <h4 className="text-[13px] font-medium text-[#323238] mb-2">Upload Files</h4>
-                            <p className="text-[13px] text-[#676879]">Upload a photo or PDF of your document from this device.</p>
+                            <h4 className="text-[13px] font-medium text-[#323238] mb-2">
+                              Upload Files
+                            </h4>
+                            <p className="text-[13px] text-[#676879]">
+                              Upload a photo or PDF of your document from this
+                              device.
+                            </p>
                           </div>
                           <input
                             ref={fileInputRef}
@@ -506,7 +612,10 @@ export default function ReceiverView() {
 
                     {formData.document && (
                       <div className="text-[13px] text-[#172B4D]">
-                        Selected file: <span className="font-medium">{formData.document.name}</span>
+                        Selected file:{" "}
+                        <span className="font-medium">
+                          {formData.document.name}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -529,34 +638,61 @@ export default function ReceiverView() {
                       </button>
 
                       {!capturedDataUrl && !cameraError && (
-                        <video ref={videoRef} className="w-full max-w-md rounded bg-black" playsInline muted />
+                        <video
+                          ref={videoRef}
+                          className="w-full max-w-md rounded bg-black"
+                          playsInline
+                          muted
+                        />
                       )}
                       {capturedDataUrl && (
-                        <img src={capturedDataUrl} alt="Captured" className="w-full max-w-md rounded" />
+                        <img
+                          src={capturedDataUrl}
+                          alt="Captured"
+                          className="w-full max-w-md rounded"
+                        />
                       )}
                       {cameraError && (
                         <div className="text-center space-y-2">
                           <div className="w-8 h-8 rounded-full border-2 border-[#676879] flex items-center justify-center mx-auto">
                             <span className="text-[#676879]">!</span>
                           </div>
-                          <h4 className="text-[13px] font-medium text-[#172B4D]">{cameraError}</h4>
-                          <p className="text-[13px] text-[#676879]">Please check your device or close other apps using the camera.</p>
+                          <h4 className="text-[13px] font-medium text-[#172B4D]">
+                            {cameraError}
+                          </h4>
+                          <p className="text-[13px] text-[#676879]">
+                            Please check your device or close other apps using
+                            the camera.
+                          </p>
                         </div>
                       )}
                       <canvas ref={canvasRef} className="hidden" />
                     </div>
                     <div className="bg-[#F6F7FB] rounded-b-lg p-2 flex justify-end gap-2">
                       {!capturedDataUrl && !cameraError && (
-                        <Button size="sm" className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700" onClick={capturePhoto}>
+                        <Button
+                          size="sm"
+                          className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700"
+                          onClick={capturePhoto}
+                        >
                           Capture
                         </Button>
                       )}
                       {capturedDataUrl && (
                         <>
-                          <Button size="sm" variant="outline" className="h-8 text-[13px]" onClick={retake}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-[13px]"
+                            onClick={retake}
+                          >
                             <RefreshCw className="w-3.5 h-3.5 mr-1" /> Retake
                           </Button>
-                          <Button size="sm" className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700" onClick={useCaptured}>
+                          <Button
+                            size="sm"
+                            className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700"
+                            onClick={useCaptured}
+                          >
                             Use Photo
                           </Button>
                         </>
@@ -573,8 +709,16 @@ export default function ReceiverView() {
                     className="w-[110px] h-[113px]"
                   />
                   <div className="text-center">
-                    <p className="text-[13px] text-[#676879] mb-1">Continue on another device by scanning the QR code or opening</p>
-                    <a href="#" className="text-[13px] text-[#0073EA] hover:underline">https://id.xyz/verify</a>
+                    <p className="text-[13px] text-[#676879] mb-1">
+                      Continue on another device by scanning the QR code or
+                      opening
+                    </p>
+                    <a
+                      href="#"
+                      className="text-[13px] text-[#0073EA] hover:underline"
+                    >
+                      https://id.xyz/verify
+                    </a>
                   </div>
                   <div className="flex items-center gap-1 text-[#0073EA] text-[12px]">
                     <Info className="w-5 h-5" />
@@ -603,10 +747,14 @@ export default function ReceiverView() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <h2 className="text-base font-bold text-[#172B4D]">Biometric Verification</h2>
+                  <h2 className="text-base font-bold text-[#172B4D]">
+                    Biometric Verification
+                  </h2>
                 </div>
                 <p className="text-[13px] text-[#172B4D] ml-6">
-                  Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.
+                  Take a live selfie to confirm you are the person in the ID
+                  document. Make sure you're in a well-lit area and your face is
+                  clearly visible.
                 </p>
               </div>
 
@@ -619,12 +767,22 @@ export default function ReceiverView() {
                         <div className="w-8 h-8 rounded-full border-2 border-[#676879] flex items-center justify-center mx-auto">
                           <span className="text-[#676879]">!</span>
                         </div>
-                        <h4 className="text-[13px] font-medium text-[#172B4D]">Camera not detected.</h4>
-                        <p className="text-[13px] text-[#676879]">Please check your device or close other apps using the camera.</p>
+                        <h4 className="text-[13px] font-medium text-[#172B4D]">
+                          Camera not detected.
+                        </h4>
+                        <p className="text-[13px] text-[#676879]">
+                          Please check your device or close other apps using the
+                          camera.
+                        </p>
                       </div>
                     </div>
                     <div className="bg-[#F6F7FB] rounded-b-lg p-2 flex justify-end">
-                      <Button size="sm" className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700">Retry</Button>
+                      <Button
+                        size="sm"
+                        className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700"
+                      >
+                        Retry
+                      </Button>
                     </div>
                   </div>
 
@@ -637,8 +795,16 @@ export default function ReceiverView() {
                         className="w-[128px] h-[132px]"
                       />
                       <div className="text-center">
-                        <p className="text-[13px] text-[#676879] mb-1">Continue on another device by scanning the QR code or opening</p>
-                        <a href="#" className="text-[13px] text-[#0073EA] hover:underline">https://id.xyz/verify</a>
+                        <p className="text-[13px] text-[#676879] mb-1">
+                          Continue on another device by scanning the QR code or
+                          opening
+                        </p>
+                        <a
+                          href="#"
+                          className="text-[13px] text-[#0073EA] hover:underline"
+                        >
+                          https://id.xyz/verify
+                        </a>
                       </div>
                     </div>
                     <div className="bg-[#F6F7FB] rounded-b-lg p-4 flex justify-end">
@@ -654,7 +820,12 @@ export default function ReceiverView() {
 
             {/* Submit Button */}
             <div className="flex justify-center">
-              <Button onClick={handleSubmit} className="h-12 px-8 bg-[#0073EA] hover:bg-blue-700 text-white font-medium">Submit Verification</Button>
+              <Button
+                onClick={handleSubmit}
+                className="h-12 px-8 bg-[#0073EA] hover:bg-blue-700 text-white font-medium"
+              >
+                Submit Verification
+              </Button>
             </div>
           </div>
         </div>

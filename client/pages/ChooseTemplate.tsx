@@ -168,9 +168,7 @@ export default function ChooseTemplate() {
           {/* Create Your Own Template */}
           <div className="flex-1 border border-[#DEDEDD] rounded bg-white">
             <div className="p-4 pt-4">
-              <div className="h-[66px] flex items-center mb-2">
-                {/* No icon for this card based on Figma */}
-              </div>
+              <div className="h-[66px] flex items-center mb-2"></div>
               <h3 className="text-[15px] font-bold text-[#172B4D] font-roboto mb-2">
                 Create your own template
               </h3>

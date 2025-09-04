@@ -95,7 +95,7 @@ export default function DocumentVerification() {
   const [selectedCountries, setSelectedCountries] = useState<string[]>([
     "India",
   ]);
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>(["Passport"]);
 
   // Load form state on mount
   useEffect(() => {

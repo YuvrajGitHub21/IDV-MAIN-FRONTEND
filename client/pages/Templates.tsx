@@ -524,6 +524,14 @@ export default function Templates() {
                     sortOrder={filterSortOrder}
                     onChangeSortBy={(s) => setFilterSortBy(s)}
                     onChangeSortOrder={(o) => setFilterSortOrder(o)}
+                    createdFrom={filterCreatedFrom}
+                    createdTo={filterCreatedTo}
+                    updatedFrom={filterUpdatedFrom}
+                    updatedTo={filterUpdatedTo}
+                    onChangeCreatedFrom={(d) => setFilterCreatedFrom(d)}
+                    onChangeCreatedTo={(d) => setFilterCreatedTo(d)}
+                    onChangeUpdatedFrom={(d) => setFilterUpdatedFrom(d)}
+                    onChangeUpdatedTo={(d) => setFilterUpdatedTo(d)}
                   />
                 </div>
 

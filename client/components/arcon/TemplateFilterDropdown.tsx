@@ -115,6 +115,45 @@ export default function TemplateFilterDropdown({
           </div>
         </div>
 
+        <div className="mb-2 grid grid-cols-2 gap-2">
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Created From</div>
+            <input
+              type="date"
+              value={createdFrom ?? ""}
+              onChange={(e) => onChangeCreatedFrom && onChangeCreatedFrom(e.target.value || undefined)}
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Created To</div>
+            <input
+              type="date"
+              value={createdTo ?? ""}
+              onChange={(e) => onChangeCreatedTo && onChangeCreatedTo(e.target.value || undefined)}
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Updated From</div>
+            <input
+              type="date"
+              value={updatedFrom ?? ""}
+              onChange={(e) => onChangeUpdatedFrom && onChangeUpdatedFrom(e.target.value || undefined)}
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Updated To</div>
+            <input
+              type="date"
+              value={updatedTo ?? ""}
+              onChange={(e) => onChangeUpdatedTo && onChangeUpdatedTo(e.target.value || undefined)}
+              className="w-full border border-gray-200 rounded px-2 py-1 text-sm"
+            />
+          </div>
+        </div>
+
         <div className="flex justify-end gap-2 mt-3">
           <Button variant="outline" onClick={onClose}>
             Close

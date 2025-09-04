@@ -141,19 +141,37 @@ const objectIdToIso = (id?: string): string => {
 // Map backend Template -> UI TemplateItem (matches updated .NET model)
 const mapTemplateDoc = (doc: any): TemplateItem => {
   const id = String(doc?.id ?? doc?.Id ?? "");
-  // System.Text.Json defaults to camelCase, so Template_status likely arrives as "template_status"
+
+  // Status from Template_status
   const isActive =
-    // (typeof doc?.template_status === "boolean" ? doc.template_status : undefined) ??
     typeof doc?.Template_status === "boolean" ? doc.Template_status : false;
+
+  // Created by / dates from new dashboard fields
+  const createdBy = String(doc?.created_by ?? "Unknown User");
+  const createdAtUtc = (() => {
+    const raw = doc?.created_template_date;
+    if (raw) {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) return d.toISOString();
+    }
+    return objectIdToIso(id);
+  })();
+  const updatedAtUtc = (() => {
+    const raw = doc?.last_updated;
+    if (!raw) return undefined;
+    const d = new Date(raw);
+    return isNaN(d.getTime()) ? undefined : d.toISOString();
+  })();
 
   return {
     id,
     name: String(doc?.nameOfTemplate ?? "Untitled"),
     description: null, // not in your model
-    createdBy: "unknown", // not in your model (UI resolves to local user)
+    createdBy,
     templateRules: null, // not in your model
     isActive,
-    createdAtUtc: objectIdToIso(id),
+    createdAtUtc,
+    updatedAtUtc,
   };
 };
 
@@ -393,6 +411,52 @@ export const useTemplates = () => {
     refetch: fetchTemplates,
   };
 };
+
+/* ===================== Create (POST /api/templates/create-min) ===================== */
+/**
+ * Create a new template with just the name. The server sets:
+ * - created_by (from the JWT)
+ * - created_template_date
+ * - last_updated
+ * Returns the new id + name.
+ */
+export async function createTemplateMin(
+  nameOfTemplate: string,
+  sectionsOrder: string[] = [
+    "Personal_info",
+    "Doc_verification",
+    "Biometric_verification",
+  ],
+): Promise<{ id: string; name: string }> {
+  const token = getToken();
+
+  const res = await fetch(`${API_BASE}/api/templates/create-min`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({
+      nameOfTemplate,
+      sections_order: sectionsOrder,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      `Failed to create template: ${res.status} ${res.statusText}${
+        text ? " — " + text.slice(0, 200) : ""
+      }`,
+    );
+  }
+
+  const doc = await res.json();
+  const id = String(doc?.id ?? doc?.Id ?? "");
+  const name = String(doc?.nameOfTemplate ?? nameOfTemplate ?? "Untitled");
+  return { id, name };
+}
 
 /* ===================== Users hook (unchanged) ===================== */
 export const useUsers = () => {

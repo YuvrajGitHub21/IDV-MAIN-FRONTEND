@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createTemplateMin } from "@/hooks/useTemplates";
 
 interface NameTemplateDialogProps {
   open: boolean;
@@ -29,17 +30,31 @@ export function NameTemplateDialog({
   const [templateName, setTemplateName] = useState("");
   const navigate = useNavigate();
 
-  const handleSave = () => {
-    if (templateName.trim()) {
-      onSave?.(templateName.trim());
-      setTemplateName("");
-      onOpenChange(false);
-      // Navigate to template builder with the template name
-      navigate("/template-builder", {
-        state: { templateName: templateName.trim() },
-      });
-    }
-  };
+  const handleSave = async () => {
+  const name = templateName.trim();
+  if (!name) return;
+
+  try {
+    // 1) Create on server — stamps created_by & timestamps
+    const created = await createTemplateMin(name);
+
+    // 2) Optional notify parent
+    onSave?.(name);
+
+    // 3) Close dialog
+    setTemplateName("");
+    onOpenChange(false);
+
+    // 4) Navigate to builder with new template id + name
+    navigate("/template-builder", {
+      state: { templateId: created.id, templateName: created.name },
+    });
+  } catch (err: any) {
+    alert(err?.message || "Failed to create template");
+  }
+};
+
+
 
   const handleCancel = () => {
     setTemplateName("");

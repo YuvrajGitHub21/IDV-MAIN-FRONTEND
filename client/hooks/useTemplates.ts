@@ -43,6 +43,10 @@ export interface TemplateFilters {
   pageSize?: number;
   sortBy?: SortBy;
   sortOrder?: SortOrder;
+  createdFrom?: string; // ISO date YYYY-MM-DD
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
 }
 
 /* ===================== Original mock data (kept for fallback) ===================== */
@@ -162,6 +166,26 @@ function getFallbackData(filters: TemplateFilters = {}) {
     filtered = filtered.filter((t) => t.createdBy === filters.createdBy);
   }
 
+  // Created date range filter
+  if (filters.createdFrom) {
+    const from = new Date(filters.createdFrom).getTime();
+    filtered = filtered.filter((t) => new Date(t.createdAtUtc).getTime() >= from);
+  }
+  if (filters.createdTo) {
+    const to = new Date(filters.createdTo).getTime();
+    filtered = filtered.filter((t) => new Date(t.createdAtUtc).getTime() <= to);
+  }
+
+  // Updated date range filter
+  if (filters.updatedFrom) {
+    const from = new Date(filters.updatedFrom).getTime();
+    filtered = filtered.filter((t) => new Date(t.updatedAtUtc ?? t.createdAtUtc).getTime() >= from);
+  }
+  if (filters.updatedTo) {
+    const to = new Date(filters.updatedTo).getTime();
+    filtered = filtered.filter((t) => new Date(t.updatedAtUtc ?? t.createdAtUtc).getTime() <= to);
+  }
+
   // Sorting
   if (filters.sortBy) {
     const key =
@@ -224,6 +248,10 @@ export const useTemplates = () => {
       if (filters.sortBy) searchParams.append("SortBy", filters.sortBy);
       if (filters.sortOrder)
         searchParams.append("SortOrder", filters.sortOrder);
+      if (filters.createdFrom) searchParams.append("CreatedFrom", filters.createdFrom);
+      if (filters.createdTo) searchParams.append("CreatedTo", filters.createdTo);
+      if (filters.updatedFrom) searchParams.append("UpdatedFrom", filters.updatedFrom);
+      if (filters.updatedTo) searchParams.append("UpdatedTo", filters.updatedTo);
 
       const res = await fetch(
         `${API_BASE}/api/form-templates?${searchParams.toString()}`,

@@ -43,6 +43,8 @@ const App = () => (
               <Route path="/template-builder" element={<TemplateBuilder />} />
               <Route path="/preview" element={<Preview />} />
               <Route path="/preview/:templateId" element={<Preview />} />
+              <Route path="/receiver-view" element={<ReceiverView />} />
+              <Route path="/receiver-view/:templateId" element={<ReceiverView />} />
 
               <Route path="/home" element={<Home />} />
 

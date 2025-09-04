@@ -169,7 +169,9 @@ function getFallbackData(filters: TemplateFilters = {}) {
   // Created date range filter
   if (filters.createdFrom) {
     const from = new Date(filters.createdFrom).getTime();
-    filtered = filtered.filter((t) => new Date(t.createdAtUtc).getTime() >= from);
+    filtered = filtered.filter(
+      (t) => new Date(t.createdAtUtc).getTime() >= from,
+    );
   }
   if (filters.createdTo) {
     const to = new Date(filters.createdTo).getTime();
@@ -179,11 +181,15 @@ function getFallbackData(filters: TemplateFilters = {}) {
   // Updated date range filter
   if (filters.updatedFrom) {
     const from = new Date(filters.updatedFrom).getTime();
-    filtered = filtered.filter((t) => new Date(t.updatedAtUtc ?? t.createdAtUtc).getTime() >= from);
+    filtered = filtered.filter(
+      (t) => new Date(t.updatedAtUtc ?? t.createdAtUtc).getTime() >= from,
+    );
   }
   if (filters.updatedTo) {
     const to = new Date(filters.updatedTo).getTime();
-    filtered = filtered.filter((t) => new Date(t.updatedAtUtc ?? t.createdAtUtc).getTime() <= to);
+    filtered = filtered.filter(
+      (t) => new Date(t.updatedAtUtc ?? t.createdAtUtc).getTime() <= to,
+    );
   }
 
   // Sorting
@@ -248,10 +254,14 @@ export const useTemplates = () => {
       if (filters.sortBy) searchParams.append("SortBy", filters.sortBy);
       if (filters.sortOrder)
         searchParams.append("SortOrder", filters.sortOrder);
-      if (filters.createdFrom) searchParams.append("CreatedFrom", filters.createdFrom);
-      if (filters.createdTo) searchParams.append("CreatedTo", filters.createdTo);
-      if (filters.updatedFrom) searchParams.append("UpdatedFrom", filters.updatedFrom);
-      if (filters.updatedTo) searchParams.append("UpdatedTo", filters.updatedTo);
+      if (filters.createdFrom)
+        searchParams.append("CreatedFrom", filters.createdFrom);
+      if (filters.createdTo)
+        searchParams.append("CreatedTo", filters.createdTo);
+      if (filters.updatedFrom)
+        searchParams.append("UpdatedFrom", filters.updatedFrom);
+      if (filters.updatedTo)
+        searchParams.append("UpdatedTo", filters.updatedTo);
 
       const res = await fetch(
         `${API_BASE}/api/form-templates?${searchParams.toString()}`,

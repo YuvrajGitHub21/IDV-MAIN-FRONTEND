@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -10,6 +11,7 @@ import {
 import { AddNewTemplateDropdown } from "@/components/arcon/AddNewTemplateDropdown";
 import { TemplateActionsDropdown } from "@/components/arcon/TemplateActionsDropdown";
 import { InviteesAvatarGroup } from "@/components/arcon/InviteesAvatarGroup";
+import TemplateFilterDropdown from "@/components/arcon/TemplateFilterDropdown";
 
 export default function Templates() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,6 +19,13 @@ export default function Templates() {
   const [pageSize, setPageSize] = useState(12);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [filterIsActive, setFilterIsActive] = useState<boolean | undefined>(
+    undefined,
+  );
+  const [filterCreatedBy, setFilterCreatedBy] = useState<string | undefined>(
+    undefined,
+  );
   const navigate = useNavigate();
 
   // Use custom hooks for API integration
@@ -29,9 +38,27 @@ export default function Templates() {
   } = useTemplates();
   const { users, fetchMultipleUsers } = useUsers();
 
+  // Build creators list from templates and known users
+  const creators = React.useMemo(() => {
+    const ids = Array.from(new Set(templates.map((t) => t.createdBy))).filter(
+      Boolean,
+    );
+    return ids.map((id) => ({ id, name: users[id] || id }));
+  }, [templates, users]);
+
   useEffect(() => {
-    fetchTemplates({ search: searchQuery, page: currentPage, pageSize });
-  }, [searchQuery, currentPage, pageSize, fetchTemplates]);
+    const filters: any = { search: searchQuery, page: currentPage, pageSize };
+    if (filterIsActive !== undefined) filters.isActive = filterIsActive;
+    if (filterCreatedBy) filters.createdBy = filterCreatedBy;
+    fetchTemplates(filters);
+  }, [
+    searchQuery,
+    currentPage,
+    pageSize,
+    filterIsActive,
+    filterCreatedBy,
+    fetchTemplates,
+  ]);
 
   // Fetch user data for all unique creators when templates change
   useEffect(() => {
@@ -442,22 +469,37 @@ export default function Templates() {
               <h1 className="text-xl font-bold text-gray-800">Templates</h1>
               <div className="flex items-center gap-3">
                 {/* Filter Button */}
-                <button className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-50 rounded">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                <div className="relative">
+                  <button
+                    className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-50 rounded"
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"
-                    />
-                  </svg>
-                  <span className="hidden sm:inline">Filter</span>
-                </button>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"
+                      />
+                    </svg>
+                    <span className="hidden sm:inline">Filter</span>
+                  </button>
+
+                  <TemplateFilterDropdown
+                    isOpen={showFilterDropdown}
+                    onClose={() => setShowFilterDropdown(false)}
+                    isActiveFilter={filterIsActive}
+                    onChangeIsActive={(val) => setFilterIsActive(val)}
+                    creators={creators}
+                    selectedCreator={filterCreatedBy}
+                    onChangeCreator={(id) => setFilterCreatedBy(id)}
+                  />
+                </div>
 
                 {/* Search */}
                 <div className="relative">

@@ -108,8 +108,7 @@ const rawMockTemplates: TemplateItem[] = [
 ];
 
 const buildHardcoreMocks = (items: TemplateItem[]): TemplateItem[] =>
-  items.map((t, i) => ({ ...t, name: `hardcore ${i + 1}` }));
-
+  items.map((t, i) => ({ ...t, name: `hardcoded ${i + 1}` }));
 const mockUsers: Record<string, string> = {
   user1: "Patricia A. Ramirez",
   user2: "Deloris L. Hall",

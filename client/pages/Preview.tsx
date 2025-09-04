@@ -403,14 +403,18 @@ export default function Preview() {
                   tabIndex={0}
                   onClick={() =>
                     navigate(
-                      templateId ? `/receiver-view/${templateId}` : "/receiver-view",
+                      templateId
+                        ? `/receiver-view/${templateId}`
+                        : "/receiver-view",
                       { state: templateData },
                     )
                   }
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       navigate(
-                        templateId ? `/receiver-view/${templateId}` : "/receiver-view",
+                        templateId
+                          ? `/receiver-view/${templateId}`
+                          : "/receiver-view",
                         { state: templateData },
                       );
                     }
@@ -425,7 +429,8 @@ export default function Preview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        This is exactly how users will experience the verification process.
+                        This is exactly how users will experience the
+                        verification process.
                       </p>
                     </div>
                   </div>

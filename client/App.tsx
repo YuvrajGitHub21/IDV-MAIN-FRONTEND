@@ -51,6 +51,7 @@ const App = () => (
               />
 
               <Route path="/home" element={<Home />} />
+              <Route path="/choose-template" element={<ChooseTemplate />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

@@ -446,22 +446,37 @@ export default function Templates() {
               <h1 className="text-xl font-bold text-gray-800">Templates</h1>
               <div className="flex items-center gap-3">
                 {/* Filter Button */}
-                <button className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-50 rounded">
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                <div className="relative">
+                  <button
+                    className="flex items-center gap-2 px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-50 rounded"
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"
-                    />
-                  </svg>
-                  <span className="hidden sm:inline">Filter</span>
-                </button>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"
+                      />
+                    </svg>
+                    <span className="hidden sm:inline">Filter</span>
+                  </button>
+
+                  <TemplateFilterDropdown
+                    isOpen={showFilterDropdown}
+                    onClose={() => setShowFilterDropdown(false)}
+                    isActiveFilter={filterIsActive}
+                    onChangeIsActive={(val) => setFilterIsActive(val)}
+                    creators={[]}
+                    selectedCreator={filterCreatedBy}
+                    onChangeCreator={(id) => setFilterCreatedBy(id)}
+                  />
+                </div>
 
                 {/* Search */}
                 <div className="relative">

@@ -101,8 +101,102 @@ export default function Preview() {
       biometricVerification: false,
     },
   };
-
+  
   // ---------- NEW: bridge helpers to map Mongo doc -> UI components ----------
+  // Order coming from Mongo; fallback if missing/empty/invalid
+const DEFAULT_SECTION_ORDER = [
+  "Personal_info",
+  "Doc_verification",
+  "Biometric_verification",
+] as const;
+
+type SectionKey = typeof DEFAULT_SECTION_ORDER[number];
+
+const isValidKey = (k: string): k is SectionKey =>
+  (DEFAULT_SECTION_ORDER as readonly string[]).includes(k);
+
+// Build the three sections from the Mongo doc, in the exact order specified
+function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
+  if (!tpl) return [];
+
+  const order: string[] = Array.isArray(tpl.sections_order) && tpl.sections_order.length
+    ? tpl.sections_order
+    : [...DEFAULT_SECTION_ORDER];
+
+  const status = tpl.Section_status || {};
+  const enabledPersonal = status.persoanl_info ?? true;
+  const enabledDoc = status.doc_verification ?? !!tpl.Doc_verification;
+  const enabledBio = status.Biometric_verification ?? !!tpl.Biometric_verification;
+
+  const personalNode: SectionConfig | null = enabledPersonal
+    ? {
+        id: "personal-info",
+        title: "Personal Information",
+        description:
+          "Please provide your basic personal information to begin the identity verification process.",
+        enabled: true,
+        component: (
+          <PersonalInformationSection
+            addedFields={getPersonalAddedFields(tpl)}
+            showBase={getPersonalShowBase(tpl)}
+          />
+        ),
+      }
+    : null;
+
+  const docNode: SectionConfig | null = enabledDoc
+    ? {
+        id: "document-verification",
+        title: "Document Verification",
+        description:
+          "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
+        enabled: true,
+        component: (
+          <DocumentVerificationSection config={getDocConfigFromDb(tpl)} />
+        ),
+      }
+    : null;
+
+  const bioNode: SectionConfig | null = enabledBio
+    ? {
+        id: "biometric-verification",
+        title: "Biometric Verification",
+        description:
+          "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
+        enabled: true,
+        component: (
+          <BiometricVerificationSection config={getBiometricConfigFromDb(tpl)} />
+        ),
+      }
+    : null;
+
+  const mapByKey: Record<SectionKey, SectionConfig | null> = {
+    Personal_info: personalNode,
+    Doc_verification: docNode,
+    Biometric_verification: bioNode,
+  };
+
+  const visited = new Set<string>();
+  const out: SectionConfig[] = [];
+  for (const rawKey of order) {
+    if (!isValidKey(rawKey)) continue;
+    if (visited.has(rawKey)) continue;
+    visited.add(rawKey);
+    const node = mapByKey[rawKey];
+    if (node && node.enabled) out.push(node);
+  }
+
+  // If none enabled (edge case), fall back to default order
+  if (!out.length) {
+    for (const k of DEFAULT_SECTION_ORDER) {
+      const n = mapByKey[k];
+      if (n && n.enabled) out.push(n);
+    }
+  }
+
+  return out;
+}
+
   const getPersonalShowBase = (tpl: any) => {
     const p = tpl?.Personal_info || {};
     return {
@@ -237,60 +331,13 @@ export default function Preview() {
   }, [templateData, templateId, dbTemplate]);
 
   // ---------- Build sections to render (DB first, fallback to builder state) ----------
+  // Create section components (DB first with sections_order, else builder fallback)
   const createSectionComponents = (): SectionConfig[] => {
-    // If we have a DB template, build using booleans from Mongo
     if (dbTemplate) {
-      const sections: SectionConfig[] = [];
-      const showPersonal = sectionStatus ? !!sectionStatus.persoanl_info : true;
-      const showDoc = sectionStatus ? !!sectionStatus.doc_verification : !!dbTemplate?.Doc_verification;
-      const showBio =
-        sectionStatus ? !!sectionStatus.Biometric_verification : !!dbTemplate?.Biometric_verification;
-
-      // Personal Info
-      if (showPersonal) {
-        sections.push({
-          id: "personal-info",
-          title: "Personal Information",
-          description:
-            "Please provide your basic personal information to begin the identity verification process.",
-          enabled: true,
-          component: (
-            <PersonalInformationSection
-              addedFields={getPersonalAddedFields(dbTemplate)}
-              showBase={getPersonalShowBase(dbTemplate)}
-            />
-          ),
-        });
-      }
-
-      // Document Verification
-      if (showDoc) {
-        sections.push({
-          id: "document-verification",
-          title: "Document Verification",
-          description:
-            "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
-          enabled: true,
-          component: <DocumentVerificationSection config={getDocConfigFromDb(dbTemplate)} />,
-        });
-      }
-
-      // Biometric Verification
-      if (showBio) {
-        sections.push({
-          id: "biometric-verification",
-          title: "Biometric Verification",
-          description:
-            "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
-          enabled: true,
-          component: <BiometricVerificationSection config={getBiometricConfigFromDb(dbTemplate)} />,
-        });
-      }
-
-      return sections;
+      return buildSectionsFromDbTemplate(dbTemplate);
     }
 
-    // Fallback to your original builder-based preview
+    // ---- Fallback to builder state (unchanged visual structure) ----
     const sections: SectionConfig[] = [];
 
     sections.push({
@@ -302,7 +349,6 @@ export default function Preview() {
       component: (
         <PersonalInformationSection
           addedFields={templateData.addedFields}
-          // default to showing the three when using builder-state
           showBase={{ firstName: true, lastName: true, email: true }}
         />
       ),
@@ -332,6 +378,7 @@ export default function Preview() {
 
     return sections;
   };
+
 
   const orderedSections = createSectionComponents();
 

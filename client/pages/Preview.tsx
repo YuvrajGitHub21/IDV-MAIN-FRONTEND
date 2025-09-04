@@ -184,7 +184,9 @@ export default function Preview() {
           description:
             "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
           enabled: step.isEnabled,
-          component: <DocumentVerificationSection config={docVerificationConfig} />,
+          component: (
+            <DocumentVerificationSection config={docVerificationConfig} />
+          ),
         });
       } else if (step.id === "biometric-verification") {
         sections.push({
@@ -405,7 +407,7 @@ export default function Preview() {
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
                       <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
-                        Template Preview
+                        Admin View
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
@@ -623,7 +625,8 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                         </span>
                       </div>
                       <p className="w-full text-[13px] text-[#505258] leading-5">
-                        Let users upload existing documents directly from their device.
+                        Let users upload existing documents directly from their
+                        device.
                       </p>
                     </div>
                   </div>
@@ -644,7 +647,8 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                           </span>
                         </div>
                         <p className="w-full text-[13px] text-[#505258] leading-5">
-                          Enable webcam access to allow users to capture documents in real time.
+                          Enable webcam access to allow users to capture
+                          documents in real time.
                         </p>
                       </div>
                     </div>
@@ -684,14 +688,15 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                     <div className="w-[538px] flex flex-col gap-2">
                       <div className="flex flex-col justify-center w-full h-2.5">
                         <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
-                          {config.documentHandling === 'retry' ? 'Allow Retries Before Rejection' : 'Reject Immediately'}
+                          {config.documentHandling === "retry"
+                            ? "Allow Retries Before Rejection"
+                            : "Reject Immediately"}
                         </span>
                       </div>
                       <p className="w-full text-[13px] text-[#505258] leading-5">
-                        {config.documentHandling === 'retry'
-                          ? 'Let users reattempt uploading the document before it\'s finally rejected.'
-                          : 'Skip retry and reject unclear documents without further attempts.'
-                        }
+                        {config.documentHandling === "retry"
+                          ? "Let users reattempt uploading the document before it's finally rejected."
+                          : "Skip retry and reject unclear documents without further attempts."}
                       </p>
                     </div>
                   </div>

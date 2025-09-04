@@ -89,13 +89,15 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 
 export default function DocumentVerification() {
   const navigate = useNavigate();
-  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
-  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
+  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(true);
+  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(true);
   const [documentHandling, setDocumentHandling] = useState("");
   const [selectedCountries, setSelectedCountries] = useState<string[]>([
     "India",
   ]);
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([
+    "Passport",
+  ]);
 
   // Load form state on mount
   useEffect(() => {
@@ -555,7 +557,9 @@ export default function DocumentVerification() {
                         <Checkbox
                           id="upload-device"
                           checked={allowUploadFromDevice}
-                          onCheckedChange={checked => setAllowUploadFromDevice(checked === true)}
+                          onCheckedChange={(checked) =>
+                            setAllowUploadFromDevice(checked === true)
+                          }
                           className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
                         <div className="flex-1 min-w-0">
@@ -579,7 +583,9 @@ export default function DocumentVerification() {
                         <Checkbox
                           id="capture-webcam"
                           checked={allowCaptureWebcam}
-                          onCheckedChange={checked => setAllowCaptureWebcam(checked === true)}
+                          onCheckedChange={(checked) =>
+                            setAllowCaptureWebcam(checked === true)
+                          }
                           className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
                         <div className="flex-1 min-w-0">

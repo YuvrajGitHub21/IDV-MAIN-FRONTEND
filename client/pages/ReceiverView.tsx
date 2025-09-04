@@ -264,8 +264,26 @@ export default function ReceiverView() {
         {/* Sidebar */}
         <div className="w-[332px] bg-white flex flex-col border-r border-[#DEDEDD]">
           <div className="p-4 flex flex-col gap-4">
-            {/* Admin View Tab - Inactive */}
-            <div className="w-full px-[26px] py-3 flex items-center gap-2.5 rounded opacity-50">
+            {/* Admin View Tab - Inactive (clickable link) */}
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={() =>
+                navigate(
+                  templateId ? `/preview/${templateId}` : "/preview",
+                  { state: location.state as any }
+                )
+              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  navigate(
+                    templateId ? `/preview/${templateId}` : "/preview",
+                    { state: location.state as any }
+                  );
+                }
+              }}
+              className="w-full px-[26px] py-3 flex items-center gap-2.5 rounded opacity-50 cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
               <div className="flex-1 flex flex-col gap-2">
                 <h3 className="text-sm font-bold text-[#292F4C]">Admin View</h3>
                 <p className="text-[13px] text-[#505258] leading-[18px]">

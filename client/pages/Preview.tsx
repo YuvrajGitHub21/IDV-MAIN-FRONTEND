@@ -233,7 +233,13 @@ export default function Preview() {
   };
 
   const handlePrevious = () => {
-    navigate("/template-builder");
+    navigate("/template-builder", {
+      state: {
+        templateName: templateData.templateName,
+        verificationSteps: templateData.verificationSteps,
+        addedFields: templateData.addedFields,
+      },
+    });
   };
 
   return (

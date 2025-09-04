@@ -89,8 +89,8 @@ const DraggableVerificationStep: React.FC<DraggableVerificationStepProps> = ({
 
 export default function DocumentVerification() {
   const navigate = useNavigate();
-  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
-  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
+  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(true);
+  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(true);
   const [documentHandling, setDocumentHandling] = useState("");
   const [selectedCountries, setSelectedCountries] = useState<string[]>([
     "India",

@@ -21,25 +21,76 @@ interface SendInviteDialogProps {
 
 const DEPARTMENTS = [
   "Human Resources",
-  "Finance", 
+  "Finance",
   "Marketing",
   "Sales",
   "Customer Support",
   "IT & Security",
   "Legal",
-  "Operations"
+  "Operations",
 ];
 
 const SAMPLE_EMPLOYEES: Employee[] = [
-  { id: "1", name: "Roger G. Rhone", email: "RogerGRhone@teleworm.us", initials: "OP", avatarColor: "#F4DEE4", department: "Operations", selected: true },
-  { id: "2", name: "Mike J. Torres", email: "MikeJTorres@rhyta.com", initials: "MT", avatarColor: "#D6ECF5", department: "IT & Security", selected: false },
-  { id: "3", name: "Wanda C. Moore", email: "WandaCMoore@dayrep.com", initials: "WM", avatarColor: "#E0DAEE", department: "Marketing", selected: false },
-  { id: "4", name: "Roy C. Kephart", email: "RoyCKephart@dayrep.com", initials: "RK", avatarColor: "#FFE6DE", department: "Sales", selected: true },
-  { id: "5", name: "Lois S. Spencer", email: "LoisSSpencer@rhyta.com", initials: "LS", avatarColor: "#DAE5E6", department: "Finance", selected: false },
-  { id: "6", name: "Jerry T. Beavers", email: "JerryTBeavers@teleworm.us", initials: "JB", avatarColor: "#F4EBE8", department: "Human Resources", selected: false },
+  {
+    id: "1",
+    name: "Roger G. Rhone",
+    email: "RogerGRhone@teleworm.us",
+    initials: "OP",
+    avatarColor: "#F4DEE4",
+    department: "Operations",
+    selected: true,
+  },
+  {
+    id: "2",
+    name: "Mike J. Torres",
+    email: "MikeJTorres@rhyta.com",
+    initials: "MT",
+    avatarColor: "#D6ECF5",
+    department: "IT & Security",
+    selected: false,
+  },
+  {
+    id: "3",
+    name: "Wanda C. Moore",
+    email: "WandaCMoore@dayrep.com",
+    initials: "WM",
+    avatarColor: "#E0DAEE",
+    department: "Marketing",
+    selected: false,
+  },
+  {
+    id: "4",
+    name: "Roy C. Kephart",
+    email: "RoyCKephart@dayrep.com",
+    initials: "RK",
+    avatarColor: "#FFE6DE",
+    department: "Sales",
+    selected: true,
+  },
+  {
+    id: "5",
+    name: "Lois S. Spencer",
+    email: "LoisSSpencer@rhyta.com",
+    initials: "LS",
+    avatarColor: "#DAE5E6",
+    department: "Finance",
+    selected: false,
+  },
+  {
+    id: "6",
+    name: "Jerry T. Beavers",
+    email: "JerryTBeavers@teleworm.us",
+    initials: "JB",
+    avatarColor: "#F4EBE8",
+    department: "Human Resources",
+    selected: false,
+  },
 ];
 
-export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogProps) {
+export default function SendInviteDialog({
+  isOpen,
+  onClose,
+}: SendInviteDialogProps) {
   const [activeTab, setActiveTab] = useState<"select" | "bulk">("select");
   const [employees, setEmployees] = useState<Employee[]>(SAMPLE_EMPLOYEES);
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,25 +101,32 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
 
   if (!isOpen) return null;
 
-  const filteredEmployees = employees.filter(emp => {
-    const matchesSearch = emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         emp.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDepartment = selectedDepartments.length === 0 || selectedDepartments.includes(emp.department);
+  const filteredEmployees = employees.filter((emp) => {
+    const matchesSearch =
+      emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      emp.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDepartment =
+      selectedDepartments.length === 0 ||
+      selectedDepartments.includes(emp.department);
     return matchesSearch && matchesDepartment;
   });
 
-  const selectedCount = employees.filter(emp => emp.selected).length;
+  const selectedCount = employees.filter((emp) => emp.selected).length;
 
   const handleSelectEmployee = (id: string) => {
-    setEmployees(prev => prev.map(emp => 
-      emp.id === id ? { ...emp, selected: !emp.selected } : emp
-    ));
+    setEmployees((prev) =>
+      prev.map((emp) =>
+        emp.id === id ? { ...emp, selected: !emp.selected } : emp,
+      ),
+    );
   };
 
   const handleSelectAll = () => {
     const newSelectAll = !selectAll;
     setSelectAll(newSelectAll);
-    setEmployees(prev => prev.map(emp => ({ ...emp, selected: newSelectAll })));
+    setEmployees((prev) =>
+      prev.map((emp) => ({ ...emp, selected: newSelectAll })),
+    );
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,7 +136,7 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
       // Simulate upload progress
       setUploadProgress(0);
       const interval = setInterval(() => {
-        setUploadProgress(prev => {
+        setUploadProgress((prev) => {
           if (prev >= 100) {
             clearInterval(interval);
             return 100;
@@ -94,7 +152,9 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
       <div className="bg-white rounded-lg w-full max-w-[800px] max-h-[640px] flex flex-col m-4">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#D0D4E4]">
-          <h2 className="text-lg font-bold text-[#323238] font-figtree">Send Invite</h2>
+          <h2 className="text-lg font-bold text-[#323238] font-figtree">
+            Send Invite
+          </h2>
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
@@ -140,7 +200,11 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="border-0 p-0 text-sm focus-visible:ring-0"
                 />
-                <Button variant="ghost" size="sm" className="text-[#505258] text-sm">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-[#505258] text-sm"
+                >
                   <Filter className="w-4 h-4 mr-1" />
                   Filter
                 </Button>
@@ -148,9 +212,11 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
 
               {/* Stats and Select All */}
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-[#676879]">{filteredEmployees.length} Employees found</span>
+                <span className="text-sm text-[#676879]">
+                  {filteredEmployees.length} Employees found
+                </span>
                 <div className="flex items-center gap-2">
-                  <Checkbox 
+                  <Checkbox
                     checked={selectAll}
                     onCheckedChange={handleSelectAll}
                   />
@@ -162,60 +228,76 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
               <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-2">
                 {/* Left Column */}
                 <div className="space-y-2">
-                  {filteredEmployees.filter((_, i) => i % 2 === 0).map((employee) => (
-                    <div
-                      key={employee.id}
-                      onClick={() => handleSelectEmployee(employee.id)}
-                      className={`p-2 rounded cursor-pointer flex items-center gap-2 ${
-                        employee.selected ? "bg-[#E6F1FD]" : "bg-white hover:bg-gray-50"
-                      }`}
-                    >
+                  {filteredEmployees
+                    .filter((_, i) => i % 2 === 0)
+                    .map((employee) => (
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-[#505258] border border-white"
-                        style={{ backgroundColor: employee.avatarColor }}
+                        key={employee.id}
+                        onClick={() => handleSelectEmployee(employee.id)}
+                        className={`p-2 rounded cursor-pointer flex items-center gap-2 ${
+                          employee.selected
+                            ? "bg-[#E6F1FD]"
+                            : "bg-white hover:bg-gray-50"
+                        }`}
                       >
-                        {employee.initials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-[#323238] truncate">{employee.name}</div>
-                        <div className="text-xs text-[#505258] truncate">{employee.email}</div>
-                      </div>
-                      {employee.selected && (
-                        <div className="w-5 h-5 rounded-full bg-[#0073EA] flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-[#505258] border border-white"
+                          style={{ backgroundColor: employee.avatarColor }}
+                        >
+                          {employee.initials}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-[#323238] truncate">
+                            {employee.name}
+                          </div>
+                          <div className="text-xs text-[#505258] truncate">
+                            {employee.email}
+                          </div>
+                        </div>
+                        {employee.selected && (
+                          <div className="w-5 h-5 rounded-full bg-[#0073EA] flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
                 </div>
 
                 {/* Right Column */}
                 <div className="space-y-2">
-                  {filteredEmployees.filter((_, i) => i % 2 === 1).map((employee) => (
-                    <div
-                      key={employee.id}
-                      onClick={() => handleSelectEmployee(employee.id)}
-                      className={`p-2 rounded cursor-pointer flex items-center gap-2 ${
-                        employee.selected ? "bg-[#E6F1FD]" : "bg-white hover:bg-gray-50"
-                      }`}
-                    >
+                  {filteredEmployees
+                    .filter((_, i) => i % 2 === 1)
+                    .map((employee) => (
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-[#505258] border border-white"
-                        style={{ backgroundColor: employee.avatarColor }}
+                        key={employee.id}
+                        onClick={() => handleSelectEmployee(employee.id)}
+                        className={`p-2 rounded cursor-pointer flex items-center gap-2 ${
+                          employee.selected
+                            ? "bg-[#E6F1FD]"
+                            : "bg-white hover:bg-gray-50"
+                        }`}
                       >
-                        {employee.initials}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-[#323238] truncate">{employee.name}</div>
-                        <div className="text-xs text-[#505258] truncate">{employee.email}</div>
-                      </div>
-                      {employee.selected && (
-                        <div className="w-5 h-5 rounded-full bg-[#0073EA] flex items-center justify-center">
-                          <Check className="w-3 h-3 text-white" />
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-[#505258] border border-white"
+                          style={{ backgroundColor: employee.avatarColor }}
+                        >
+                          {employee.initials}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-[#323238] truncate">
+                            {employee.name}
+                          </div>
+                          <div className="text-xs text-[#505258] truncate">
+                            {employee.email}
+                          </div>
+                        </div>
+                        {employee.selected && (
+                          <div className="w-5 h-5 rounded-full bg-[#0073EA] flex items-center justify-center">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </div>
             </div>
@@ -224,7 +306,10 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
             <div className="p-4 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div></div>
-                <Button variant="outline" className="text-[#0073EA] border-[#0073EA]">
+                <Button
+                  variant="outline"
+                  className="text-[#0073EA] border-[#0073EA]"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Download sample format
                 </Button>
@@ -262,24 +347,40 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 border border-[#D0D4E4] rounded bg-white flex items-center justify-center">
-                        <svg width="16" height="16" viewBox="0 0 16 16" className="text-[#258750]">
-                          <rect width="16" height="16" fill="currentColor" rx="2" />
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          className="text-[#258750]"
+                        >
+                          <rect
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            rx="2"
+                          />
                         </svg>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-[#323238]">{uploadedFile.name}</div>
-                        <div className="text-xs text-[#505258]">Size {Math.round(uploadedFile.size / 1024)}KB</div>
+                        <div className="text-sm font-medium text-[#323238]">
+                          {uploadedFile.name}
+                        </div>
+                        <div className="text-xs text-[#505258]">
+                          Size {Math.round(uploadedFile.size / 1024)}KB
+                        </div>
                       </div>
                     </div>
                     <button className="w-7 h-7 rounded-full bg-[#F6F7FB] flex items-center justify-center">
                       <X className="w-4 h-4 text-[#676879]" />
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-[#505258]">Pending</span>
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-[#505258]">{uploadProgress}%</span>
+                      <span className="text-xs text-[#505258]">
+                        {uploadProgress}%
+                      </span>
                       {uploadProgress === 100 && (
                         <div className="w-5 h-5 rounded-full bg-[#258750] flex items-center justify-center">
                           <Check className="w-3 h-3 text-white" />
@@ -287,9 +388,9 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="w-full bg-white rounded-full h-1.5">
-                    <div 
+                    <div
                       className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 via-green-500 to-yellow-500"
                       style={{ width: `${uploadProgress}%` }}
                     />
@@ -303,7 +404,8 @@ export default function SendInviteDialog({ isOpen, onClose }: SendInviteDialogPr
         {/* Footer */}
         <div className="flex items-center justify-between p-5 border-t border-[#D0D4E4]">
           <span className="text-sm text-[#676879]">
-            You've selected {selectedCount} employee{selectedCount !== 1 ? 's' : ''}
+            You've selected {selectedCount} employee
+            {selectedCount !== 1 ? "s" : ""}
           </span>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>

@@ -21,6 +21,7 @@ export function AddNewTemplateDropdown({
   onChooseTemplate,
 }: AddNewTemplateDropdownProps) {
   const [showNameDialog, setShowNameDialog] = useState(false);
+  const navigate = useNavigate();
 
   const handleCreateNewClick = () => {
     setShowNameDialog(true);
@@ -28,6 +29,10 @@ export function AddNewTemplateDropdown({
 
   const handleCreateNewFromDropdown = () => {
     setShowNameDialog(true);
+  };
+
+  const handleChooseTemplateClick = () => {
+    navigate("/choose-template");
   };
 
   const handleSaveTemplate = (templateName: string) => {

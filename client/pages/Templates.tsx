@@ -481,7 +481,7 @@ export default function Templates() {
                     onClose={() => setShowFilterDropdown(false)}
                     isActiveFilter={filterIsActive}
                     onChangeIsActive={(val) => setFilterIsActive(val)}
-                    creators={[]}
+                    creators={creators}
                     selectedCreator={filterCreatedBy}
                     onChangeCreator={(id) => setFilterCreatedBy(id)}
                   />

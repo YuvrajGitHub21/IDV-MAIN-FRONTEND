@@ -579,7 +579,9 @@ export default function BiometricVerification() {
                         <Checkbox
                           id="block-attempts"
                           checked={blockAfterRetries}
-                          onCheckedChange={(v) => setBlockAfterRetries(Boolean(v))}
+                          onCheckedChange={(v) =>
+                            setBlockAfterRetries(Boolean(v))
+                          }
                           className="mt-0.5 w-4 h-4 lg:w-[18px] lg:h-[18px]"
                         />
                         <div className="flex-1 min-w-0">

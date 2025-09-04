@@ -20,8 +20,12 @@ export default function Templates() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [filterIsActive, setFilterIsActive] = useState<boolean | undefined>(undefined);
-  const [filterCreatedBy, setFilterCreatedBy] = useState<string | undefined>(undefined);
+  const [filterIsActive, setFilterIsActive] = useState<boolean | undefined>(
+    undefined,
+  );
+  const [filterCreatedBy, setFilterCreatedBy] = useState<string | undefined>(
+    undefined,
+  );
   const navigate = useNavigate();
 
   // Use custom hooks for API integration
@@ -36,7 +40,9 @@ export default function Templates() {
 
   // Build creators list from templates and known users
   const creators = React.useMemo(() => {
-    const ids = Array.from(new Set(templates.map((t) => t.createdBy))).filter(Boolean);
+    const ids = Array.from(new Set(templates.map((t) => t.createdBy))).filter(
+      Boolean,
+    );
     return ids.map((id) => ({ id, name: users[id] || id }));
   }, [templates, users]);
 
@@ -45,7 +51,14 @@ export default function Templates() {
     if (filterIsActive !== undefined) filters.isActive = filterIsActive;
     if (filterCreatedBy) filters.createdBy = filterCreatedBy;
     fetchTemplates(filters);
-  }, [searchQuery, currentPage, pageSize, filterIsActive, filterCreatedBy, fetchTemplates]);
+  }, [
+    searchQuery,
+    currentPage,
+    pageSize,
+    filterIsActive,
+    filterCreatedBy,
+    fetchTemplates,
+  ]);
 
   // Fetch user data for all unique creators when templates change
   useEffect(() => {

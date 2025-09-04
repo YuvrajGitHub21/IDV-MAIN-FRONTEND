@@ -124,6 +124,7 @@ export default function SendInviteDialog({
   const [selectAll, setSelectAll] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const uploadIntervalRef = useRef<number | null>(null);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   if (!isOpen) return null;

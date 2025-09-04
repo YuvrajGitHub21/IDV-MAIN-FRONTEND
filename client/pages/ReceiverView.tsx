@@ -1,6 +1,5 @@
-import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronLeft, Camera, Upload, Info, Check } from "lucide-react";
+import { ChevronLeft, Camera, Upload, Info, Check, X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +38,15 @@ export default function ReceiverView() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [emailVerified, setEmailVerified] = useState(false);
 
+  // Load admin/preview configuration for Document Verification
+  const [docConfig, setDocConfig] = useState<any>(null);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_doc_verification_form");
+      if (raw) setDocConfig(JSON.parse(raw));
+    } catch {}
+  }, []);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -47,7 +55,6 @@ export default function ReceiverView() {
   };
 
   const handleEmailVerify = () => {
-    // Simulate email verification
     setEmailVerified(true);
   };
 
@@ -61,8 +68,7 @@ export default function ReceiverView() {
   const handleSubmit = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.firstName.trim())
-      newErrors.firstName = "First name is required";
+    if (!formData.firstName.trim()) newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
     if (!formData.email.trim()) newErrors.email = "Email is required";
     if (!emailVerified) newErrors.email = "Email verification is required";
@@ -72,9 +78,105 @@ export default function ReceiverView() {
 
     if (Object.keys(newErrors).length === 0) {
       console.log("Form submitted:", formData);
-      // Handle form submission
     }
   };
+
+  // ID types mapping and filtering based on admin selection/preview
+  const allIdOptions: { value: string; label: string; iconBg: string }[] = [
+    { value: "passport", label: "Passport", iconBg: "#5A43D6" },
+    { value: "aadhar", label: "Aadhar Card", iconBg: "#00B499" },
+    { value: "license", label: "Drivers License", iconBg: "#ED5F00" },
+    { value: "pan", label: "Pan Card", iconBg: "#9C2BAD" },
+  ];
+  const selectedSet = useMemo(() => {
+    const set = new Set<string>();
+    const list: string[] = docConfig?.selectedDocuments || [];
+    const map: Record<string, string> = {
+      Passport: "passport",
+      "Aadhar Card": "aadhar",
+      "Pan Card": "pan",
+      "Driving License": "license",
+      "Drivers License": "license",
+    };
+    for (const item of list) {
+      const v = map[item];
+      if (v) set.add(v);
+    }
+    return set;
+  }, [docConfig]);
+  const filteredIdOptions = selectedSet.size
+    ? allIdOptions.filter((opt) => selectedSet.has(opt.value))
+    : allIdOptions;
+
+  // Upload methods based on admin selection/preview
+  const allowUploadFromDevice = !!docConfig?.allowUploadFromDevice;
+  const allowCaptureWebcam = !!docConfig?.allowCaptureWebcam;
+
+  // Camera capture state for Document upload
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [capturedDataUrl, setCapturedDataUrl] = useState<string | null>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const stopStream = () => {
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop());
+    }
+    setStream(null);
+  };
+
+  const openCamera = async () => {
+    setShowCamera(true);
+    setCapturedDataUrl(null);
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ video: true });
+      setStream(s);
+      if (videoRef.current) {
+        videoRef.current.srcObject = s;
+        await videoRef.current.play();
+      }
+      setCameraError(null);
+    } catch (e) {
+      setCameraError("Camera not detected.");
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    const w = video.videoWidth || 640;
+    const h = video.videoHeight || 480;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, w, h);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    setCapturedDataUrl(dataUrl);
+    stopStream();
+  };
+
+  const retake = () => {
+    setCapturedDataUrl(null);
+    openCamera();
+  };
+
+  const useCaptured = async () => {
+    if (!capturedDataUrl) return;
+    const res = await fetch(capturedDataUrl);
+    const blob = await res.blob();
+    const file = new File([blob], "captured.jpg", { type: blob.type || "image/jpeg" });
+    setFormData((prev) => ({ ...prev, document: file }));
+    setShowCamera(false);
+  };
+
+  useEffect(() => {
+    return () => stopStream();
+  }, []);
 
   return (
     <div className="min-h-screen bg-white font-roboto">
@@ -87,9 +189,7 @@ export default function ReceiverView() {
         />
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-[#F65F7C] flex items-center justify-center">
-            <span className="text-white text-xs font-medium leading-[10px]">
-              OS
-            </span>
+            <span className="text-white text-xs font-medium leading-[10px]">OS</span>
           </div>
         </div>
       </header>
@@ -115,14 +215,10 @@ export default function ReceiverView() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-xs text-[#505258] font-medium">
-                Template
-              </span>
+              <span className="text-xs text-[#505258] font-medium">Template</span>
             </div>
             <span className="text-xs text-[#505258] font-medium">/</span>
-            <span className="text-xs text-[#505258] font-medium">
-              Create New Template
-            </span>
+            <span className="text-xs text-[#505258] font-medium">Create New Template</span>
           </div>
         </div>
 
@@ -135,45 +231,7 @@ export default function ReceiverView() {
             >
               <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
             </button>
-            <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">
-              New Template
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      {/* Steps Section */}
-      <div className="h-[89px] px-4 py-3 border-b border-[#DEDEDD] bg-white">
-        <div className="w-full px-4 py-3 flex items-center justify-center">
-          <div className="flex items-center gap-8">
-            {/* Form Builder Step - Completed */}
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="p-1.5 rounded-full border-2 border-[#258750]">
-                <div className="w-8 h-8 rounded-full bg-[#258750] flex items-center justify-center">
-                  <Check className="w-[18px] h-[18px] text-white" />
-                </div>
-              </div>
-              <span className="text-[13px] font-medium text-[#172B4D]">
-                Form builder
-              </span>
-            </div>
-
-            {/* Connection Line */}
-            <div className="w-[120px] h-px bg-[#DEDEDD]"></div>
-
-            {/* Preview Step - Current */}
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="p-1.5 rounded-full border-2 border-[#0073EA]">
-                <div className="w-8 h-8 rounded-full bg-[#0073EA] flex items-center justify-center">
-                  <span className="text-white text-base font-bold leading-4">
-                    2
-                  </span>
-                </div>
-              </div>
-              <span className="text-[13px] font-medium text-[#172B4D]">
-                Preview
-              </span>
-            </div>
+            <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">New Template</h1>
           </div>
         </div>
       </div>
@@ -188,8 +246,7 @@ export default function ReceiverView() {
               <div className="flex-1 flex flex-col gap-2">
                 <h3 className="text-sm font-bold text-[#292F4C]">Admin View</h3>
                 <p className="text-[13px] text-[#505258] leading-[18px]">
-                  Lorem Ipsum is simply dummy text of the printing and
-                  typesetting industry.
+                  This preview shows exactly what users will see.
                 </p>
               </div>
             </div>
@@ -197,12 +254,9 @@ export default function ReceiverView() {
             {/* Receiver's View Tab - Active */}
             <div className="w-full px-[26px] py-3 flex items-center gap-2.5 rounded bg-[#E6F1FD]">
               <div className="flex-1 flex flex-col gap-2">
-                <h3 className="text-sm font-bold text-[#292F4C]">
-                  Receiver's View
-                </h3>
+                <h3 className="text-sm font-bold text-[#292F4C]">Receiver's View</h3>
                 <p className="text-[13px] text-[#505258] leading-[18px]">
-                  Lorem Ipsum is simply dummy text of the printing and
-                  typesetting industry.
+                  Fill the form as the end user.
                 </p>
               </div>
             </div>
@@ -231,13 +285,10 @@ export default function ReceiverView() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <h2 className="text-base font-bold text-[#172B4D]">
-                    Personal Information
-                  </h2>
+                  <h2 className="text-base font-bold text-[#172B4D]">Personal Information</h2>
                 </div>
                 <p className="text-[13px] text-[#172B4D] ml-6">
-                  Please provide your basic personal information to begin the
-                  identity verification process.
+                  Please provide your basic personal information to begin the identity verification process.
                 </p>
               </div>
 
@@ -245,56 +296,35 @@ export default function ReceiverView() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* First Name */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="firstName"
-                      className="text-[13px] font-medium text-[#172B4D]"
-                    >
-                      First Name
-                    </Label>
+                    <Label htmlFor="firstName" className="text-[13px] font-medium text-[#172B4D]">First Name</Label>
                     <Input
                       id="firstName"
                       value={formData.firstName}
-                      onChange={(e) =>
-                        handleInputChange("firstName", e.target.value)
-                      }
+                      onChange={(e) => handleInputChange("firstName", e.target.value)}
                       placeholder="Enter First Name"
                       className="h-[38px] border-[#C3C6D4] text-[13px]"
                     />
-                    {errors.firstName && (
-                      <p className="text-red-500 text-xs">{errors.firstName}</p>
-                    )}
+                    {errors.firstName && <p className="text-red-500 text-xs">{errors.firstName}</p>}
                   </div>
 
                   {/* Last Name */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="lastName"
-                      className="text-[13px] font-medium text-[#172B4D]"
-                    >
-                      Last Name
-                    </Label>
+                    <Label htmlFor="lastName" className="text-[13px] font-medium text-[#172B4D]">Last Name</Label>
                     <Input
                       id="lastName"
                       value={formData.lastName}
-                      onChange={(e) =>
-                        handleInputChange("lastName", e.target.value)
-                      }
+                      onChange={(e) => handleInputChange("lastName", e.target.value)}
                       placeholder="Enter Last Name"
                       className="h-[38px] border-[#C3C6D4] text-[13px]"
                     />
-                    {errors.lastName && (
-                      <p className="text-red-500 text-xs">{errors.lastName}</p>
-                    )}
+                    {errors.lastName && <p className="text-red-500 text-xs">{errors.lastName}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Email */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-[13px] font-medium text-[#172B4D]"
-                    >
+                    <Label htmlFor="email" className="text-[13px] font-medium text-[#172B4D]">
                       Email <span className="text-[#D83A52]">*</span>
                     </Label>
                     <div className="relative">
@@ -302,9 +332,7 @@ export default function ReceiverView() {
                         id="email"
                         type="email"
                         value={formData.email}
-                        onChange={(e) =>
-                          handleInputChange("email", e.target.value)
-                        }
+                        onChange={(e) => handleInputChange("email", e.target.value)}
                         placeholder="Enter Your Email Address"
                         className="h-[38px] border-[#C3C6D4] text-[13px] pr-20"
                       />
@@ -324,26 +352,17 @@ export default function ReceiverView() {
                         Email verification is required to continue
                       </div>
                     )}
-                    {errors.email && (
-                      <p className="text-red-500 text-xs">{errors.email}</p>
-                    )}
+                    {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
                   </div>
 
                   {/* Date of Birth */}
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="dateOfBirth"
-                      className="text-[13px] font-medium text-[#172B4D]"
-                    >
-                      Date Of Birth
-                    </Label>
+                    <Label htmlFor="dateOfBirth" className="text-[13px] font-medium text-[#172B4D]">Date Of Birth</Label>
                     <Input
                       id="dateOfBirth"
                       type="date"
                       value={formData.dateOfBirth}
-                      onChange={(e) =>
-                        handleInputChange("dateOfBirth", e.target.value)
-                      }
+                      onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
                       className="h-[38px] border-[#C3C6D4] text-[13px]"
                     />
                   </div>
@@ -370,32 +389,20 @@ export default function ReceiverView() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <h2 className="text-base font-bold text-[#172B4D]">
-                    Document Verification
-                  </h2>
+                  <h2 className="text-base font-bold text-[#172B4D]">Document Verification</h2>
                 </div>
                 <p className="text-[13px] text-[#172B4D] ml-6">
-                  Choose a valid government-issued ID (like a passport, driver's
-                  license, or national ID) and upload a clear photo of it.
+                  Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.
                 </p>
               </div>
 
               <CardContent className="p-8 space-y-6">
                 {/* Country Selection */}
                 <div className="space-y-2">
-                  <Label className="text-[13px] font-medium text-[#172B4D]">
-                    Country
-                  </Label>
+                  <Label className="text-[13px] font-medium text-[#172B4D]">Country</Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Select
-                      value={formData.country}
-                      onValueChange={(value) =>
-                        handleInputChange("country", value)
-                      }
-                    >
-                      <SelectTrigger className="h-[38px] border-[#C3C6D4] text-[13px]">
-                        <SelectValue placeholder="Select Country" />
-                      </SelectTrigger>
+                    <Select value={formData.country} onValueChange={(value) => handleInputChange("country", value)}>
+                      <SelectTrigger className="h-[38px] border-[#C3C6D4] text-[13px]"><SelectValue placeholder="Select Country" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="India">India</SelectItem>
                         <SelectItem value="USA">USA</SelectItem>
@@ -403,9 +410,7 @@ export default function ReceiverView() {
                       </SelectContent>
                     </Select>
                     <Select>
-                      <SelectTrigger className="h-[38px] border-[#C3C6D4] text-[13px]">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
+                      <SelectTrigger className="h-[38px] border-[#C3C6D4] text-[13px]"><SelectValue placeholder="Select" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="option1">Option 1</SelectItem>
                         <SelectItem value="option2">Option 2</SelectItem>
@@ -414,244 +419,166 @@ export default function ReceiverView() {
                   </div>
                 </div>
 
-                {/* ID Type Selection */}
+                {/* ID Type Selection - show only admin-selected or preview items */}
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-base font-bold text-[#172B4D] mb-1">
-                      Select the ID Type
-                    </h3>
-                    <p className="text-[13px] text-[#676879]">
-                      Select the ID you'd like to use for verification.
-                    </p>
+                    <h3 className="text-base font-bold text-[#172B4D] mb-1">Select the ID Type</h3>
+                    <p className="text-[13px] text-[#676879]">Select the ID you'd like to use for verification.</p>
                   </div>
 
                   <RadioGroup
                     value={formData.idType}
-                    onValueChange={(value) =>
-                      handleInputChange("idType", value)
-                    }
+                    onValueChange={(value) => handleInputChange("idType", value)}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
                   >
-                    <div className="relative">
-                      <RadioGroupItem
-                        value="passport"
-                        id="passport"
-                        className="sr-only"
-                      />
-                      <Label
-                        htmlFor="passport"
-                        className={`flex flex-col items-start gap-3 p-4 border rounded cursor-pointer transition-all ${
-                          formData.idType === "passport"
-                            ? "border-[#0073EA] bg-[#E6F1FD]"
-                            : "border-[#C3C6D4] bg-white"
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded bg-[#5A43D6] flex items-center justify-center">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z"
-                              fill="white"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium text-[#172B4D]">
-                          Passport
-                        </span>
-                      </Label>
-                      {formData.idType === "passport" && (
-                        <div className="absolute top-2 right-2 w-[18px] h-[18px] rounded-full border-2 border-[#0073EA] bg-white flex items-center justify-center">
-                          <div className="w-2 h-2 rounded-full bg-[#0073EA]"></div>
-                        </div>
+                    {filteredIdOptions.map((opt) => (
+                      <div key={opt.value} className="relative">
+                        <RadioGroupItem value={opt.value} id={opt.value} className="sr-only" />
+                        <Label
+                          htmlFor={opt.value}
+                          className={`flex flex-col items-start gap-3 p-4 border rounded cursor-pointer transition-all ${
+                            formData.idType === opt.value ? "border-[#0073EA] bg-[#E6F1FD]" : "border-[#C3C6D4] bg-white"
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded flex items-center justify-center" style={{ backgroundColor: opt.iconBg }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <circle cx="12" cy="12" r="10" fill="white" />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium text-[#172B4D]">{opt.label}</span>
+                        </Label>
+                        {formData.idType === opt.value && (
+                          <div className="absolute top-2 right-2 w-[18px] h-[18px] rounded-full border-2 border-[#0073EA] bg-white flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-[#0073EA]"></div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </RadioGroup>
+                  {errors.idType && <p className="text-red-500 text-xs">{errors.idType}</p>}
+                </div>
+
+                {/* Upload Methods - only show those enabled by admin/preview */}
+                {(allowCaptureWebcam || allowUploadFromDevice) && (
+                  <div className="space-y-4">
+                    <h3 className="text-base font-bold text-[#172B4D]">Choose a method to upload your document</h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {allowCaptureWebcam && (
+                        <button
+                          type="button"
+                          onClick={openCamera}
+                          className="border-2 border-dashed border-[#C3C6D4] rounded-lg p-8 flex flex-col items-center gap-4 hover:border-[#0073EA] transition-colors cursor-pointer"
+                        >
+                          <div className="w-[52px] h-[52px] rounded-full bg-[#F6F7FB] flex items-center justify-center">
+                            <Camera className="w-6 h-6 text-[#676879]" />
+                          </div>
+                          <div className="text-center">
+                            <h4 className="text-[13px] font-medium text-[#323238] mb-2">Camera</h4>
+                            <p className="text-[13px] text-[#676879]">Use your device camera to capture the document.</p>
+                          </div>
+                        </button>
+                      )}
+
+                      {allowUploadFromDevice && (
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-2 border-dashed border-[#C3C6D4] rounded-lg p-8 flex flex-col items-center gap-4 hover:border-[#0073EA] transition-colors cursor-pointer"
+                        >
+                          <div className="w-[52px] h-[52px] rounded-full bg-[#F6F7FB] flex items-center justify-center">
+                            <Upload className="w-6 h-6 text-[#676879]" />
+                          </div>
+                          <div className="text-center">
+                            <h4 className="text-[13px] font-medium text-[#323238] mb-2">Upload Files</h4>
+                            <p className="text-[13px] text-[#676879]">Upload a photo or PDF of your document from this device.</p>
+                          </div>
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            onChange={handleFileUpload}
+                            accept="image/*,.pdf"
+                            className="hidden"
+                          />
+                        </button>
                       )}
                     </div>
 
-                    <div className="relative">
-                      <RadioGroupItem
-                        value="aadhar"
-                        id="aadhar"
-                        className="sr-only"
-                      />
-                      <Label
-                        htmlFor="aadhar"
-                        className={`flex flex-col items-start gap-3 p-4 border rounded cursor-pointer transition-all opacity-50 ${
-                          formData.idType === "aadhar"
-                            ? "border-[#0073EA] bg-[#E6F1FD]"
-                            : "border-[#C3C6D4] bg-white"
-                        }`}
+                    {formData.document && (
+                      <div className="text-[13px] text-[#172B4D]">
+                        Selected file: <span className="font-medium">{formData.document.name}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Camera panel for capturing document */}
+                {showCamera && (
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="border-2 border-dashed border-[#C3C6D4] rounded-lg p-4 flex flex-col items-center gap-4 min-h-[320px] justify-center relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowCamera(false);
+                          stopStream();
+                        }}
+                        className="absolute top-2 right-2 p-1 rounded hover:bg-gray-100"
+                        aria-label="Close camera"
                       >
-                        <div className="w-8 h-8 rounded bg-[#00B499] flex items-center justify-center">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z"
-                              fill="white"
-                            />
-                            <path
-                              d="M12 14C8.13401 14 5 17.134 5 21C5 21.5523 5.44772 22 6 22H18C18.5523 22 19 21.5523 19 21C19 17.134 15.866 14 12 14Z"
-                              fill="white"
-                            />
-                          </svg>
+                        <X className="w-5 h-5 text-[#676879]" />
+                      </button>
+
+                      {!capturedDataUrl && !cameraError && (
+                        <video ref={videoRef} className="w-full max-w-md rounded bg-black" playsInline muted />
+                      )}
+                      {capturedDataUrl && (
+                        <img src={capturedDataUrl} alt="Captured" className="w-full max-w-md rounded" />
+                      )}
+                      {cameraError && (
+                        <div className="text-center space-y-2">
+                          <div className="w-8 h-8 rounded-full border-2 border-[#676879] flex items-center justify-center mx-auto">
+                            <span className="text-[#676879]">!</span>
+                          </div>
+                          <h4 className="text-[13px] font-medium text-[#172B4D]">{cameraError}</h4>
+                          <p className="text-[13px] text-[#676879]">Please check your device or close other apps using the camera.</p>
                         </div>
-                        <span className="text-sm font-medium text-[#172B4D]">
-                          Aadhar Card
-                        </span>
-                      </Label>
+                      )}
+                      <canvas ref={canvasRef} className="hidden" />
                     </div>
-
-                    <div className="relative">
-                      <RadioGroupItem
-                        value="license"
-                        id="license"
-                        className="sr-only"
-                      />
-                      <Label
-                        htmlFor="license"
-                        className={`flex flex-col items-start gap-3 p-4 border rounded cursor-pointer transition-all opacity-50 ${
-                          formData.idType === "license"
-                            ? "border-[#0073EA] bg-[#E6F1FD]"
-                            : "border-[#C3C6D4] bg-white"
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded bg-[#ED5F00] flex items-center justify-center">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M20 6H4C2.9 6 2 6.9 2 8V16C2 17.1 2.9 18 4 18H20C21.1 18 22 17.1 22 16V8C22 6.9 21.1 6 20 6ZM8 15C6.9 15 6 14.1 6 13C6 11.9 6.9 11 8 11C9.1 11 10 11.9 10 13C10 14.1 9.1 15 8 15ZM18 15H12V13H18V15ZM18 11H12V9H18V11Z"
-                              fill="white"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium text-[#172B4D]">
-                          Drivers License
-                        </span>
-                      </Label>
-                    </div>
-
-                    <div className="relative">
-                      <RadioGroupItem
-                        value="pan"
-                        id="pan"
-                        className="sr-only"
-                      />
-                      <Label
-                        htmlFor="pan"
-                        className={`flex flex-col items-start gap-3 p-4 border rounded cursor-pointer transition-all opacity-50 ${
-                          formData.idType === "pan"
-                            ? "border-[#0073EA] bg-[#E6F1FD]"
-                            : "border-[#C3C6D4] bg-white"
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded bg-[#9C2BAD] flex items-center justify-center">
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM8.5 15C7.1 15 6 13.9 6 12.5S7.1 10 8.5 10S11 11.1 11 12.5S9.9 15 8.5 15ZM20 15H13V13H20V15ZM20 11H13V9H20V11Z"
-                              fill="white"
-                            />
-                          </svg>
-                        </div>
-                        <span className="text-sm font-medium text-[#172B4D]">
-                          Pan Card
-                        </span>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                  {errors.idType && (
-                    <p className="text-red-500 text-xs">{errors.idType}</p>
-                  )}
-                </div>
-
-                {/* Upload Methods */}
-                <div className="space-y-4">
-                  <h3 className="text-base font-bold text-[#172B4D]">
-                    Choose a method to upload your document
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Camera Option */}
-                    <div className="border-2 border-dashed border-[#C3C6D4] rounded-lg p-8 flex flex-col items-center gap-4 hover:border-[#0073EA] transition-colors cursor-pointer">
-                      <div className="w-[52px] h-[52px] rounded-full bg-[#F6F7FB] flex items-center justify-center">
-                        <Camera className="w-6 h-6 text-[#676879]" />
-                      </div>
-                      <div className="text-center">
-                        <h4 className="text-[13px] font-medium text-[#323238] mb-2">
-                          Camera
-                        </h4>
-                        <p className="text-[13px] text-[#676879]">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing
-                          elit. Mauris lobortis massa vitae
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Upload Files Option */}
-                    <div className="border-2 border-dashed border-[#C3C6D4] rounded-lg p-8 flex flex-col items-center gap-4 hover:border-[#0073EA] transition-colors cursor-pointer">
-                      <div className="w-[52px] h-[52px] rounded-full bg-[#F6F7FB] flex items-center justify-center">
-                        <Upload className="w-6 h-6 text-[#676879]" />
-                      </div>
-                      <div className="text-center">
-                        <h4 className="text-[13px] font-medium text-[#323238] mb-2">
-                          Upload Files
-                        </h4>
-                        <p className="text-[13px] text-[#676879]">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing
-                          elit. Mauris lobortis massa vitae
-                        </p>
-                      </div>
-                      <input
-                        type="file"
-                        onChange={handleFileUpload}
-                        accept="image/*,.pdf"
-                        className="hidden"
-                        id="file-upload"
-                      />
+                    <div className="bg-[#F6F7FB] rounded-b-lg p-2 flex justify-end gap-2">
+                      {!capturedDataUrl && !cameraError && (
+                        <Button size="sm" className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700" onClick={capturePhoto}>
+                          Capture
+                        </Button>
+                      )}
+                      {capturedDataUrl && (
+                        <>
+                          <Button size="sm" variant="outline" className="h-8 text-[13px]" onClick={retake}>
+                            <RefreshCw className="w-3.5 h-3.5 mr-1" /> Retake
+                          </Button>
+                          <Button size="sm" className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700" onClick={useCaptured}>
+                            Use Photo
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
+                )}
 
-                  {/* QR Code Section */}
-                  <div className="border-2 border-dashed border-[#C3C6D4] rounded-lg p-8 flex items-center justify-center gap-8">
-                    <img
-                      src="https://api.builder.io/api/v1/image/assets/TEMP/71b92e12d4aa83fb25f12a5fcbfdd11a3f368505?width=220"
-                      alt="QR Code"
-                      className="w-[110px] h-[113px]"
-                    />
-                    <div className="text-center">
-                      <p className="text-[13px] text-[#676879] mb-1">
-                        Continue on another device by scanning the QR code or
-                        opening
-                      </p>
-                      <a
-                        href="#"
-                        className="text-[13px] text-[#0073EA] hover:underline"
-                      >
-                        https://id.xyz/verify
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-1 text-[#0073EA] text-[12px]">
-                      <Info className="w-5 h-5" />
-                      <span>How does this work?</span>
-                    </div>
+                {/* QR Code Section */}
+                <div className="border-2 border-dashed border-[#C3C6D4] rounded-lg p-8 flex items-center justify-center gap-8">
+                  <img
+                    src="https://api.builder.io/api/v1/image/assets/TEMP/71b92e12d4aa83fb25f12a5fcbfdd11a3f368505?width=220"
+                    alt="QR Code"
+                    className="w-[110px] h-[113px]"
+                  />
+                  <div className="text-center">
+                    <p className="text-[13px] text-[#676879] mb-1">Continue on another device by scanning the QR code or opening</p>
+                    <a href="#" className="text-[13px] text-[#0073EA] hover:underline">https://id.xyz/verify</a>
+                  </div>
+                  <div className="flex items-center gap-1 text-[#0073EA] text-[12px]">
+                    <Info className="w-5 h-5" />
+                    <span>How does this work?</span>
                   </div>
                 </div>
               </CardContent>
@@ -676,14 +603,10 @@ export default function ReceiverView() {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  <h2 className="text-base font-bold text-[#172B4D]">
-                    Biometric Verification
-                  </h2>
+                  <h2 className="text-base font-bold text-[#172B4D]">Biometric Verification</h2>
                 </div>
                 <p className="text-[13px] text-[#172B4D] ml-6">
-                  Take a live selfie to confirm you are the person in the ID
-                  document. Make sure you're in a well-lit area and your face is
-                  clearly visible.
+                  Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.
                 </p>
               </div>
 
@@ -696,22 +619,12 @@ export default function ReceiverView() {
                         <div className="w-8 h-8 rounded-full border-2 border-[#676879] flex items-center justify-center mx-auto">
                           <span className="text-[#676879]">!</span>
                         </div>
-                        <h4 className="text-[13px] font-medium text-[#172B4D]">
-                          Camera not detected.
-                        </h4>
-                        <p className="text-[13px] text-[#676879]">
-                          Please check your device or close other apps using the
-                          camera.
-                        </p>
+                        <h4 className="text-[13px] font-medium text-[#172B4D]">Camera not detected.</h4>
+                        <p className="text-[13px] text-[#676879]">Please check your device or close other apps using the camera.</p>
                       </div>
                     </div>
                     <div className="bg-[#F6F7FB] rounded-b-lg p-2 flex justify-end">
-                      <Button
-                        size="sm"
-                        className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700"
-                      >
-                        Retry
-                      </Button>
+                      <Button size="sm" className="h-8 text-[13px] bg-[#0073EA] hover:bg-blue-700">Retry</Button>
                     </div>
                   </div>
 
@@ -724,16 +637,8 @@ export default function ReceiverView() {
                         className="w-[128px] h-[132px]"
                       />
                       <div className="text-center">
-                        <p className="text-[13px] text-[#676879] mb-1">
-                          Continue on another device by scanning the QR code or
-                          opening
-                        </p>
-                        <a
-                          href="#"
-                          className="text-[13px] text-[#0073EA] hover:underline"
-                        >
-                          https://id.xyz/verify
-                        </a>
+                        <p className="text-[13px] text-[#676879] mb-1">Continue on another device by scanning the QR code or opening</p>
+                        <a href="#" className="text-[13px] text-[#0073EA] hover:underline">https://id.xyz/verify</a>
                       </div>
                     </div>
                     <div className="bg-[#F6F7FB] rounded-b-lg p-4 flex justify-end">
@@ -749,12 +654,7 @@ export default function ReceiverView() {
 
             {/* Submit Button */}
             <div className="flex justify-center">
-              <Button
-                onClick={handleSubmit}
-                className="h-12 px-8 bg-[#0073EA] hover:bg-blue-700 text-white font-medium"
-              >
-                Submit Verification
-              </Button>
+              <Button onClick={handleSubmit} className="h-12 px-8 bg-[#0073EA] hover:bg-blue-700 text-white font-medium">Submit Verification</Button>
             </div>
           </div>
         </div>

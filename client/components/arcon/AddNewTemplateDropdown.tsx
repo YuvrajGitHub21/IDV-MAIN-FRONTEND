@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { NameTemplateDialog } from "./NameTemplateDialog";
 
@@ -20,6 +21,7 @@ export function AddNewTemplateDropdown({
   onChooseTemplate,
 }: AddNewTemplateDropdownProps) {
   const [showNameDialog, setShowNameDialog] = useState(false);
+  const navigate = useNavigate();
 
   const handleCreateNewClick = () => {
     setShowNameDialog(true);
@@ -27,6 +29,10 @@ export function AddNewTemplateDropdown({
 
   const handleCreateNewFromDropdown = () => {
     setShowNameDialog(true);
+  };
+
+  const handleChooseTemplateClick = () => {
+    navigate("/choose-template");
   };
 
   const handleSaveTemplate = (templateName: string) => {
@@ -80,7 +86,7 @@ export function AddNewTemplateDropdown({
               "flex items-center px-2 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded cursor-pointer",
               "font-medium",
             )}
-            onClick={onChooseTemplate}
+            onClick={handleChooseTemplateClick}
           >
             Choose Template
           </DropdownMenuItem>

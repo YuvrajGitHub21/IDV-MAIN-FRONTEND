@@ -33,9 +33,18 @@ export default function Templates() {
   } = useTemplates();
   const { users, fetchMultipleUsers } = useUsers();
 
+  // Build creators list from templates and known users
+  const creators = React.useMemo(() => {
+    const ids = Array.from(new Set(templates.map((t) => t.createdBy))).filter(Boolean);
+    return ids.map((id) => ({ id, name: users[id] || id }));
+  }, [templates, users]);
+
   useEffect(() => {
-    fetchTemplates({ search: searchQuery, page: currentPage, pageSize });
-  }, [searchQuery, currentPage, pageSize, fetchTemplates]);
+    const filters: any = { search: searchQuery, page: currentPage, pageSize };
+    if (filterIsActive !== undefined) filters.isActive = filterIsActive;
+    if (filterCreatedBy) filters.createdBy = filterCreatedBy;
+    fetchTemplates(filters);
+  }, [searchQuery, currentPage, pageSize, filterIsActive, filterCreatedBy, fetchTemplates]);
 
   // Fetch user data for all unique creators when templates change
   useEffect(() => {

@@ -397,18 +397,35 @@ export default function Preview() {
                   </div>
                 </div>
 
-                {/* Receiver's View Tab - Inactive */}
-                <div className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded opacity-50">
+                {/* Receiver's View Tab - Inactive (clickable link) */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() =>
+                    navigate(
+                      templateId ? `/receiver-view/${templateId}` : "/receiver-view",
+                      { state: templateData },
+                    )
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      navigate(
+                        templateId ? `/receiver-view/${templateId}` : "/receiver-view",
+                        { state: templateData },
+                      );
+                    }
+                  }}
+                  className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded opacity-50 cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
                       <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
-                        User Experience
+                        Receiver's View
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        This is exactly how users will experience the
-                        verification process.
+                        This is exactly how users will experience the verification process.
                       </p>
                     </div>
                   </div>

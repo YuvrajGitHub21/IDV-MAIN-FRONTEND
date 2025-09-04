@@ -278,43 +278,16 @@ export const useTemplates = () => {
  
     try {
       const page = filters.page ?? 1;
-      const pageSize = filters.pageSize ?? 20;
-
-      searchParams.append("IsActive", String(isActive));
-      searchParams.append("CreatedBy", HARDCODED_CREATED_BY); // hardcoded as requested
-      searchParams.append("Page", String(page));
-      searchParams.append("PageSize", String(pageSize));
-      if (filters.search) searchParams.append("Search", filters.search);
-      if (filters.sortBy) searchParams.append("SortBy", filters.sortBy);
-      if (filters.sortOrder)
-        searchParams.append("SortOrder", filters.sortOrder);
-      if (filters.createdFrom)
-        searchParams.append("CreatedFrom", filters.createdFrom);
-      if (filters.createdTo)
-        searchParams.append("CreatedTo", filters.createdTo);
-      if (filters.updatedFrom)
-        searchParams.append("UpdatedFrom", filters.updatedFrom);
-      if (filters.updatedTo)
-        searchParams.append("UpdatedTo", filters.updatedTo);
-
-      const res = await fetch(
-        `${API_BASE}/api/form-templates?${searchParams.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json, text/plain, */*",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
       const pageSize = filters.pageSize ?? 12;
- 
-      // normal call
+
+      // Use the existing fetchPage helper which correctly constructs query params
       const res = await fetchPage({
         search: filters.search,
         page,
         pageSize,
       });
+
+      // Handle errors and probe mode below
       if (!res.ok) {
         const text = await res.text().catch(() => "");
  
@@ -454,5 +427,3 @@ export const getStatusInfo = (isActive: boolean) => {
       : "bg-yellow-100 text-yellow-800",
   };
 };
- 
- 

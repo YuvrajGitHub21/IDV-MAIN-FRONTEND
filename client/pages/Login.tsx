@@ -32,7 +32,7 @@ export default function Login() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+const API = import.meta.env.VITE_API_BASE;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -42,7 +42,7 @@ export default function Login() {
     setErrors({});
 
     try {
-      const response = await fetch("http://localhost:5294/api/Auth/login", {
+      const response = await fetch(`${API}/api/Auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

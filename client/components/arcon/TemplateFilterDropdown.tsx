@@ -9,6 +9,10 @@ interface TemplateFilterDropdownProps {
   creators: { id: string; name: string }[];
   selectedCreator: string | undefined;
   onChangeCreator: (id: string | undefined) => void;
+  sortBy: "createdAt" | "updatedAt" | undefined;
+  sortOrder: "asc" | "desc" | undefined;
+  onChangeSortBy: (s: "createdAt" | "updatedAt" | undefined) => void;
+  onChangeSortOrder: (o: "asc" | "desc" | undefined) => void;
 }
 
 export default function TemplateFilterDropdown({
@@ -19,6 +23,10 @@ export default function TemplateFilterDropdown({
   creators,
   selectedCreator,
   onChangeCreator,
+  sortBy,
+  sortOrder,
+  onChangeSortBy,
+  onChangeSortOrder,
 }: TemplateFilterDropdownProps) {
   if (!isOpen) return null;
 

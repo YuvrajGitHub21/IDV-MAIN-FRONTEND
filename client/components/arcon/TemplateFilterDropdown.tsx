@@ -13,6 +13,14 @@ interface TemplateFilterDropdownProps {
   sortOrder: "asc" | "desc" | undefined;
   onChangeSortBy: (s: "createdAt" | "updatedAt" | undefined) => void;
   onChangeSortOrder: (o: "asc" | "desc" | undefined) => void;
+  createdFrom?: string;
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
+  onChangeCreatedFrom?: (d: string | undefined) => void;
+  onChangeCreatedTo?: (d: string | undefined) => void;
+  onChangeUpdatedFrom?: (d: string | undefined) => void;
+  onChangeUpdatedTo?: (d: string | undefined) => void;
 }
 
 export default function TemplateFilterDropdown({

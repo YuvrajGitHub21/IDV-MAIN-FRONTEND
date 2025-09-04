@@ -430,14 +430,17 @@ export default function SendInviteDialog({
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => {
-                      if (uploadIntervalRef.current) {
-                        clearInterval(uploadIntervalRef.current);
-                        uploadIntervalRef.current = null;
-                      }
-                      setUploadedFile(null);
-                      setUploadProgress(0);
-                    }} className="w-7 h-7 rounded-full bg-[#F6F7FB] flex items-center justify-center">
+                    <button
+                      onClick={() => {
+                        if (uploadIntervalRef.current) {
+                          clearInterval(uploadIntervalRef.current);
+                          uploadIntervalRef.current = null;
+                        }
+                        setUploadedFile(null);
+                        setUploadProgress(0);
+                      }}
+                      className="w-7 h-7 rounded-full bg-[#F6F7FB] flex items-center justify-center"
+                    >
                       <X className="w-4 h-4 text-[#676879]" />
                     </button>
                   </div>

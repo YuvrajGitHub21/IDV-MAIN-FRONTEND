@@ -36,6 +36,7 @@ interface FormData {
 export default function ReceiverView() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { templateId } = useParams();
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",

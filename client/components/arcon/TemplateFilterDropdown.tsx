@@ -35,6 +35,14 @@ export default function TemplateFilterDropdown({
   sortOrder,
   onChangeSortBy,
   onChangeSortOrder,
+  createdFrom,
+  createdTo,
+  updatedFrom,
+  updatedTo,
+  onChangeCreatedFrom,
+  onChangeCreatedTo,
+  onChangeUpdatedFrom,
+  onChangeUpdatedTo,
 }: TemplateFilterDropdownProps) {
   if (!isOpen) return null;
 

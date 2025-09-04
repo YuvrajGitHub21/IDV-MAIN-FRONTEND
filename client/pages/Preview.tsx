@@ -3,6 +3,7 @@ import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { ChevronLeft, Send, Save, FileText, Check, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 
 interface VerificationStep {
   id: string;
@@ -43,6 +44,7 @@ export default function Preview() {
   const location = useLocation();
   const { templateId } = useParams();
   const [activeView, setActiveView] = useState<"admin" | "receiver">("admin");
+  const [showSendInviteDialog, setShowSendInviteDialog] = useState(false);
 
   // Load actual configuration data from localStorage
   const [docVerificationConfig, setDocVerificationConfig] = useState<any>(null);
@@ -211,6 +213,7 @@ export default function Preview() {
 
   const handleSaveAndSendInvite = async () => {
     console.log("API Payload for Save & Send Invite:", apiPayload);
+    setShowSendInviteDialog(true);
     // TODO: Make API call
     // await fetch('/api/templates', {
     //   method: 'POST',
@@ -504,6 +507,12 @@ export default function Preview() {
           </div>
         </div>
       </div>
+
+      {/* Send Invite Dialog */}
+      <SendInviteDialog
+        isOpen={showSendInviteDialog}
+        onClose={() => setShowSendInviteDialog(false)}
+      />
     </div>
   );
 }

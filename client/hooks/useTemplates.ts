@@ -221,6 +221,8 @@ export const useTemplates = () => {
       searchParams.append("Page", String(page));
       searchParams.append("PageSize", String(pageSize));
       if (filters.search) searchParams.append("Search", filters.search);
+      if (filters.sortBy) searchParams.append("SortBy", filters.sortBy);
+      if (filters.sortOrder) searchParams.append("SortOrder", filters.sortOrder);
 
       const res = await fetch(
         `${API_BASE}/api/form-templates?${searchParams.toString()}`,

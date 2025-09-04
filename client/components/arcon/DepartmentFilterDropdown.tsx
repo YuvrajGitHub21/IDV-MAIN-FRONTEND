@@ -21,7 +21,7 @@ export default function DepartmentFilterDropdown({
   const handleDepartmentToggle = (department: string) => {
     const isSelected = selectedDepartments.includes(department);
     if (isSelected) {
-      onDepartmentChange(selectedDepartments.filter(d => d !== department));
+      onDepartmentChange(selectedDepartments.filter((d) => d !== department));
     } else {
       onDepartmentChange([...selectedDepartments, department]);
     }
@@ -30,11 +30,8 @@ export default function DepartmentFilterDropdown({
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 z-40" 
-        onClick={onClose}
-      />
-      
+      <div className="fixed inset-0 z-40" onClick={onClose} />
+
       {/* Dropdown */}
       <div className="absolute top-full right-0 mt-1 z-50 w-[250px] bg-white rounded border border-[#C3C6D4] shadow-lg">
         <div className="flex flex-col p-2 gap-0.5">

@@ -9,6 +9,7 @@ export interface TemplateItem {
   templateRules: string | null;
   isActive: boolean;
   createdAtUtc: string;
+  updatedAtUtc?: string;
 }
 
 export interface TemplatesResponse {
@@ -30,6 +31,9 @@ export interface UserResponse {
   };
   errors: string[];
 }
+
+export type SortBy = "createdAt" | "updatedAt";
+export type SortOrder = "asc" | "desc";
 
 export interface TemplateFilters {
   isActive?: boolean; // ignored by API; used only for fallback filtering

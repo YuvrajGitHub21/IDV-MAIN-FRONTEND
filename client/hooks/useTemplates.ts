@@ -163,6 +163,17 @@ function getFallbackData(filters: TemplateFilters = {}) {
     filtered = filtered.filter((t) => t.createdBy === filters.createdBy);
   }
 
+  // Sorting
+  if (filters.sortBy) {
+    const key = filters.sortBy === "createdAt" ? "createdAtUtc" : "updatedAtUtc";
+    filtered.sort((a, b) => {
+      const av = a[key] ? new Date(a[key] as string).getTime() : 0;
+      const bv = b[key] ? new Date(b[key] as string).getTime() : 0;
+      if (filters.sortOrder === "asc") return av - bv;
+      return bv - av;
+    });
+  }
+
   // Pagination
   const page = filters.page || 1;
   const pageSize = filters.pageSize || 12;

@@ -204,8 +204,8 @@ export default function ReceiverView() {
           className="w-[90px] h-7"
         />
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#F65F7C] flex items-center justify-center">
-            <span className="text-white text-xs font-medium leading-[10px]">
+          <div className="w-8 h-8 p-2 rounded-full bg-[#F65F7C] flex items-center justify-center">
+            <span className="text-white text-xs font-medium leading-[10px] font-roboto">
               OS
             </span>
           </div>

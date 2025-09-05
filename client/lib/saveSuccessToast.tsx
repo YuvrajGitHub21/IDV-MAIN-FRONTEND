@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { CheckCircle, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -6,11 +6,13 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
   // Do NOT use React hooks here — this is a plain utility function.
   let lastToastId: string | null = null;
 
-  const toastId = toast.custom(
-    (t) => {
+  const toastIdRaw = toast.custom(
+    (id: string | number) => {
+      const idStr = String(id);
+
       return (
         <div
-          data-toast-id={t.id}
+          data-toast-id={idStr}
           className="flex w-[540px] p-6 items-start gap-4 rounded-lg bg-white shadow-[0_20px_24px_-4px_rgba(16,24,40,0.08),0_8px_8px_-4px_rgba(16,24,40,0.03)]"
         >
           <div className="flex w-12 h-12 p-3 justify-center items-center flex-shrink-0 rounded-[28px] border-[8px] border-[#ECFDF3] bg-[#D1FADF]">
@@ -27,7 +29,7 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
             </div>
           </div>
           <button
-            onClick={() => toast.dismiss(t.id)}
+            onClick={() => toast.dismiss(idStr)}
             className="flex w-8 h-8 justify-center items-center gap-[10px] flex-shrink-0 rounded-[50px] bg-white"
           >
             <X className="w-5 h-5 text-[#676879]" />
@@ -42,6 +44,7 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
   );
 
   // store id so outside click handler can dismiss immediately
+  const toastId = String(toastIdRaw);
   lastToastId = toastId;
 
   // Dismiss the toast when clicking/touching anywhere outside it

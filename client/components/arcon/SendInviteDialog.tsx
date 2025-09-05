@@ -223,7 +223,10 @@ export default function SendInviteDialog({
       (t) => {
         lastToastIdRef.current = t.id;
         return (
-          <div data-toast-id={t.id} className="flex w-[540px] p-6 justify-center items-center gap-4 rounded-lg bg-white shadow-[0_20px_24px_-4px_rgba(16,24,40,0.08),0_8px_8px_-4px_rgba(16,24,40,0.03)]">
+          <div
+            data-toast-id={t.id}
+            className="flex w-[540px] p-6 justify-center items-center gap-4 rounded-lg bg-white shadow-[0_20px_24px_-4px_rgba(16,24,40,0.08),0_8px_8px_-4px_rgba(16,24,40,0.03)]"
+          >
             <div className="flex w-12 h-12 p-3 justify-center items-center flex-shrink-0 rounded-[28px] border-[8px] border-[#ECFDF3] bg-[#D1FADF]">
               <CheckCircle className="w-6 h-6 text-[#039855]" />
             </div>
@@ -255,7 +258,8 @@ export default function SendInviteDialog({
       if (!id) return;
       const target = e.target as HTMLElement | null;
       if (!target) return;
-      const inside = target.closest && target.closest(`[data-toast-id="${id}"]`);
+      const inside =
+        target.closest && target.closest(`[data-toast-id="${id}"]`);
       if (!inside) {
         toast.dismiss(id);
       }

@@ -422,12 +422,12 @@ export default function Templates() {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside
           ref={sidebarRef}
           className={cn(
-            "fixed inset-y-0 left-0 z-50 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11",
+            "fixed top-11 bottom-0 left-0 z-50 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 overflow-auto",
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",

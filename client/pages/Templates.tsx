@@ -12,6 +12,7 @@ import { TemplateActionsDropdown } from "@/components/arcon/TemplateActionsDropd
 import { InviteesAvatarGroup } from "@/components/arcon/InviteesAvatarGroup";
 import TemplateFilterDropdown from "@/components/arcon/TemplateFilterDropdown";
 import ConfirmDeleteDialog from "@/components/arcon/ConfirmDeleteDialog";
+import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { toast } from "sonner";
 
 export default function Templates() {
@@ -219,6 +220,9 @@ export default function Templates() {
     string | undefined
   >(undefined);
 
+  // send invite dialog state
+  const [showSendInviteDialog, setShowSendInviteDialog] = useState(false);
+
   // DELETE call
   const deleteTemplate = async (id: string) => {
     const token = getToken();
@@ -264,6 +268,10 @@ export default function Templates() {
         break;
       case "edit":
         navigate("/template-builder", { state: { templateId } });
+        break;
+      case "sendInvite":
+        // open send invite dialog
+        setShowSendInviteDialog(true);
         break;
       case "delete":
         // open custom confirm dialog
@@ -372,6 +380,13 @@ export default function Templates() {
           }
         }}
       />
+
+      {/* Send Invite Dialog */}
+      <SendInviteDialog
+        isOpen={showSendInviteDialog}
+        onClose={() => setShowSendInviteDialog(false)}
+      />
+
       {/* Header */}
       <header className="flex items-center justify-between px-3 md:px-4 h-11 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-3">

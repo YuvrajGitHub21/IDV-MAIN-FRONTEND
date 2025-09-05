@@ -727,14 +727,6 @@ export default function Preview() {
               Previous
             </span>
           </button>
-
-          {activeView === "receiver" && (
-            <div className="absolute right-8 flex items-center gap-1 rounded">
-              <span className="text-[13px] font-medium text-[#505258]">
-                Next
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -745,8 +737,17 @@ export default function Preview() {
           <div className="p-4 pr-2 pl-4 flex flex-col gap-2">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                {/* Admin View Tab - Active */}
-                <div className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded bg-[#E6F1FD]">
+                {/* Admin View Tab */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setActiveView("admin")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ")
+                      setActiveView("admin");
+                  }}
+                  className={`w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded ${activeView === "admin" ? "bg-[#E6F1FD]" : "opacity-50 cursor-pointer hover:bg-blue-50"}`}
+                >
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
                       <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
@@ -763,40 +764,16 @@ export default function Preview() {
                   </div>
                 </div>
 
-                {/* Receiver's View Tab - Inactive (clickable link) */}
+                {/* Receiver's View Tab */}
                 <div
                   role="button"
                   tabIndex={0}
-                  onClick={() =>
-                    navigate(
-                      templateId
-                        ? `/receiver-view/${templateId}`
-                        : "/receiver-view",
-                      {
-                        state: {
-                          templateConfig: buildTemplateConfigForReceiverView(),
-                          templateData,
-                        },
-                      },
-                    )
-                  }
+                  onClick={() => setActiveView("receiver")}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      navigate(
-                        templateId
-                          ? `/receiver-view/${templateId}`
-                          : "/receiver-view",
-                        {
-                          state: {
-                            templateConfig:
-                              buildTemplateConfigForReceiverView(),
-                            templateData,
-                          },
-                        },
-                      );
-                    }
+                    if (e.key === "Enter" || e.key === " ")
+                      setActiveView("receiver");
                   }}
-                  className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded opacity-50 cursor-pointer hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className={`w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded ${activeView === "receiver" ? "bg-[#E6F1FD]" : "opacity-50 cursor-pointer hover:bg-blue-50"}`}
                 >
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">

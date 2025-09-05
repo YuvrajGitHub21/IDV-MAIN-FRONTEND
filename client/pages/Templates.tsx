@@ -195,6 +195,10 @@ export default function Templates() {
 
   // optional: show a spinner on the row you’re deleting
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  // confirm delete dialog state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTemplateId, setConfirmTemplateId] = useState<string | null>(null);
+  const [confirmTemplateName, setConfirmTemplateName] = useState<string | undefined>(undefined);
 
   // DELETE call
   const deleteTemplate = async (id: string) => {

@@ -271,6 +271,52 @@ export default function Templates() {
 
   return (
     <div className="min-h-screen bg-white">
+      <ConfirmDeleteDialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          setConfirmOpen(open);
+          if (!open) {
+            setConfirmTemplateId(null);
+            setConfirmTemplateName(undefined);
+          }
+        }}
+        templateName={confirmTemplateName}
+        onConfirm={async () => {
+          if (!confirmTemplateId) return;
+          try {
+            await deleteTemplate(confirmTemplateId);
+            // show a simple destructive toast
+            toast.custom(
+              (t) => (
+                <div className="flex items-center gap-4 bg-white rounded-lg p-4 shadow">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-50">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M3 6h18" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M10 11v6" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M14 11v6" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="font-roboto font-semibold text-sm text-[#323238]">{`"${confirmTemplateName || 'Template'}" deleted`}</div>
+                    <div className="text-xs text-[#676879]">Template has been removed.</div>
+                  </div>
+                  <button className="ml-auto" onClick={() => toast.dismiss(t.id)}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#676879" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </button>
+                </div>
+              ),
+              { duration: 4000, position: "top-center" }
+            );
+            setConfirmOpen(false);
+          } catch (err) {
+            // deleteTemplate already alerts on failure
+          } finally {
+            setConfirmTemplateId(null);
+            setConfirmTemplateName(undefined);
+          }
+        }}
+      />
       {/* Header */}
       <header className="flex items-center justify-between px-3 md:px-4 h-11 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-3">

@@ -471,7 +471,7 @@ export default function Templates() {
         <aside
           ref={sidebarRef}
           className={cn(
-            "fixed top-11 bottom-0 left-0 z-50 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 overflow-auto",
+            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 overflow-auto",
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",
@@ -480,12 +480,12 @@ export default function Templates() {
           {/* Mobile overlay */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-40"
+              className="fixed inset-0 bg-black bg-opacity-50 lg:hidden z-50"
               onClick={() => setSidebarOpen(false)}
             />
           )}
 
-          <div className="relative flex flex-col h-full pt-2 pb-4 z-50">
+          <div className="relative flex flex-col h-full pt-2 pb-4 z-10 justify-between">
             <nav className="flex-1 px-0 space-y-1">
               {/* Home */}
               <div

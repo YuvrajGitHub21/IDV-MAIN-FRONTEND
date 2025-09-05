@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -244,7 +245,8 @@ export default function BiometricVerification() {
   };
 
   const handleNext = () => {
-    console.log("Navigate to preview");
+    // Proceed to preview page
+    navigate("/preview");
   };
 
   const handleSave = () => {

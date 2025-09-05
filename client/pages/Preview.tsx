@@ -4,6 +4,7 @@ import { ChevronLeft, Send, Save, Check, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
+import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
 
@@ -209,8 +210,14 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
   const getPersonalAddedFields = (tpl: any): AddedField[] => {
     const a = tpl?.Personal_info?.Added_fields || {};
     const out: AddedField[] = [];
+// <<<<<<< ai_main_a5c275984259
+//     if (a.dob)
+//       out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
+//     if (a.Current_address || a.current_address) {
+// =======
     if (a.dob) out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
     if (a.Current_address)
+// >>>>>>> main
       out.push({
         id: "currentAddress",
         name: "Current Address",
@@ -227,11 +234,25 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
   };
 
   const getDocConfigFromDb = (tpl: any) => {
+// <<<<<<< ai_main_a5c275984259
+//     const v = tpl?.Doc_verification ?? tpl?.doc_verification ?? {};
+//     const uploads = v.user_uploads ?? {};
+//     const unreadable = v.Unreadable_docs ?? v.unreadable_docs ?? {};
+
+//     // flatten all enabled docs across countries (defensive typing)
+//     const countries = Array.isArray(v.Countries_array)
+//       ? v.Countries_array
+//       : Array.isArray(v.countries_array)
+//         ? v.countries_array
+//         : [];
+
+// =======
     const v = tpl?.Doc_verification || {};
     const uploads = v.user_uploads || {};
     const unreadable = v.Unreadable_docs || {};
     // flatten all enabled docs across countries
     const countries = Array.isArray(v.Countries_array) ? v.Countries_array : [];
+// >>>>>>> main
     const selectedDocuments: string[] = [];
     countries.forEach((c: any) => {
       const list = c?.listOfdocs || {};
@@ -253,8 +274,15 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
   };
 
   const getBiometricConfigFromDb = (tpl: any) => {
+// <<<<<<< ai_main_a5c275984259
+//     const b = tpl?.Biometric_verification ?? tpl?.biometric_verification ?? {};
+//     const retries = Array.isArray(b.number_of_retries)
+//       ? b.number_of_retries
+//       : [];
+// =======
     const b = tpl?.Biometric_verification || {};
     const retries = Array.isArray(b.number_of_retries) ? b.number_of_retries : [];
+// >>>>>>> main
     const maxRetries = retries.length ? Math.max(...retries) : undefined;
     const l = b.liveness || {};
     const r = b.biometric_data_retention || {};
@@ -299,7 +327,10 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
           order: index + 1,
           required: step.isRequired,
           settings: {
-            uploadOptions: { allowDeviceUpload: true, allowWebcamCapture: true },
+            uploadOptions: {
+              allowDeviceUpload: true,
+              allowWebcamCapture: true,
+            },
             documentHandling: { allowRetries: true },
             supportedCountries: [
               { country: "India", supportedDocuments: ["Aadhar Card", "Driving License", "Pan Card", "Passport"] },
@@ -334,7 +365,69 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
   // Create section components (DB first with sections_order, else builder fallback)
   const createSectionComponents = (): SectionConfig[] => {
     if (dbTemplate) {
-      return buildSectionsFromDbTemplate(dbTemplate);
+// <<<<<<< ai_main_a5c275984259
+      const sections: SectionConfig[] = [];
+      const showPersonal = sectionStatus ? !!sectionStatus.persoanl_info : true;
+      const showDoc = sectionStatus
+        ? !!sectionStatus.doc_verification
+        : !!dbTemplate?.Doc_verification;
+      const showBio = sectionStatus
+        ? !!sectionStatus.Biometric_verification
+        : !!dbTemplate?.Biometric_verification;
+
+      // Personal Info
+      if (showPersonal) {
+        sections.push({
+          id: "personal-info",
+          title: "Personal Information",
+          description:
+            "Please provide your basic personal information to begin the identity verification process.",
+          enabled: true,
+          component: (
+            <PersonalInformationSection
+              addedFields={getPersonalAddedFields(dbTemplate)}
+              showBase={getPersonalShowBase(dbTemplate)}
+            />
+          ),
+        });
+      }
+
+      // Document Verification
+      if (showDoc) {
+        sections.push({
+          id: "document-verification",
+          title: "Document Verification",
+          description:
+            "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
+          enabled: true,
+          component: (
+            <DocumentVerificationSection
+              config={getDocConfigFromDb(dbTemplate)}
+            />
+          ),
+        });
+      }
+
+      // Biometric Verification
+      if (showBio) {
+        sections.push({
+          id: "biometric-verification",
+          title: "Biometric Verification",
+          description:
+            "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
+          enabled: true,
+          component: (
+            <BiometricVerificationSection
+              config={getBiometricConfigFromDb(dbTemplate)}
+            />
+          ),
+        });
+      }
+
+      return sections;
+// <!-- =======
+//       return buildSectionsFromDbTemplate(dbTemplate);
+// >>>>>>> main -->
     }
 
     // ---- Fallback to builder state (unchanged visual structure) ----
@@ -362,7 +455,9 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
           description:
             "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
           enabled: step.isEnabled,
-          component: <DocumentVerificationSection config={docVerificationConfig} />,
+          component: (
+            <DocumentVerificationSection config={docVerificationConfig} />
+          ),
         });
       } else if (step.id === "biometric-verification" && step.isEnabled) {
         sections.push({
@@ -379,7 +474,6 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
     return sections;
   };
 
-
   const orderedSections = createSectionComponents();
 
   // Count visible personal fields for sidebar blurb
@@ -387,7 +481,9 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
     if (dbTemplate) {
       const base = getPersonalShowBase(dbTemplate);
       const baseCount =
-        (base.firstName ? 1 : 0) + (base.lastName ? 1 : 0) + (base.email ? 1 : 0);
+        (base.firstName ? 1 : 0) +
+        (base.lastName ? 1 : 0) +
+        (base.email ? 1 : 0);
       return baseCount + getPersonalAddedFields(dbTemplate).length;
     }
     return 3 + (templateData.addedFields?.length || 0);
@@ -406,6 +502,12 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
 
   const handleSave = async () => {
     console.log("API Payload for Save:", apiPayload);
+
+    // Show success toast
+    showSaveSuccessToast(templateData?.templateName || "New Template");
+
+    // Navigate to templates page
+    navigate("/dashboard");
   };
 
   const handlePrevious = () => {
@@ -492,7 +594,10 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
                 onClick={handleBack}
                 className="w-7 h-7 p-2 flex items-center justify-center rounded-full bg-[#F1F2F4] hover:bg-gray-200 transition-colors"
               >
-                <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
+                <ChevronLeft
+                  className="w-4 h-4 text-[#676879]"
+                  strokeWidth={2}
+                />
               </button>
               <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">
                 {displayName}

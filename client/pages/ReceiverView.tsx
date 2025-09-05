@@ -24,6 +24,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent } from "@/components/ui/card";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
+import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
 
 interface FormData {
   firstName: string;
@@ -277,6 +278,12 @@ export default function ReceiverView() {
             <button
               onClick={() => {
                 console.log("ReceiverView: Save", formData);
+
+                // Show success toast
+                showSaveSuccessToast("New Template");
+
+                // Navigate to templates page
+                navigate("/dashboard");
               }}
               className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-[#0073EA] hover:bg-blue-700 transition-colors"
             >

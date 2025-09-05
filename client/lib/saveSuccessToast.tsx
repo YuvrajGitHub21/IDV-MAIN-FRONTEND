@@ -22,7 +22,7 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
                 "{templateName}" has been saved successfully.
               </div>
               <div className="self-stretch text-[#676879] font-figtree text-[13px] font-normal leading-5">
-                Saved as a in progress.
+                Congratulations! 
               </div>
             </div>
           </div>

@@ -171,6 +171,66 @@ export default function Templates() {
     console.log("Choose template");
   };
 
+    // ⬆️ near your other imports
+  // (use the same base URL as your useTemplates hook)
+  const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+  const getToken = () =>
+    typeof window !== "undefined" ? localStorage.getItem("access") : null;
+
+  // …inside Templates() component, add this helper to reuse current filters
+  const buildCurrentFilters = () => {
+    const filters: any = { search: searchQuery, page: currentPage, pageSize };
+    if (filterIsActive !== undefined) filters.isActive = filterIsActive;
+    if (filterCreatedBy) filters.createdBy = filterCreatedBy;
+    if (filterSortBy) filters.sortBy = filterSortBy;
+    if (filterSortOrder) filters.sortOrder = filterSortOrder;
+    if (filterCreatedFrom) filters.createdFrom = filterCreatedFrom;
+    if (filterCreatedTo) filters.createdTo = filterCreatedTo;
+    if (filterUpdatedFrom) filters.updatedFrom = filterUpdatedFrom;
+    if (filterUpdatedTo) filters.updatedTo = filterUpdatedTo;
+    return filters;
+  };
+
+  // optional: show a spinner on the row you’re deleting
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // DELETE call
+  const deleteTemplate = async (id: string) => {
+    const token = getToken();
+    if (!token) {
+      alert("You're not logged in.");
+      return;
+    }
+    setDeletingId(id);
+    try {
+      const res = await fetch(`${API_BASE}/api/templates/${id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(
+          `Delete failed: ${res.status} ${res.statusText}${
+            text ? ` — ${text.slice(0, 200)}` : ""
+          }`
+        );
+      } else console.log("deleted template");
+
+      // refresh list with current filters
+      await fetchTemplates(buildCurrentFilters());
+    } catch (e: any) {
+      console.error(e);
+      alert(e?.message || "Failed to delete template");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+
   const handleTemplateAction = (action: string, templateId: string) => {
     console.log(`Action: ${action} for template: ${templateId}`);
 
@@ -180,6 +240,11 @@ export default function Templates() {
         break;
       case "edit":
         navigate("/template-builder", { state: { templateId } });
+        break;
+      case "delete":
+        if (window.confirm("Delete this template? This cannot be undone.")) {
+          deleteTemplate(templateId);
+        }
         break;
       default:
         console.log(`Action ${action} not yet implemented`);

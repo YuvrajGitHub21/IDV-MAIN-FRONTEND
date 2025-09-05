@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5294/api/User", {
+      const res = await fetch("http://localhost:5074/api/User", {
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${tokenRef.current}`,
@@ -79,7 +79,7 @@ const Dashboard: React.FC = () => {
 
   const loadProfile = async () => {
     try {
-      const res = await fetch("http://localhost:5294/api/User/profile", {
+      const res = await fetch("http://localhost:5074/api/User/profile", {
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${tokenRef.current}`,
@@ -112,7 +112,7 @@ const Dashboard: React.FC = () => {
     firstName: string;
     lastName: string;
   }) => {
-    const res = await fetch("http://localhost:5294/api/User/profile", {
+    const res = await fetch("http://localhost:5074/api/User/profile", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

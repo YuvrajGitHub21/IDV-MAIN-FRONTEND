@@ -122,6 +122,14 @@ export default function Templates() {
     }
   }, [templates, fetchMultipleUsers]);
 
+  // Ensure currentPage is within valid range when totalItems or pageSize change
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalItems, pageSize, currentPage]);
+
   // Enhanced click outside functionality for mobile sidebar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -964,7 +972,10 @@ export default function Templates() {
                 <span>Rows per page</span>
                 <select
                   value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
                   className="border border-gray-300 rounded px-2 py-1"
                 >
                   <option value={12}>12</option>
@@ -974,10 +985,16 @@ export default function Templates() {
               </div>
 
               <span>
-                1-{Math.min(pageSize, totalItems)} of {totalItems}
+                {/* Show current range */}
+                {(() => {
+                  const start =
+                    totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+                  const end = Math.min(currentPage * pageSize, totalItems);
+                  return `${start}-${end} of ${totalItems}`;
+                })()}
               </span>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCurrentPage(1)}
                   disabled={currentPage === 1}
@@ -1004,8 +1021,60 @@ export default function Templates() {
                     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
                   </svg>
                 </button>
+
+                {/* Page number buttons */}
+                <div className="flex items-center gap-1">
+                  {(() => {
+                    const totalPages = Math.max(
+                      1,
+                      Math.ceil(totalItems / pageSize),
+                    );
+                    // Generate compact page list (first, prev, current-1,current,current+1,next,last)
+                    const pages: (number | "dots")[] = [];
+                    if (totalPages <= 7) {
+                      for (let i = 1; i <= totalPages; i++) pages.push(i);
+                    } else {
+                      pages.push(1);
+                      if (currentPage > 4) pages.push("dots");
+                      const start = Math.max(2, currentPage - 1);
+                      const end = Math.min(totalPages - 1, currentPage + 1);
+                      for (let i = start; i <= end; i++) pages.push(i);
+                      if (currentPage < totalPages - 3) pages.push("dots");
+                      pages.push(totalPages);
+                    }
+
+                    return pages.map((p, idx) => {
+                      if (p === "dots")
+                        return (
+                          <span
+                            key={`d-${idx}`}
+                            className="px-2 text-sm text-gray-500"
+                          >
+                            …
+                          </span>
+                        );
+                      return (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(Number(p))}
+                          className={`px-2 py-1 rounded ${p === currentPage ? "bg-[#EEF2FF] text-[#172B4D] font-medium" : "hover:bg-gray-100"}`}
+                        >
+                          {p}
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+
                 <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
+                  onClick={() =>
+                    setCurrentPage(
+                      Math.min(
+                        Math.ceil(totalItems / pageSize),
+                        currentPage + 1,
+                      ),
+                    )
+                  }
                   disabled={currentPage * pageSize >= totalItems}
                   className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
                 >

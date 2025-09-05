@@ -108,17 +108,21 @@ export default function ReceiverView() {
             firstName: personalInfo.firstName !== false,
             lastName: personalInfo.LastName !== false,
             email: personalInfo.Email !== false,
-            dateOfBirth: !!(personalInfo.Added_fields?.dob),
+            dateOfBirth: !!personalInfo.Added_fields?.dob,
           },
         },
         documentVerification: {
-          enabled: sectionStatus.doc_verification !== false && !!docVerification.user_uploads,
-          allowUploadFromDevice: !!(docVerification.user_uploads?.Allow_uploads),
-          allowCaptureWebcam: !!(docVerification.user_uploads?.allow_capture),
+          enabled:
+            sectionStatus.doc_verification !== false &&
+            !!docVerification.user_uploads,
+          allowUploadFromDevice: !!docVerification.user_uploads?.Allow_uploads,
+          allowCaptureWebcam: !!docVerification.user_uploads?.allow_capture,
           supportedDocuments: extractSupportedDocuments(docVerification),
         },
         biometricVerification: {
-          enabled: sectionStatus.Biometric_verification !== false && !!biometricVerification.number_of_retries,
+          enabled:
+            sectionStatus.Biometric_verification !== false &&
+            !!biometricVerification.number_of_retries,
         },
       };
     }
@@ -126,30 +130,39 @@ export default function ReceiverView() {
     // Fallback to location state
     if (location.state?.templateData) {
       return {
-        templateName: location.state.templateData.templateName || "New Template",
+        templateName:
+          location.state.templateData.templateName || "New Template",
         personalInfo: {
           enabled: true,
           fields: {
             firstName: true,
             lastName: true,
             email: true,
-            dateOfBirth: location.state.templateData.addedFields?.some((f: any) =>
-              f.id.includes("date")
-            ) || false,
+            dateOfBirth:
+              location.state.templateData.addedFields?.some((f: any) =>
+                f.id.includes("date"),
+              ) || false,
           },
         },
         documentVerification: {
-          enabled: location.state.templateData.verificationSteps?.some(
-            (s: any) => s.id === "document-verification"
-          ) || false,
+          enabled:
+            location.state.templateData.verificationSteps?.some(
+              (s: any) => s.id === "document-verification",
+            ) || false,
           allowUploadFromDevice: true,
           allowCaptureWebcam: true,
-          supportedDocuments: ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
+          supportedDocuments: [
+            "Passport",
+            "Aadhar Card",
+            "Drivers License",
+            "Pan Card",
+          ],
         },
         biometricVerification: {
-          enabled: location.state.templateData.verificationSteps?.some(
-            (s: any) => s.id === "biometric-verification"
-          ) || false,
+          enabled:
+            location.state.templateData.verificationSteps?.some(
+              (s: any) => s.id === "biometric-verification",
+            ) || false,
         },
       };
     }
@@ -170,7 +183,12 @@ export default function ReceiverView() {
         enabled: true,
         allowUploadFromDevice: true,
         allowCaptureWebcam: true,
-        supportedDocuments: ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
+        supportedDocuments: [
+          "Passport",
+          "Aadhar Card",
+          "Drivers License",
+          "Pan Card",
+        ],
       },
       biometricVerification: {
         enabled: true,
@@ -179,7 +197,9 @@ export default function ReceiverView() {
   }, [location.state, dbTemplate]);
 
   function extractSupportedDocuments(docVerification: any): string[] {
-    const countries = Array.isArray(docVerification.Countries_array) ? docVerification.Countries_array : [];
+    const countries = Array.isArray(docVerification.Countries_array)
+      ? docVerification.Countries_array
+      : [];
     const supportedDocs: string[] = [];
     countries.forEach((country: any) => {
       const listOfDocs = country?.listOfdocs || {};
@@ -283,33 +303,37 @@ export default function ReceiverView() {
     { value: "pan", label: "Pan Card", color: "#9C2BAD" },
   ].filter((option) =>
     templateConfig.documentVerification.supportedDocuments.includes(
-      option.label
-    )
+      option.label,
+    ),
   );
 
   // Build sections in order based on template configuration
   const buildSections = () => {
     const sections = [];
-    
+
     // Get sections order from database or use default
-    const sectionsOrder = dbTemplate?.sections_order || ["Personal_info", "Doc_verification", "Biometric_verification"];
-    
+    const sectionsOrder = dbTemplate?.sections_order || [
+      "Personal_info",
+      "Doc_verification",
+      "Biometric_verification",
+    ];
+
     const sectionMap = {
-      "Personal_info": {
+      Personal_info: {
         id: "personal-info",
         enabled: templateConfig.personalInfo.enabled,
-        component: renderPersonalInformation()
+        component: renderPersonalInformation(),
       },
-      "Doc_verification": {
-        id: "document-verification", 
+      Doc_verification: {
+        id: "document-verification",
         enabled: templateConfig.documentVerification.enabled,
-        component: renderDocumentVerification()
+        component: renderDocumentVerification(),
       },
-      "Biometric_verification": {
+      Biometric_verification: {
         id: "biometric-verification",
         enabled: templateConfig.biometricVerification.enabled,
-        component: renderBiometricVerification()
-      }
+        component: renderBiometricVerification(),
+      },
     };
 
     // Add sections in the specified order, only if enabled
@@ -331,7 +355,10 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-2 py-4 bg-white border-b border-[#DEDEDD]">
           <div className="flex items-center gap-2 pb-1">
-            <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3">
               Personal Information
             </h2>
@@ -468,7 +495,10 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-3 py-4 bg-white border-b border-[#DEDEDD]">
           <div className="flex items-center gap-2 pb-1">
-            <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3">
               Document Verification
             </h2>
@@ -576,7 +606,10 @@ export default function ReceiverView() {
                             xmlns="http://www.w3.org/2000/svg"
                           >
                             {/* Default icon - you can customize per document type */}
-                            <path d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z" fill="white"/>
+                            <path
+                              d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z"
+                              fill="white"
+                            />
                           </svg>
                         </div>
                         <span className="text-sm font-medium text-[#172B4D] leading-[22px]">
@@ -774,7 +807,10 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-3 py-4 bg-white border-b border-[#DEDEDD]">
           <div className="flex items-center gap-2 pb-1">
-            <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3">
               Biometric Verification
             </h2>
@@ -1106,7 +1142,7 @@ export default function ReceiverView() {
                   {section.component}
                 </div>
               ))}
-              
+
               {sections.length === 0 && (
                 <div className="text-sm text-gray-500 text-center py-8">
                   No sections enabled for this template.

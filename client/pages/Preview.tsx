@@ -363,71 +363,10 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
 
   // ---------- Build sections to render (DB first, fallback to builder state) ----------
   // Create section components (DB first with sections_order, else builder fallback)
+ // ---------- Build sections to render (DB first, fallback to builder state) ----------
   const createSectionComponents = (): SectionConfig[] => {
     if (dbTemplate) {
-// <<<<<<< ai_main_a5c275984259
-      const sections: SectionConfig[] = [];
-      const showPersonal = sectionStatus ? !!sectionStatus.persoanl_info : true;
-      const showDoc = sectionStatus
-        ? !!sectionStatus.doc_verification
-        : !!dbTemplate?.Doc_verification;
-      const showBio = sectionStatus
-        ? !!sectionStatus.Biometric_verification
-        : !!dbTemplate?.Biometric_verification;
-
-      // Personal Info
-      if (showPersonal) {
-        sections.push({
-          id: "personal-info",
-          title: "Personal Information",
-          description:
-            "Please provide your basic personal information to begin the identity verification process.",
-          enabled: true,
-          component: (
-            <PersonalInformationSection
-              addedFields={getPersonalAddedFields(dbTemplate)}
-              showBase={getPersonalShowBase(dbTemplate)}
-            />
-          ),
-        });
-      }
-
-      // Document Verification
-      if (showDoc) {
-        sections.push({
-          id: "document-verification",
-          title: "Document Verification",
-          description:
-            "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
-          enabled: true,
-          component: (
-            <DocumentVerificationSection
-              config={getDocConfigFromDb(dbTemplate)}
-            />
-          ),
-        });
-      }
-
-      // Biometric Verification
-      if (showBio) {
-        sections.push({
-          id: "biometric-verification",
-          title: "Biometric Verification",
-          description:
-            "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
-          enabled: true,
-          component: (
-            <BiometricVerificationSection
-              config={getBiometricConfigFromDb(dbTemplate)}
-            />
-          ),
-        });
-      }
-
-      return sections;
-// <!-- =======
-//       return buildSectionsFromDbTemplate(dbTemplate);
-// >>>>>>> main -->
+      return buildSectionsFromDbTemplate(dbTemplate);
     }
 
     // ---- Fallback to builder state (unchanged visual structure) ----
@@ -455,9 +394,7 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
           description:
             "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
           enabled: step.isEnabled,
-          component: (
-            <DocumentVerificationSection config={docVerificationConfig} />
-          ),
+          component: <DocumentVerificationSection config={docVerificationConfig} />,
         });
       } else if (step.id === "biometric-verification" && step.isEnabled) {
         sections.push({
@@ -473,6 +410,7 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
 
     return sections;
   };
+
 
   const orderedSections = createSectionComponents();
 

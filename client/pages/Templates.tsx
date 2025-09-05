@@ -269,7 +269,7 @@ export default function Templates() {
         // open custom confirm dialog
         setConfirmTemplateId(templateId);
         const tpl = templates.find((t) => t.id === templateId);
-        setConfirmTemplateName(tpl?.templateName || tpl?.name || "Template");
+        setConfirmTemplateName(tpl?.name || "Template");
         setConfirmOpen(true);
         break;
       default:

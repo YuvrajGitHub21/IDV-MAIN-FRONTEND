@@ -987,7 +987,8 @@ export default function Templates() {
               <span>
                 {/* Show current range */}
                 {(() => {
-                  const start = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+                  const start =
+                    totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
                   const end = Math.min(currentPage * pageSize, totalItems);
                   return `${start}-${end} of ${totalItems}`;
                 })()}
@@ -1024,7 +1025,10 @@ export default function Templates() {
                 {/* Page number buttons */}
                 <div className="flex items-center gap-1">
                   {(() => {
-                    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+                    const totalPages = Math.max(
+                      1,
+                      Math.ceil(totalItems / pageSize),
+                    );
                     // Generate compact page list (first, prev, current-1,current,current+1,next,last)
                     const pages: (number | "dots")[] = [];
                     if (totalPages <= 7) {
@@ -1040,9 +1044,15 @@ export default function Templates() {
                     }
 
                     return pages.map((p, idx) => {
-                      if (p === "dots") return (
-                        <span key={`d-${idx}`} className="px-2 text-sm text-gray-500">…</span>
-                      );
+                      if (p === "dots")
+                        return (
+                          <span
+                            key={`d-${idx}`}
+                            className="px-2 text-sm text-gray-500"
+                          >
+                            …
+                          </span>
+                        );
                       return (
                         <button
                           key={p}
@@ -1057,7 +1067,14 @@ export default function Templates() {
                 </div>
 
                 <button
-                  onClick={() => setCurrentPage(Math.min(Math.ceil(totalItems / pageSize), currentPage + 1))}
+                  onClick={() =>
+                    setCurrentPage(
+                      Math.min(
+                        Math.ceil(totalItems / pageSize),
+                        currentPage + 1,
+                      ),
+                    )
+                  }
                   disabled={currentPage * pageSize >= totalItems}
                   className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
                 >
@@ -1070,7 +1087,9 @@ export default function Templates() {
                   </svg>
                 </button>
                 <button
-                  onClick={() => setCurrentPage(Math.ceil(totalItems / pageSize))}
+                  onClick={() =>
+                    setCurrentPage(Math.ceil(totalItems / pageSize))
+                  }
                   disabled={currentPage * pageSize >= totalItems}
                   className="p-1 rounded hover:bg-gray-100 disabled:opacity-50"
                 >

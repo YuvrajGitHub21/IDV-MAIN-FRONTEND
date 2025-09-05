@@ -245,7 +245,8 @@ export default function BiometricVerification() {
   };
 
   const handleNext = () => {
-    console.log("Navigate to preview");
+    // Proceed to preview page
+    navigate("/preview");
   };
 
   const handleSave = () => {

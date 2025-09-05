@@ -441,7 +441,7 @@ export default function Templates() {
             />
           )}
 
-          <div className="relative flex flex-col h-full pt-2 pb-4 z-10 justify-between">
+          <div className="relative flex flex-col h-full pt-2 pb-24 z-10">
             <nav className="flex-1 px-0 space-y-1">
               {/* Home */}
               <div

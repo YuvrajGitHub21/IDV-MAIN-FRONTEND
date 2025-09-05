@@ -700,7 +700,7 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
                   onClick={() =>
                     navigate(
                       templateId ? `/receiver-view/${templateId}` : "/receiver-view",
-                      { state: templateData },
+                      { state: { templateConfig: buildTemplateConfigForReceiverView(), templateData } },
                     )
                   }
                   onKeyDown={(e) => {

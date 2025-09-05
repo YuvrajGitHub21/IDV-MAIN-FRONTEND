@@ -684,50 +684,50 @@ export default function Templates() {
               <span className="text-xs font-semibold mt-1">Help</span>
             </div>
           </div>
-            <div className="absolute bottom-0 left-0 w-full px-2 py-4 border-t bg-white">
-              <div
-                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
-                onClick={handleLogout}
+          <div className="absolute bottom-0 left-0 w-full px-2 py-4 border-t bg-white">
+            <div
+              className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+              onClick={handleLogout}
+            >
+              <svg
+                className="w-5 h-5"
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <svg
-                  className="w-5 h-5"
-                  width="22"
-                  height="22"
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M8.25 19.25H4.58333C4.17935 19.25 3.79185 19.0893 3.50429 18.8017C3.21673 18.5141 3.05556 18.1267 3.05556 17.7222V4.27778C3.05556 3.87326 3.21673 3.48587 3.50429 3.19831C3.79185 2.91075 4.17935 2.75 4.58333 2.75H8.25M15.5833 15.5833L19.25 11.9167M19.25 11.9167L15.5833 8.25M19.25 11.9167H8.25"
-                    stroke="#676879"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-xs font-semibold mt-1">Logout</span>
-              </div>
-
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
-                <svg
-                  className="w-5 h-5"
-                  width="22"
-                  height="22"
-                  viewBox="0 0 22 22"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M8.3312 8.2487C8.54671 7.63606 8.97209 7.11947 9.53203 6.7904C10.0919 6.46134 10.7502 6.34106 11.3903 6.45085C12.0304 6.56065 12.6109 6.89342 13.0292 7.39027C13.4474 7.8871 13.6764 8.51592 13.6754 9.16536C13.6754 10.9987 10.9254 11.9154 10.9254 11.9154M10.9987 15.582H11.0079M20.1654 10.9987C20.1654 16.0613 16.0613 20.1654 10.9987 20.1654C5.93609 20.1654 1.83203 16.0613 1.83203 10.9987C1.83203 5.93609 5.93609 1.83203 10.9987 1.83203C16.0613 1.83203 20.1654 5.93609 20.1654 10.9987Z"
-                    stroke="#676879"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-xs font-semibold mt-1">Help</span>
-              </div>
+                <path
+                  d="M8.25 19.25H4.58333C4.17935 19.25 3.79185 19.0893 3.50429 18.8017C3.21673 18.5141 3.05556 18.1267 3.05556 17.7222V4.27778C3.05556 3.87326 3.21673 3.48587 3.50429 3.19831C3.79185 2.91075 4.17935 2.75 4.58333 2.75H8.25M15.5833 15.5833L19.25 11.9167M19.25 11.9167L15.5833 8.25M19.25 11.9167H8.25"
+                  stroke="#676879"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-xs font-semibold mt-1">Logout</span>
             </div>
+
+            <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
+              <svg
+                className="w-5 h-5"
+                width="22"
+                height="22"
+                viewBox="0 0 22 22"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M8.3312 8.2487C8.54671 7.63606 8.97209 7.11947 9.53203 6.7904C10.0919 6.46134 10.7502 6.34106 11.3903 6.45085C12.0304 6.56065 12.6109 6.89342 13.0292 7.39027C13.4474 7.8871 13.6764 8.51592 13.6754 9.16536C13.6754 10.9987 10.9254 11.9154 10.9254 11.9154M10.9987 15.582H11.0079M20.1654 10.9987C20.1654 16.0613 16.0613 20.1654 10.9987 20.1654C5.93609 20.1654 1.83203 16.0613 1.83203 10.9987C1.83203 5.93609 5.93609 1.83203 10.9987 1.83203C16.0613 1.83203 20.1654 5.93609 20.1654 10.9987Z"
+                  stroke="#676879"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="text-xs font-semibold mt-1">Help</span>
+            </div>
+          </div>
         </aside>
 
         {/* Main Content */}

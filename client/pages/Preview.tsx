@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { ChevronLeft, Send, Save, Check, Minus } from "lucide-react";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
+import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
 
@@ -419,6 +420,12 @@ export default function Preview() {
 
   const handleSave = async () => {
     console.log("API Payload for Save:", apiPayload);
+
+    // Show success toast
+    showSaveSuccessToast(templateData?.templateName || "New Template");
+
+    // Navigate to templates page
+    navigate("/dashboard");
   };
 
   const handlePrevious = () => {

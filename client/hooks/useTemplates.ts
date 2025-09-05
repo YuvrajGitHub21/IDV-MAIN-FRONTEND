@@ -353,7 +353,7 @@ export const useTemplates = () => {
       const pageSize = filters.pageSize ?? 12;
 
       const res = await fetchPage({
-        search: filters.search,
+        ...filters,
         page,
         pageSize,
       });

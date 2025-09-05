@@ -296,7 +296,7 @@ export default function Templates() {
   const home_page = () => navigate("/home", { replace: true });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <ConfirmDeleteDialog
         open={confirmOpen}
         onOpenChange={(open) => {

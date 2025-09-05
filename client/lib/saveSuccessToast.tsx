@@ -40,7 +40,7 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
     {
       duration: 4000,
       position: "top-center",
-    }
+    },
   );
 
   // store id so outside click handler can dismiss immediately

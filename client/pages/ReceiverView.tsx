@@ -52,28 +52,49 @@ export default function ReceiverView() {
   const location = useLocation();
   const { templateId } = useParams();
 
-  // Get template configuration from location state or use defaults
-  const templateConfig: TemplateConfig = location.state?.templateConfig || {
-    templateName: "New Template",
-    personalInfo: {
-      enabled: true,
-      fields: {
-        firstName: true,
-        lastName: true,
-        email: true,
-        dateOfBirth: true,
+  // Get template configuration from location state or build from templateData or use defaults
+  const templateConfig: TemplateConfig = location.state?.templateConfig ||
+    (location.state?.templateData ? {
+      templateName: location.state.templateData.templateName || "New Template",
+      personalInfo: {
+        enabled: true,
+        fields: {
+          firstName: true,
+          lastName: true,
+          email: true,
+          dateOfBirth: location.state.templateData.addedFields?.some((f: any) => f.id.includes("date")) || false,
+        },
       },
-    },
-    documentVerification: {
-      enabled: true,
-      allowUploadFromDevice: true,
-      allowCaptureWebcam: true,
-      supportedDocuments: ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
-    },
-    biometricVerification: {
-      enabled: true,
-    },
-  };
+      documentVerification: {
+        enabled: location.state.templateData.verificationSteps?.some((s: any) => s.id === "document-verification") || false,
+        allowUploadFromDevice: true,
+        allowCaptureWebcam: true,
+        supportedDocuments: ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
+      },
+      biometricVerification: {
+        enabled: location.state.templateData.verificationSteps?.some((s: any) => s.id === "biometric-verification") || false,
+      },
+    } : {
+      templateName: "New Template",
+      personalInfo: {
+        enabled: true,
+        fields: {
+          firstName: true,
+          lastName: true,
+          email: true,
+          dateOfBirth: true,
+        },
+      },
+      documentVerification: {
+        enabled: true,
+        allowUploadFromDevice: true,
+        allowCaptureWebcam: true,
+        supportedDocuments: ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
+      },
+      biometricVerification: {
+        enabled: true,
+      },
+    });
 
   const [formData, setFormData] = useState<FormData>({
     firstName: "",

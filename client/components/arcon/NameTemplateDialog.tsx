@@ -28,42 +28,50 @@ export function NameTemplateDialog({
   onCancel,
 }: NameTemplateDialogProps) {
   const [templateName, setTemplateName] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const handleSave = async () => {
-  const name = templateName.trim();
-  if (!name) return;
+    const name = templateName.trim();
+    if (!name) return;
 
-  try {
-    // 1) Create on server — stamps created_by & timestamps
-    const created = await createTemplateMin(name);
+    // Length constraint check
+    if (name.length > 30) {
+      setErrorMessage("Template name cannot exceed 30 characters.");
+      return;
+    }
 
-    // 2) Optional notify parent
-    onSave?.(name);
+    try {
+      // 1) Create on server — stamps created_by & timestamps
+      const created = await createTemplateMin(name);
 
-    // 3) Close dialog
-    setTemplateName("");
-    onOpenChange(false);
+      // 2) Optional notify parent
+      onSave?.(name);
 
-    // 4) Navigate to builder with new template id + name
-    navigate("/template-builder", {
-      state: { templateId: created.id, templateName: created.name },
-    });
-  } catch (err: any) {
-    alert(err?.message || "Failed to create template");
-  }
-};
+      // 3) Close dialog
+      setTemplateName("");
+      setErrorMessage(""); // Clear error
+      onOpenChange(false);
 
-
+      // 4) Navigate to builder with new template id + name
+      navigate("/template-builder", {
+        state: { templateId: created.id, templateName: created.name },
+      });
+    } catch (err: any) {
+      alert(err?.message || "Failed to create template");
+    }
+  };
 
   const handleCancel = () => {
     setTemplateName("");
+    setErrorMessage(""); // Clear error on cancel
     onCancel?.();
     onOpenChange(false);
   };
 
   const handleClose = () => {
     setTemplateName("");
+    setErrorMessage(""); // Clear error on close
     onOpenChange(false);
   };
 
@@ -72,7 +80,7 @@ export function NameTemplateDialog({
       <DialogContent
         className={cn(
           "max-w-[520px] w-full p-0 gap-0 bg-white rounded-lg border shadow-lg",
-          "font-roboto",
+          "font-roboto"
         )}
         onInteractOutside={(e) => e.preventDefault()}
       >
@@ -106,12 +114,20 @@ export function NameTemplateDialog({
               <Input
                 id="template-name"
                 value={templateName}
-                onChange={(e) => setTemplateName(e.target.value)}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setTemplateName(name);
+                  if (name.length > 30) {
+                    setErrorMessage("Template name cannot exceed 30 characters.");
+                  } else {
+                    setErrorMessage(""); // Clear error if within limit
+                  }
+                }}
                 placeholder="Enter Template Name"
                 className={cn(
                   "h-[38px] px-3 py-2 text-sm border border-gray-300 rounded",
                   "focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                  "placeholder:text-gray-500",
+                  "placeholder:text-gray-500"
                 )}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -122,6 +138,9 @@ export function NameTemplateDialog({
                   }
                 }}
               />
+              {errorMessage && (
+                <p className="text-xs text-red-500 mt-1">{errorMessage}</p>
+              )}
             </div>
           </div>
         </div>
@@ -133,17 +152,17 @@ export function NameTemplateDialog({
             onClick={handleCancel}
             className={cn(
               "h-8 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50",
-              "rounded border-0",
+              "rounded border-0"
             )}
           >
             Cancel
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!templateName.trim()}
+            disabled={!templateName.trim() || errorMessage !== ""}
             className={cn(
               "h-8 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700",
-              "rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed",
+              "rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >
             Save & Continue

@@ -248,9 +248,11 @@ export default function Templates() {
         navigate("/template-builder", { state: { templateId } });
         break;
       case "delete":
-        if (window.confirm("Delete this template? This cannot be undone.")) {
-          deleteTemplate(templateId);
-        }
+        // open custom confirm dialog
+        setConfirmTemplateId(templateId);
+        const tpl = templates.find((t) => t.id === templateId);
+        setConfirmTemplateName(tpl?.templateName || tpl?.name || "Template");
+        setConfirmOpen(true);
         break;
       default:
         console.log(`Action ${action} not yet implemented`);

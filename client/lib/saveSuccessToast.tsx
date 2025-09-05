@@ -3,7 +3,8 @@ import { CheckCircle, X } from "lucide-react";
 import { toast } from "sonner";
 
 export function showSaveSuccessToast(templateName: string = "New Template") {
-  const lastToastIdRef = useRef<string | null>(null);
+  // Do NOT use React hooks here — this is a plain utility function.
+  let lastToastId: string | null = null;
 
   const toastId = toast.custom(
     (t) => {

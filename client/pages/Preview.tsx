@@ -526,10 +526,9 @@ export default function Preview() {
   // Navigate to receiver view
   const handleReceiverViewClick = () => {
     const templateConfig = buildTemplateConfigForReceiverView();
-    navigate(
-      templateId ? `/receiver-view/${templateId}` : "/receiver-view",
-      { state: { templateConfig, templateData } }
-    );
+    navigate(templateId ? `/receiver-view/${templateId}` : "/receiver-view", {
+      state: { templateConfig, templateData },
+    });
   };
 
   if (loadingTpl) {
@@ -643,7 +642,9 @@ export default function Preview() {
               className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-[#0073EA] hover:bg-blue-700 transition-colors"
             >
               <Save className="w-4 h-4 text-white" strokeWidth={1.5} />
-              <span className="text-[13px] font-medium text-white font-roboto">Save</span>
+              <span className="text-[13px] font-medium text-white font-roboto">
+                Save
+              </span>
             </button>
           </div>
         </div>
@@ -727,7 +728,8 @@ export default function Preview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px] font-roboto">
-                        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                        Lorem Ipsum is simply dummy text of the printing and
+                        typesetting industry.
                       </p>
                     </div>
                   </div>
@@ -752,7 +754,8 @@ export default function Preview() {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px] font-roboto">
-                        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                        Lorem Ipsum is simply dummy text of the printing and
+                        typesetting industry.
                       </p>
                     </div>
                   </div>

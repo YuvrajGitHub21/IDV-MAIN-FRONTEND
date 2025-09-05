@@ -297,45 +297,81 @@ export default function ReceiverView() {
   };
 
   const idOptions = [
-    { 
-      value: "passport", 
-      label: "Passport", 
+    {
+      value: "passport",
+      label: "Passport",
       color: "#5A43D6",
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z" fill="white"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z"
+            fill="white"
+          />
         </svg>
-      )
+      ),
     },
-    { 
-      value: "aadhar", 
-      label: "Aadhar Card", 
+    {
+      value: "aadhar",
+      label: "Aadhar Card",
       color: "#00B499",
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12.25 17.6923C11.2653 17.6923 10.316 17.8509 9.402 18.1683C8.48783 18.4856 7.64225 18.9679 6.86525 19.6152C6.87808 19.7064 6.91342 19.7882 6.97125 19.8605C7.02892 19.933 7.093 19.9795 7.1635 20H17.327C17.3975 19.9795 17.4616 19.933 17.5193 19.8605C17.5769 19.7882 17.6122 19.7064 17.625 19.6152C16.8608 18.9679 16.0218 18.4856 15.1077 18.1683C14.1936 17.8509 13.241 17.6923 12.25 17.6923Z" fill="white"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12.25 17.6923C11.2653 17.6923 10.316 17.8509 9.402 18.1683C8.48783 18.4856 7.64225 18.9679 6.86525 19.6152C6.87808 19.7064 6.91342 19.7882 6.97125 19.8605C7.02892 19.933 7.093 19.9795 7.1635 20H17.327C17.3975 19.9795 17.4616 19.933 17.5193 19.8605C17.5769 19.7882 17.6122 19.7064 17.625 19.6152C16.8608 18.9679 16.0218 18.4856 15.1077 18.1683C14.1936 17.8509 13.241 17.6923 12.25 17.6923Z"
+            fill="white"
+          />
         </svg>
-      )
+      ),
     },
-    { 
-      value: "license", 
-      label: "Drivers License", 
+    {
+      value: "license",
+      label: "Drivers License",
       color: "#ED5F00",
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4.80775 20.5C4.30258 20.5 3.875 20.325 3.525 19.975C3.175 19.625 3 19.1974 3 18.6923V5.30775C3 4.80258 3.175 4.375 3.525 4.025C3.875 3.675 4.30258 3.5 4.80775 3.5H20.1923C20.6974 3.5 21.125 3.675 21.475 4.025C21.825 4.375 22 4.80258 22 5.30775V18.6923C22 19.1974 21.825 19.625 21.475 19.975C21.125 20.325 20.6974 20.5 20.1923 20.5H4.80775Z" fill="white"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4.80775 20.5C4.30258 20.5 3.875 20.325 3.525 19.975C3.175 19.625 3 19.1974 3 18.6923V5.30775C3 4.80258 3.175 4.375 3.525 4.025C3.875 3.675 4.30258 3.5 4.80775 3.5H20.1923C20.6974 3.5 21.125 3.675 21.475 4.025C21.825 4.375 22 4.80258 22 5.30775V18.6923C22 19.1974 21.825 19.625 21.475 19.975C21.125 20.325 20.6974 20.5 20.1923 20.5H4.80775Z"
+            fill="white"
+          />
         </svg>
-      )
+      ),
     },
-    { 
-      value: "pan", 
-      label: "Pan Card", 
+    {
+      value: "pan",
+      label: "Pan Card",
       color: "#9C2BAD",
       icon: (
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5.05775 19.5C4.55258 19.5 4.125 19.325 3.775 18.975C3.425 18.625 3.25 18.1974 3.25 17.6923V6.30775C3.25 5.80258 3.425 5.375 3.775 5.025C4.125 4.675 4.55258 4.5 5.05775 4.5H20.4423C20.9474 4.5 21.375 4.675 21.725 5.025C22.075 5.375 22.25 5.80258 22.25 6.30775V17.6923C22.25 18.1974 22.075 18.625 21.725 18.975C21.375 19.325 20.9474 19.5 20.4423 19.5H5.05775Z" fill="white"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5.05775 19.5C4.55258 19.5 4.125 19.325 3.775 18.975C3.425 18.625 3.25 18.1974 3.25 17.6923V6.30775C3.25 5.80258 3.425 5.375 3.775 5.025C4.125 4.675 4.55258 4.5 5.05775 4.5H20.4423C20.9474 4.5 21.375 4.675 21.725 5.025C22.075 5.375 22.25 5.80258 22.25 6.30775V17.6923C22.25 18.1974 22.075 18.625 21.725 18.975C21.375 19.325 20.9474 19.5 20.4423 19.5H5.05775Z"
+            fill="white"
+          />
         </svg>
-      )
+      ),
     },
   ].filter((option) =>
     templateConfig.documentVerification.supportedDocuments.includes(
@@ -391,14 +427,18 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-2 py-4 bg-white">
           <div className="flex items-center gap-2 pb-1">
-            <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
               Personal Information
             </h2>
           </div>
           <div className="pl-7">
             <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
-              Please provide your basic personal information to begin the identity verification process.
+              Please provide your basic personal information to begin the
+              identity verification process.
             </p>
           </div>
         </div>
@@ -418,7 +458,9 @@ export default function ReceiverView() {
                   <div className="h-[38px] px-3 py-[15px] flex items-center border border-[#C3C6D4] rounded bg-white">
                     <Input
                       value={formData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
                       placeholder="Enter First Name"
                       className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
                     />
@@ -436,7 +478,9 @@ export default function ReceiverView() {
                   <div className="h-[38px] px-3 py-[15px] flex items-center border border-[#C3C6D4] rounded bg-white">
                     <Input
                       value={formData.lastName}
-                      onChange={(e) => handleInputChange("lastName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
                       placeholder="Enter Last Name"
                       className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
                     />
@@ -460,7 +504,9 @@ export default function ReceiverView() {
                       <Input
                         type="email"
                         value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                         placeholder="Enter Your Email Address"
                         className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 font-roboto placeholder:text-[#676879]"
                       />
@@ -497,7 +543,9 @@ export default function ReceiverView() {
                     <Input
                       type="date"
                       value={formData.dateOfBirth}
-                      onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("dateOfBirth", e.target.value)
+                      }
                       placeholder="DD/MM/YYYY"
                       className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
                     />
@@ -519,14 +567,18 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-3 py-4 bg-white">
           <div className="flex items-center gap-2 pb-1">
-            <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
               Document Verification
             </h2>
           </div>
           <div className="pl-7">
             <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
-              Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.
+              Choose a valid government-issued ID (like a passport, driver's
+              license, or national ID) and upload a clear photo of it.
             </p>
           </div>
         </div>
@@ -543,7 +595,9 @@ export default function ReceiverView() {
               </div>
               <div className="flex gap-6">
                 <div className="h-[38px] px-3 py-[15px] flex items-center justify-between flex-1 border border-[#C3C6D4] rounded bg-white">
-                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">India</span>
+                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">
+                    India
+                  </span>
                   <svg
                     width="11"
                     height="10"
@@ -561,7 +615,9 @@ export default function ReceiverView() {
                   </svg>
                 </div>
                 <div className="h-[38px] px-3 py-[15px] flex items-center justify-between flex-1 border border-[#C3C6D4] rounded bg-white">
-                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">Select</span>
+                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">
+                    Select
+                  </span>
                 </div>
               </div>
             </div>
@@ -634,14 +690,18 @@ export default function ReceiverView() {
                       onClick={openCamera}
                     >
                       <div className="w-[52px] h-[52px] p-2 flex items-center justify-center rounded-full bg-[#F6F7FB]">
-                        <Camera className="w-6 h-6 text-[#676879]" strokeWidth={1.35} />
+                        <Camera
+                          className="w-6 h-6 text-[#676879]"
+                          strokeWidth={1.35}
+                        />
                       </div>
                       <div className="text-center">
                         <h4 className="text-[13px] font-medium text-[#323238] leading-normal font-figtree mb-2">
                           Camera
                         </h4>
                         <p className="w-[257px] text-[13px] text-[#676879] leading-5 text-center font-roboto">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris lobortis massa vitae
+                          Lorem ipsum dolor sit amet, consectetur adipiscing
+                          elit. Mauris lobortis massa vitae
                         </p>
                       </div>
                     </div>
@@ -656,14 +716,18 @@ export default function ReceiverView() {
                       onClick={() => fileInputRef.current?.click()}
                     >
                       <div className="w-[52px] h-[52px] p-2 flex items-center justify-center rounded-full bg-[#F6F7FB]">
-                        <Upload className="w-6 h-6 text-[#676879]" strokeWidth={1.41} />
+                        <Upload
+                          className="w-6 h-6 text-[#676879]"
+                          strokeWidth={1.41}
+                        />
                       </div>
                       <div className="text-center">
                         <h4 className="text-[13px] font-medium text-[#323238] leading-normal font-figtree mb-2">
                           Upload Files
                         </h4>
                         <p className="w-[257px] text-[13px] text-[#676879] leading-5 text-center font-roboto">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris lobortis massa vitae
+                          Lorem ipsum dolor sit amet, consectetur adipiscing
+                          elit. Mauris lobortis massa vitae
                         </p>
                       </div>
                       <input
@@ -691,10 +755,12 @@ export default function ReceiverView() {
                       <div className="w-[214px] flex flex-col">
                         <p className="text-[13px] text-center leading-5 font-roboto">
                           <span className="text-[#676879]">
-                            Continue on another device by scanning the QR code or opening
+                            Continue on another device by scanning the QR code
+                            or opening
                           </span>
                           <span className="text-[#0073EA]">
-                            {" "}https://id.xyz/verify
+                            {" "}
+                            https://id.xyz/verify
                           </span>
                         </p>
                       </div>
@@ -801,14 +867,19 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-3 py-4 bg-white">
           <div className="flex items-center gap-2 pb-1">
-            <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
               Biometric Verification
             </h2>
           </div>
           <div className="pl-7">
             <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
-              Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.
+              Take a live selfie to confirm you are the person in the ID
+              document. Make sure you're in a well-lit area and your face is
+              clearly visible.
             </p>
           </div>
         </div>
@@ -844,7 +915,8 @@ export default function ReceiverView() {
                         </span>
                       </div>
                       <p className="w-[284px] text-[13px] text-[#676879] text-center leading-5 font-roboto">
-                        Please check your device or close other apps using the camera.
+                        Please check your device or close other apps using the
+                        camera.
                       </p>
                     </div>
                   </div>
@@ -852,7 +924,10 @@ export default function ReceiverView() {
               </div>
               <div className="w-[440px] h-12 px-4 py-2 flex items-end justify-end gap-2 rounded-b bg-[#F6F7FB]">
                 <div className="h-8 px-3 py-[9px] flex items-center gap-1 rounded bg-[#0073EA]">
-                  <RefreshCw className="w-[18px] h-[18px] text-white transform -rotate-90" strokeWidth={1.5} />
+                  <RefreshCw
+                    className="w-[18px] h-[18px] text-white transform -rotate-90"
+                    strokeWidth={1.5}
+                  />
                   <span className="text-[13px] font-medium text-white font-roboto">
                     Retry
                   </span>
@@ -901,10 +976,12 @@ export default function ReceiverView() {
                           <div className="w-[214px] flex flex-col">
                             <p className="text-[13px] text-center leading-5 font-roboto">
                               <span className="text-[#676879]">
-                                Continue on another device by scanning the QR code or opening
+                                Continue on another device by scanning the QR
+                                code or opening
                               </span>
                               <span className="text-[#0073EA]">
-                                {" "}https://id.xyz/verify
+                                {" "}
+                                https://id.xyz/verify
                               </span>
                             </p>
                           </div>
@@ -1013,7 +1090,9 @@ export default function ReceiverView() {
               className="h-8 px-[6px] py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-[#0073EA] hover:bg-blue-700"
             >
               <Save className="w-4 h-4 text-white" strokeWidth={1.5} />
-              <span className="text-[13px] font-medium text-white font-roboto">Save</span>
+              <span className="text-[13px] font-medium text-white font-roboto">
+                Save
+              </span>
             </button>
           </div>
         </div>
@@ -1064,7 +1143,9 @@ export default function ReceiverView() {
 
           {/* Next Button */}
           <div className="flex items-center gap-1">
-            <span className="text-[13px] font-medium text-[#505258] font-roboto">Next</span>
+            <span className="text-[13px] font-medium text-[#505258] font-roboto">
+              Next
+            </span>
             <div className="w-3.5 h-3.5"></div>
           </div>
         </div>
@@ -1092,7 +1173,8 @@ export default function ReceiverView() {
                       Admin View
                     </h3>
                     <p className="flex-1 text-[13px] text-[#505258] leading-[18px] font-roboto">
-                      Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                      Lorem Ipsum is simply dummy text of the printing and
+                      typesetting industry.
                     </p>
                   </div>
                 </div>
@@ -1104,7 +1186,8 @@ export default function ReceiverView() {
                       Receiver's View
                     </h3>
                     <p className="flex-1 text-[13px] text-[#505258] leading-[18px] font-roboto">
-                      Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+                      Lorem Ipsum is simply dummy text of the printing and
+                      typesetting industry.
                     </p>
                   </div>
                 </div>

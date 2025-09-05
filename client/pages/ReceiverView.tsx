@@ -218,7 +218,7 @@ export default function ReceiverView() {
     email: "",
     dateOfBirth: "",
     country: "India",
-    idType: "",
+    idType: "passport",
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -297,10 +297,82 @@ export default function ReceiverView() {
   };
 
   const idOptions = [
-    { value: "passport", label: "Passport", color: "#5A43D6" },
-    { value: "aadhar", label: "Aadhar Card", color: "#00B499" },
-    { value: "license", label: "Drivers License", color: "#ED5F00" },
-    { value: "pan", label: "Pan Card", color: "#9C2BAD" },
+    {
+      value: "passport",
+      label: "Passport",
+      color: "#5A43D6",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z"
+            fill="white"
+          />
+        </svg>
+      ),
+    },
+    {
+      value: "aadhar",
+      label: "Aadhar Card",
+      color: "#00B499",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M12.25 17.6923C11.2653 17.6923 10.316 17.8509 9.402 18.1683C8.48783 18.4856 7.64225 18.9679 6.86525 19.6152C6.87808 19.7064 6.91342 19.7882 6.97125 19.8605C7.02892 19.933 7.093 19.9795 7.1635 20H17.327C17.3975 19.9795 17.4616 19.933 17.5193 19.8605C17.5769 19.7882 17.6122 19.7064 17.625 19.6152C16.8608 18.9679 16.0218 18.4856 15.1077 18.1683C14.1936 17.8509 13.241 17.6923 12.25 17.6923Z"
+            fill="white"
+          />
+        </svg>
+      ),
+    },
+    {
+      value: "license",
+      label: "Drivers License",
+      color: "#ED5F00",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4.80775 20.5C4.30258 20.5 3.875 20.325 3.525 19.975C3.175 19.625 3 19.1974 3 18.6923V5.30775C3 4.80258 3.175 4.375 3.525 4.025C3.875 3.675 4.30258 3.5 4.80775 3.5H20.1923C20.6974 3.5 21.125 3.675 21.475 4.025C21.825 4.375 22 4.80258 22 5.30775V18.6923C22 19.1974 21.825 19.625 21.475 19.975C21.125 20.325 20.6974 20.5 20.1923 20.5H4.80775Z"
+            fill="white"
+          />
+        </svg>
+      ),
+    },
+    {
+      value: "pan",
+      label: "Pan Card",
+      color: "#9C2BAD",
+      icon: (
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M5.05775 19.5C4.55258 19.5 4.125 19.325 3.775 18.975C3.425 18.625 3.25 18.1974 3.25 17.6923V6.30775C3.25 5.80258 3.425 5.375 3.775 5.025C4.125 4.675 4.55258 4.5 5.05775 4.5H20.4423C20.9474 4.5 21.375 4.675 21.725 5.025C22.075 5.375 22.25 5.80258 22.25 6.30775V17.6923C22.25 18.1974 22.075 18.625 21.725 18.975C21.375 19.325 20.9474 19.5 20.4423 19.5H5.05775Z"
+            fill="white"
+          />
+        </svg>
+      ),
+    },
   ].filter((option) =>
     templateConfig.documentVerification.supportedDocuments.includes(
       option.label,
@@ -353,18 +425,18 @@ export default function ReceiverView() {
     return (
       <div className="border border-[#DEDEDD] rounded bg-white">
         {/* Section Header */}
-        <div className="px-2 py-4 bg-white border-b border-[#DEDEDD]">
+        <div className="px-2 py-4 bg-white">
           <div className="flex items-center gap-2 pb-1">
             <Minus
               className="w-[18px] h-[18px] text-[#323238]"
               strokeWidth={1.5}
             />
-            <h2 className="text-base font-bold text-[#172B4D] leading-3">
+            <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
               Personal Information
             </h2>
           </div>
           <div className="pl-7">
-            <p className="text-[13px] text-[#172B4D] leading-5">
+            <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
               Please provide your basic personal information to begin the
               identity verification process.
             </p>
@@ -372,25 +444,25 @@ export default function ReceiverView() {
         </div>
 
         {/* Section Content */}
-        <div className="px-[34px] py-5">
+        <div className="px-[34px] py-5 border-t border-[#DEDEDD] bg-white">
           <div className="flex flex-col gap-6">
             {/* First Row - First Name & Last Name */}
             <div className="flex gap-6">
               {templateConfig.personalInfo.fields.firstName && (
                 <div className="flex-1 flex flex-col">
                   <div className="pb-2">
-                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                       First Name
                     </Label>
                   </div>
-                  <div className="h-[38px] px-3 py-[15px] flex items-center justify-between border border-[#C3C6D4] rounded bg-white">
+                  <div className="h-[38px] px-3 py-[15px] flex items-center border border-[#C3C6D4] rounded bg-white">
                     <Input
                       value={formData.firstName}
                       onChange={(e) =>
                         handleInputChange("firstName", e.target.value)
                       }
                       placeholder="Enter First Name"
-                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
                     />
                   </div>
                 </div>
@@ -399,18 +471,18 @@ export default function ReceiverView() {
               {templateConfig.personalInfo.fields.lastName && (
                 <div className="flex-1 flex flex-col">
                   <div className="pb-2">
-                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                       Last Name
                     </Label>
                   </div>
-                  <div className="h-[38px] px-3 py-[15px] flex items-center justify-between border border-[#C3C6D4] rounded bg-white">
+                  <div className="h-[38px] px-3 py-[15px] flex items-center border border-[#C3C6D4] rounded bg-white">
                     <Input
                       value={formData.lastName}
                       onChange={(e) =>
                         handleInputChange("lastName", e.target.value)
                       }
                       placeholder="Enter Last Name"
-                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
                     />
                   </div>
                 </div>
@@ -422,7 +494,7 @@ export default function ReceiverView() {
               {templateConfig.personalInfo.fields.email && (
                 <div className="flex-1 flex flex-col">
                   <div className="pb-2">
-                    <Label className="text-[13px] font-medium leading-[18px]">
+                    <Label className="text-[13px] font-medium leading-[18px] font-roboto">
                       <span className="text-[#172B4D]">Email </span>
                       <span className="text-[#D83A52]">*</span>
                     </Label>
@@ -436,12 +508,12 @@ export default function ReceiverView() {
                           handleInputChange("email", e.target.value)
                         }
                         placeholder="Enter Your Email Address"
-                        className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
+                        className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 font-roboto placeholder:text-[#676879]"
                       />
                       <div className="h-7 px-3 py-[9px] flex items-center gap-1 rounded bg-white">
                         <Button
                           onClick={handleEmailVerify}
-                          className="text-[12px] font-medium text-[#0073EA] p-0 h-auto bg-transparent hover:bg-transparent"
+                          className="text-[12px] font-medium text-[#0073EA] p-0 h-auto bg-transparent hover:bg-transparent font-figtree"
                           variant="ghost"
                         >
                           Verify
@@ -451,7 +523,7 @@ export default function ReceiverView() {
                     {!emailVerified && (
                       <div className="h-8 px-2 flex items-center gap-2 border border-[#DEDEDD] rounded bg-[#F1F2F4]">
                         <Info className="w-[18px] h-[18px] text-[#344563]" />
-                        <span className="text-[12px] text-[#676879] leading-[22px]">
+                        <span className="text-[12px] text-[#676879] leading-[22px] font-roboto">
                           Email verification is required to continue
                         </span>
                       </div>
@@ -463,7 +535,7 @@ export default function ReceiverView() {
               {templateConfig.personalInfo.fields.dateOfBirth && (
                 <div className="w-[452px] flex flex-col">
                   <div className="pb-2">
-                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                       Date Of Birth
                     </Label>
                   </div>
@@ -475,7 +547,7 @@ export default function ReceiverView() {
                         handleInputChange("dateOfBirth", e.target.value)
                       }
                       placeholder="DD/MM/YYYY"
-                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
                     />
                   </div>
                 </div>
@@ -493,18 +565,18 @@ export default function ReceiverView() {
     return (
       <div className="border border-[#DEDEDD] rounded bg-white">
         {/* Section Header */}
-        <div className="px-3 py-4 bg-white border-b border-[#DEDEDD]">
+        <div className="px-3 py-4 bg-white">
           <div className="flex items-center gap-2 pb-1">
             <Minus
               className="w-[18px] h-[18px] text-[#323238]"
               strokeWidth={1.5}
             />
-            <h2 className="text-base font-bold text-[#172B4D] leading-3">
+            <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
               Document Verification
             </h2>
           </div>
           <div className="pl-7">
-            <p className="text-[13px] text-[#172B4D] leading-5">
+            <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
               Choose a valid government-issued ID (like a passport, driver's
               license, or national ID) and upload a clear photo of it.
             </p>
@@ -512,30 +584,20 @@ export default function ReceiverView() {
         </div>
 
         {/* Section Content */}
-        <div className="px-[34px] py-5">
+        <div className="px-[34px] py-5 border-t border-[#DEDEDD] bg-white">
           <div className="flex flex-col gap-4">
             {/* Country Selection */}
             <div className="h-20 flex flex-col">
               <div className="pb-2">
-                <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                   Country
                 </Label>
               </div>
               <div className="flex gap-6">
                 <div className="h-[38px] px-3 py-[15px] flex items-center justify-between flex-1 border border-[#C3C6D4] rounded bg-white">
-                  <Select
-                    value={formData.country}
-                    onValueChange={(value) =>
-                      handleInputChange("country", value)
-                    }
-                  >
-                    <SelectTrigger className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="India">India</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">
+                    India
+                  </span>
                   <svg
                     width="11"
                     height="10"
@@ -543,19 +605,17 @@ export default function ReceiverView() {
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g clipPath="url(#clip0_5163_43987)">
-                      <path
-                        d="M1.5 3L5.5 7L9.5 3"
-                        stroke="#344563"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </g>
+                    <path
+                      d="M1.5 3L5.5 7L9.5 3"
+                      stroke="#344563"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </div>
                 <div className="h-[38px] px-3 py-[15px] flex items-center justify-between flex-1 border border-[#C3C6D4] rounded bg-white">
-                  <span className="text-[13px] text-[#676879] leading-5">
+                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">
                     Select
                   </span>
                 </div>
@@ -565,10 +625,10 @@ export default function ReceiverView() {
             {/* ID Type Selection */}
             <div className="flex flex-col gap-4">
               <div className="pb-1 flex flex-col gap-1">
-                <h3 className="text-base font-bold text-[#172B4D] leading-[26px]">
+                <h3 className="text-base font-bold text-[#172B4D] leading-[26px] font-roboto">
                   Select the ID Type
                 </h3>
-                <p className="text-[13px] text-[#676879] leading-5">
+                <p className="text-[13px] text-[#676879] leading-5 font-roboto">
                   Select the ID you'd like to use for verification.
                 </p>
               </div>
@@ -591,28 +651,16 @@ export default function ReceiverView() {
                         className={`w-[211px] h-[94px] px-4 py-3 flex flex-col gap-3 border rounded cursor-pointer ${
                           formData.idType === option.value
                             ? "border-[#0073EA] bg-[#E6F1FD]"
-                            : "border-[#C3C6D4] bg-white"
+                            : "border-[#C3C6D4] bg-white opacity-50"
                         }`}
                       >
                         <div
                           className="w-8 h-8 p-2 flex items-center justify-center rounded"
                           style={{ backgroundColor: option.color }}
                         >
-                          <svg
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            {/* Default icon - you can customize per document type */}
-                            <path
-                              d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z"
-                              fill="white"
-                            />
-                          </svg>
+                          {option.icon}
                         </div>
-                        <span className="text-sm font-medium text-[#172B4D] leading-[22px]">
+                        <span className="text-sm font-medium text-[#172B4D] leading-[22px] font-roboto">
                           {option.label}
                         </span>
                       </Label>
@@ -629,61 +677,73 @@ export default function ReceiverView() {
 
             {/* Upload Methods */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-base font-bold text-[#172B4D] leading-[26px]">
+              <h3 className="text-base font-bold text-[#172B4D] leading-[26px] font-roboto">
                 Choose a method to upload your document
               </h3>
 
-              <div className="flex gap-6">
+              <div className="flex gap-6 h-[334px]">
+                {/* Camera Option */}
                 {templateConfig.documentVerification.allowCaptureWebcam && (
-                  <div
-                    className="h-[156px] flex-1 flex flex-col items-center justify-center gap-4 border-2 border-dashed border-[#C3C6D4] rounded-lg cursor-pointer hover:border-[#0073EA]"
-                    onClick={openCamera}
-                  >
-                    <div className="w-[52px] h-[52px] p-2 flex items-center justify-center rounded-full bg-[#F6F7FB]">
-                      <Camera className="w-6 h-6 text-[#676879]" />
-                    </div>
-                    <div className="text-center">
-                      <h4 className="text-[13px] font-medium text-[#323238] leading-normal">
-                        Camera
-                      </h4>
-                      <p className="w-[257px] text-[13px] text-[#676879] leading-5 text-center">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Mauris lobortis massa vitae
-                      </p>
+                  <div className="flex-1 flex flex-col">
+                    <div
+                      className="h-[156px] flex flex-col items-center justify-center gap-4 border-2 border-dashed border-[#C3C6D4] rounded-t-lg cursor-pointer hover:border-[#0073EA] bg-white"
+                      onClick={openCamera}
+                    >
+                      <div className="w-[52px] h-[52px] p-2 flex items-center justify-center rounded-full bg-[#F6F7FB]">
+                        <Camera
+                          className="w-6 h-6 text-[#676879]"
+                          strokeWidth={1.35}
+                        />
+                      </div>
+                      <div className="text-center">
+                        <h4 className="text-[13px] font-medium text-[#323238] leading-normal font-figtree mb-2">
+                          Camera
+                        </h4>
+                        <p className="w-[257px] text-[13px] text-[#676879] leading-5 text-center font-roboto">
+                          Lorem ipsum dolor sit amet, consectetur adipiscing
+                          elit. Mauris lobortis massa vitae
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
 
+                {/* Upload Files Option */}
                 {templateConfig.documentVerification.allowUploadFromDevice && (
-                  <div
-                    className="h-[156px] flex-1 flex flex-col items-center justify-center gap-4 border-2 border-dashed border-[#C3C6D4] rounded-lg cursor-pointer hover:border-[#0073EA]"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <div className="w-[52px] h-[52px] p-2 flex items-center justify-center rounded-full bg-[#F6F7FB]">
-                      <Upload className="w-6 h-6 text-[#676879]" />
+                  <div className="flex-1 flex flex-col">
+                    <div
+                      className="h-[156px] flex flex-col items-center justify-center gap-4 border-2 border-dashed border-[#C3C6D4] rounded-t-lg cursor-pointer hover:border-[#0073EA] bg-white"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <div className="w-[52px] h-[52px] p-2 flex items-center justify-center rounded-full bg-[#F6F7FB]">
+                        <Upload
+                          className="w-6 h-6 text-[#676879]"
+                          strokeWidth={1.41}
+                        />
+                      </div>
+                      <div className="text-center">
+                        <h4 className="text-[13px] font-medium text-[#323238] leading-normal font-figtree mb-2">
+                          Upload Files
+                        </h4>
+                        <p className="w-[257px] text-[13px] text-[#676879] leading-5 text-center font-roboto">
+                          Lorem ipsum dolor sit amet, consectetur adipiscing
+                          elit. Mauris lobortis massa vitae
+                        </p>
+                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        onChange={handleFileUpload}
+                        accept="image/*,.pdf"
+                        className="hidden"
+                      />
                     </div>
-                    <div className="text-center">
-                      <h4 className="text-[13px] font-medium text-[#323238] leading-normal">
-                        Upload Files
-                      </h4>
-                      <p className="w-[257px] text-[13px] text-[#676879] leading-5 text-center">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Mauris lobortis massa vitae
-                      </p>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      onChange={handleFileUpload}
-                      accept="image/*,.pdf"
-                      className="hidden"
-                    />
                   </div>
                 )}
               </div>
 
               {/* QR Code Section */}
-              <div className="h-[156px] flex items-center gap-4 border-2 border-dashed border-[#C3C6D4] rounded-lg p-8">
+              <div className="h-[156px] flex items-center gap-4 border-2 border-dashed border-[#C3C6D4] rounded-lg p-8 relative">
                 <div className="flex items-center justify-center gap-4 flex-1">
                   <img
                     src="https://api.builder.io/api/v1/image/assets/TEMP/71b92e12d4aa83fb25f12a5fcbfdd11a3f368505?width=220"
@@ -693,7 +753,7 @@ export default function ReceiverView() {
                   <div className="flex flex-col items-center justify-center gap-2">
                     <div className="w-[214px] flex flex-col items-center gap-3">
                       <div className="w-[214px] flex flex-col">
-                        <p className="text-[13px] text-center leading-5">
+                        <p className="text-[13px] text-center leading-5 font-roboto">
                           <span className="text-[#676879]">
                             Continue on another device by scanning the QR code
                             or opening
@@ -707,8 +767,8 @@ export default function ReceiverView() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-[#0073EA] text-[12px]">
-                  <Info className="w-5 h-5" />
+                <div className="absolute top-2 right-2 flex items-center gap-1 text-[#0073EA] text-[12px] font-roboto">
+                  <Info className="w-5 h-5" strokeWidth={1.5} />
                   <span>How does this work?</span>
                 </div>
               </div>
@@ -805,18 +865,18 @@ export default function ReceiverView() {
     return (
       <div className="border border-[#DEDEDD] rounded bg-white">
         {/* Section Header */}
-        <div className="px-3 py-4 bg-white border-b border-[#DEDEDD]">
+        <div className="px-3 py-4 bg-white">
           <div className="flex items-center gap-2 pb-1">
             <Minus
               className="w-[18px] h-[18px] text-[#323238]"
               strokeWidth={1.5}
             />
-            <h2 className="text-base font-bold text-[#172B4D] leading-3">
+            <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
               Biometric Verification
             </h2>
           </div>
           <div className="pl-7">
-            <p className="text-[13px] text-[#172B4D] leading-5">
+            <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
               Take a live selfie to confirm you are the person in the ID
               document. Make sure you're in a well-lit area and your face is
               clearly visible.
@@ -825,7 +885,7 @@ export default function ReceiverView() {
         </div>
 
         {/* Section Content */}
-        <div className="p-4">
+        <div className="p-4 border-t border-[#DEDEDD] bg-white">
           <div className="w-[956px] p-2 flex items-center gap-6">
             {/* Camera Section */}
             <div className="h-[428px] flex flex-col flex-1">
@@ -850,11 +910,11 @@ export default function ReceiverView() {
                             strokeLinejoin="round"
                           />
                         </svg>
-                        <span className="absolute left-0 top-8 w-[126px] text-[13px] font-medium text-[#172B4D] text-center leading-5">
+                        <span className="absolute left-0 top-8 w-[126px] text-[13px] font-medium text-[#172B4D] text-center leading-5 font-roboto">
                           Camera not detected.
                         </span>
                       </div>
-                      <p className="w-[284px] text-[13px] text-[#676879] text-center leading-5">
+                      <p className="w-[284px] text-[13px] text-[#676879] text-center leading-5 font-roboto">
                         Please check your device or close other apps using the
                         camera.
                       </p>
@@ -862,10 +922,13 @@ export default function ReceiverView() {
                   </div>
                 </div>
               </div>
-              <div className="w-[440px] h-8 px-4 py-2 flex items-end justify-end gap-2 rounded-b bg-[#F6F7FB]">
+              <div className="w-[440px] h-12 px-4 py-2 flex items-end justify-end gap-2 rounded-b bg-[#F6F7FB]">
                 <div className="h-8 px-3 py-[9px] flex items-center gap-1 rounded bg-[#0073EA]">
-                  <RefreshCw className="w-[18px] h-[18px] text-white transform -rotate-90" />
-                  <span className="text-[13px] font-medium text-white">
+                  <RefreshCw
+                    className="w-[18px] h-[18px] text-white transform -rotate-90"
+                    strokeWidth={1.5}
+                  />
+                  <span className="text-[13px] font-medium text-white font-roboto">
                     Retry
                   </span>
                 </div>
@@ -911,7 +974,7 @@ export default function ReceiverView() {
                       <div className="flex flex-col items-center justify-center gap-2">
                         <div className="w-[214px] flex flex-col items-center gap-3">
                           <div className="w-[214px] flex flex-col">
-                            <p className="text-[13px] text-center leading-5">
+                            <p className="text-[13px] text-center leading-5 font-roboto">
                               <span className="text-[#676879]">
                                 Continue on another device by scanning the QR
                                 code or opening
@@ -930,8 +993,8 @@ export default function ReceiverView() {
               </div>
               <div className="w-[440px] h-12 px-4 py-4 flex justify-end bg-[#F6F7FB] rounded-b">
                 <div className="w-[135px] flex items-center justify-end gap-1">
-                  <Info className="w-5 h-5 text-[#0073EA]" />
-                  <span className="text-[12px] text-[#0073EA] leading-5">
+                  <Info className="w-5 h-5 text-[#0073EA]" strokeWidth={1.5} />
+                  <span className="text-[12px] text-[#0073EA] leading-5 font-roboto">
                     How does this work?
                   </span>
                 </div>
@@ -964,7 +1027,7 @@ export default function ReceiverView() {
         />
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-[#F65F7C] flex items-center justify-center">
-            <span className="text-white text-xs font-medium leading-[10px]">
+            <span className="text-white text-xs font-medium leading-[10px] font-roboto">
               OS
             </span>
           </div>
@@ -978,18 +1041,18 @@ export default function ReceiverView() {
           <div className="flex items-center gap-2">
             <div className="flex h-8 items-center gap-1">
               <FileText className="w-4 h-4 text-[#515257]" strokeWidth={1.09} />
-              <span className="text-xs text-[#505258] font-medium leading-3">
+              <span className="text-xs text-[#505258] font-medium leading-3 font-roboto">
                 Template
               </span>
             </div>
             <div className="flex h-8 items-center gap-2">
-              <span className="text-xs text-[#505258] font-medium leading-3">
+              <span className="text-xs text-[#505258] font-medium leading-3 font-roboto">
                 /
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#505258] font-medium leading-3">
+            <span className="text-xs text-[#505258] font-medium leading-3 font-roboto">
               Create New Template
             </span>
           </div>
@@ -1005,7 +1068,7 @@ export default function ReceiverView() {
                 onClick={() => navigate(-1)}
               />
             </div>
-            <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">
+            <h1 className="text-xl font-bold text-[#172B4D] leading-[30px] font-roboto">
               {templateConfig.templateName}
             </h1>
           </div>
@@ -1015,7 +1078,7 @@ export default function ReceiverView() {
               className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-white hover:bg-blue-50"
             >
               <Send className="w-4 h-4 text-[#0073EA]" strokeWidth={1.33} />
-              <span className="text-[13px] font-medium text-[#0073EA]">
+              <span className="text-[13px] font-medium text-[#0073EA] font-roboto">
                 Save & Send Invite
               </span>
             </button>
@@ -1027,7 +1090,9 @@ export default function ReceiverView() {
               className="h-8 px-[6px] py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-[#0073EA] hover:bg-blue-700"
             >
               <Save className="w-4 h-4 text-white" strokeWidth={1.5} />
-              <span className="text-[13px] font-medium text-white">Save</span>
+              <span className="text-[13px] font-medium text-white font-roboto">
+                Save
+              </span>
             </button>
           </div>
         </div>
@@ -1039,7 +1104,7 @@ export default function ReceiverView() {
           {/* Previous Button */}
           <div className="flex items-center gap-1">
             <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
-            <span className="text-[13px] font-medium text-[#505258]">
+            <span className="text-[13px] font-medium text-[#505258] font-roboto">
               Previous
             </span>
           </div>
@@ -1053,7 +1118,7 @@ export default function ReceiverView() {
                   <Check className="w-[18px] h-[18px] text-white" />
                 </div>
               </div>
-              <span className="text-[13px] font-medium text-[#172B4D]">
+              <span className="text-[13px] font-medium text-[#172B4D] font-roboto">
                 Form builder
               </span>
             </div>
@@ -1065,12 +1130,12 @@ export default function ReceiverView() {
             <div className="flex flex-col items-center gap-1.5">
               <div className="p-1.5 rounded-full border-2 border-[#0073EA]">
                 <div className="w-8 h-8 rounded-full bg-[#0073EA] flex items-center justify-center">
-                  <span className="text-white text-base font-bold leading-4">
+                  <span className="text-white text-base font-bold leading-4 font-roboto">
                     2
                   </span>
                 </div>
               </div>
-              <span className="text-[13px] font-medium text-[#172B4D]">
+              <span className="text-[13px] font-medium text-[#172B4D] font-roboto">
                 Preview
               </span>
             </div>
@@ -1078,7 +1143,9 @@ export default function ReceiverView() {
 
           {/* Next Button */}
           <div className="flex items-center gap-1">
-            <span className="text-[13px] font-medium text-[#505258]">Next</span>
+            <span className="text-[13px] font-medium text-[#505258] font-roboto">
+              Next
+            </span>
             <div className="w-3.5 h-3.5"></div>
           </div>
         </div>
@@ -1086,7 +1153,7 @@ export default function ReceiverView() {
 
       {/* Main Content */}
       <div className="w-full pb-4 flex flex-col items-center">
-        <div className="flex items-start w-full">
+        <div className="flex items-start w-full h-[1657px]">
           {/* Sidebar */}
           <div className="w-[332px] px-4 pr-2 py-4 flex flex-col gap-2 bg-white">
             <div className="flex flex-col gap-4">
@@ -1102,10 +1169,10 @@ export default function ReceiverView() {
                   }
                 >
                   <div className="flex-1 flex flex-col gap-2">
-                    <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
+                    <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px] font-roboto">
                       Admin View
                     </h3>
-                    <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
+                    <p className="flex-1 text-[13px] text-[#505258] leading-[18px] font-roboto">
                       Lorem Ipsum is simply dummy text of the printing and
                       typesetting industry.
                     </p>
@@ -1115,10 +1182,10 @@ export default function ReceiverView() {
                 {/* Receiver's View Tab - Active */}
                 <div className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded bg-[#E6F1FD]">
                   <div className="flex-1 flex flex-col gap-2">
-                    <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
+                    <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px] font-roboto">
                       Receiver's View
                     </h3>
-                    <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
+                    <p className="flex-1 text-[13px] text-[#505258] leading-[18px] font-roboto">
                       Lorem Ipsum is simply dummy text of the printing and
                       typesetting industry.
                     </p>

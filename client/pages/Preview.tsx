@@ -46,7 +46,6 @@ export default function Preview() {
   const navigate = useNavigate();
   const location = useLocation();
   const { templateId } = useParams();
-  const [activeView, setActiveView] = useState<"admin" | "receiver">("admin");
   const [showSendInviteDialog, setShowSendInviteDialog] = useState(false);
 
   // ---------- NEW: template doc from Mongo ----------
@@ -216,15 +215,9 @@ export default function Preview() {
   const getPersonalAddedFields = (tpl: any): AddedField[] => {
     const a = tpl?.Personal_info?.Added_fields || {};
     const out: AddedField[] = [];
-    // <<<<<<< ai_main_a5c275984259
-    //     if (a.dob)
-    //       out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
-    //     if (a.Current_address || a.current_address) {
-    // =======
     if (a.dob)
       out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
     if (a.Current_address)
-      // >>>>>>> main
       out.push({
         id: "currentAddress",
         name: "Current Address",
@@ -242,25 +235,11 @@ export default function Preview() {
   };
 
   const getDocConfigFromDb = (tpl: any) => {
-    // <<<<<<< ai_main_a5c275984259
-    //     const v = tpl?.Doc_verification ?? tpl?.doc_verification ?? {};
-    //     const uploads = v.user_uploads ?? {};
-    //     const unreadable = v.Unreadable_docs ?? v.unreadable_docs ?? {};
-
-    //     // flatten all enabled docs across countries (defensive typing)
-    //     const countries = Array.isArray(v.Countries_array)
-    //       ? v.Countries_array
-    //       : Array.isArray(v.countries_array)
-    //         ? v.countries_array
-    //         : [];
-
-    // =======
     const v = tpl?.Doc_verification || {};
     const uploads = v.user_uploads || {};
     const unreadable = v.Unreadable_docs || {};
     // flatten all enabled docs across countries
     const countries = Array.isArray(v.Countries_array) ? v.Countries_array : [];
-    // >>>>>>> main
     const selectedDocuments: string[] = [];
     countries.forEach((c: any) => {
       const list = c?.listOfdocs || {};
@@ -282,17 +261,10 @@ export default function Preview() {
   };
 
   const getBiometricConfigFromDb = (tpl: any) => {
-    // <<<<<<< ai_main_a5c275984259
-    //     const b = tpl?.Biometric_verification ?? tpl?.biometric_verification ?? {};
-    //     const retries = Array.isArray(b.number_of_retries)
-    //       ? b.number_of_retries
-    //       : [];
-    // =======
     const b = tpl?.Biometric_verification || {};
     const retries = Array.isArray(b.number_of_retries)
       ? b.number_of_retries
       : [];
-    // >>>>>>> main
     const maxRetries = retries.length ? Math.max(...retries) : undefined;
     const l = b.liveness || {};
     const r = b.biometric_data_retention || {};
@@ -384,7 +356,6 @@ export default function Preview() {
 
   // ---------- Build sections to render (DB first, fallback to builder state) ----------
   // Create section components (DB first with sections_order, else builder fallback)
-  // ---------- Build sections to render (DB first, fallback to builder state) ----------
   const createSectionComponents = (): SectionConfig[] => {
     if (dbTemplate) {
       return buildSectionsFromDbTemplate(dbTemplate);
@@ -552,6 +523,14 @@ export default function Preview() {
     });
   };
 
+  // Navigate to receiver view
+  const handleReceiverViewClick = () => {
+    const templateConfig = buildTemplateConfigForReceiverView();
+    navigate(templateId ? `/receiver-view/${templateId}` : "/receiver-view", {
+      state: { templateConfig, templateData },
+    });
+  };
+
   if (loadingTpl) {
     return (
       <div className="min-h-screen bg-white font-roboto flex items-center justify-center text-sm text-gray-600">
@@ -575,7 +554,7 @@ export default function Preview() {
         />
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-[#F65F7C] flex items-center justify-center">
-            <span className="text-white text-xs font-medium leading-[10px]">
+            <span className="text-white text-xs font-medium leading-[10px] font-roboto">
               OS
             </span>
           </div>
@@ -611,19 +590,19 @@ export default function Preview() {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-xs text-[#505258] font-medium leading-3">
+              <span className="text-xs text-[#505258] font-medium leading-3 font-roboto">
                 Template
               </span>
             </div>
             <div className="flex h-8 items-center gap-2">
-              <span className="text-xs text-[#505258] font-medium leading-3">
+              <span className="text-xs text-[#505258] font-medium leading-3 font-roboto">
                 /
               </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex h-8 items-center gap-1">
-              <span className="text-xs text-[#505258] font-medium leading-3">
+              <span className="text-xs text-[#505258] font-medium leading-3 font-roboto">
                 Create New Template
               </span>
             </div>
@@ -643,7 +622,7 @@ export default function Preview() {
                   strokeWidth={2}
                 />
               </button>
-              <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">
+              <h1 className="text-xl font-bold text-[#172B4D] leading-[30px] font-roboto">
                 {displayName}
               </h1>
             </div>
@@ -654,7 +633,7 @@ export default function Preview() {
               className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-white hover:bg-blue-50 transition-colors"
             >
               <Send className="w-4 h-4 text-[#0073EA]" strokeWidth={1.33} />
-              <span className="text-[13px] font-medium text-[#0073EA]">
+              <span className="text-[13px] font-medium text-[#0073EA] font-roboto">
                 Save & Send Invite
               </span>
             </button>
@@ -663,7 +642,9 @@ export default function Preview() {
               className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-[#0073EA] hover:bg-blue-700 transition-colors"
             >
               <Save className="w-4 h-4 text-white" strokeWidth={1.5} />
-              <span className="text-[13px] font-medium text-white">Save</span>
+              <span className="text-[13px] font-medium text-white font-roboto">
+                Save
+              </span>
             </button>
           </div>
         </div>
@@ -693,7 +674,7 @@ export default function Preview() {
                     </svg>
                   </div>
                 </div>
-                <span className="text-[13px] font-medium text-[#172B4D]">
+                <span className="text-[13px] font-medium text-[#172B4D] font-roboto">
                   Form builder
                 </span>
               </div>
@@ -705,12 +686,12 @@ export default function Preview() {
               <div className="flex flex-col items-center gap-1.5">
                 <div className="p-1.5 rounded-full border-2 border-[#0073EA]">
                   <div className="w-8 h-8 rounded-full bg-[#0073EA] flex items-center justify-center">
-                    <span className="text-white text-base font-bold leading-4">
+                    <span className="text-white text-base font-bold leading-4 font-roboto">
                       2
                     </span>
                   </div>
                 </div>
-                <span className="text-[13px] font-medium text-[#172B4D]">
+                <span className="text-[13px] font-medium text-[#172B4D] font-roboto">
                   Preview
                 </span>
               </div>
@@ -723,7 +704,7 @@ export default function Preview() {
             className="absolute left-8 flex items-center gap-1 rounded hover:bg-gray-50 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
-            <span className="text-[13px] font-medium text-[#505258]">
+            <span className="text-[13px] font-medium text-[#505258] font-roboto">
               Previous
             </span>
           </button>
@@ -737,54 +718,44 @@ export default function Preview() {
           <div className="p-4 pr-2 pl-4 flex flex-col gap-2">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                {/* Admin View Tab */}
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setActiveView("admin")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ")
-                      setActiveView("admin");
-                  }}
-                  className={`w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded ${activeView === "admin" ? "bg-[#E6F1FD]" : "opacity-50 cursor-pointer hover:bg-blue-50"}`}
-                >
+                {/* Admin View Tab - Active */}
+                <div className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded bg-[#E6F1FD]">
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
-                      <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
+                      <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px] font-roboto">
                         Admin View
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
-                      <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        Showing exactly what admin selected:{" "}
-                        {orderedSections.length} sections with{" "}
-                        {visiblePersonalCount} fields total.
+                      <p className="flex-1 text-[13px] text-[#505258] leading-[18px] font-roboto">
+                        Lorem Ipsum is simply dummy text of the printing and
+                        typesetting industry.
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Receiver's View Tab */}
+                {/* Receiver's View Tab - Inactive */}
                 <div
                   role="button"
                   tabIndex={0}
-                  onClick={() => setActiveView("receiver")}
+                  onClick={handleReceiverViewClick}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ")
-                      setActiveView("receiver");
+                      handleReceiverViewClick();
                   }}
-                  className={`w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded ${activeView === "receiver" ? "bg-[#E6F1FD]" : "opacity-50 cursor-pointer hover:bg-blue-50"}`}
+                  className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded opacity-50 cursor-pointer hover:bg-blue-50"
                 >
                   <div className="flex-1 flex flex-col gap-2">
                     <div className="flex items-center gap-1">
-                      <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px]">
+                      <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px] font-roboto">
                         Receiver's View
                       </h3>
                     </div>
                     <div className="flex items-center gap-2">
-                      <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        This is exactly how users will experience the
-                        verification process.
+                      <p className="flex-1 text-[13px] text-[#505258] leading-[18px] font-roboto">
+                        Lorem Ipsum is simply dummy text of the printing and
+                        typesetting industry.
                       </p>
                     </div>
                   </div>
@@ -815,12 +786,12 @@ export default function Preview() {
                         className="w-[18px] h-[18px] text-[#323238]"
                         strokeWidth={1.5}
                       />
-                      <h2 className="text-base font-bold text-[#172B4D] leading-3">
+                      <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
                         {section.title}
                       </h2>
                     </div>
                     <div className="flex items-center gap-2.5 w-full pl-7">
-                      <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                      <p className="flex-1 text-[13px] text-[#172B4D] leading-5 font-roboto">
                         {section.description}
                       </p>
                     </div>
@@ -902,14 +873,14 @@ const PersonalInformationSection = ({
               <div key={field.id} className="flex flex-col flex-1">
                 <div className="flex gap-2 w-full pb-2">
                   <div className="flex flex-col justify-center flex-1 h-2.5">
-                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                    <span className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                       {field.name}
                     </span>
                   </div>
                 </div>
                 <div className="h-[38px] px-3 py-[15px] flex items-center justify-between w-full rounded border border-[#C3C6D4] bg-white">
                   <div className="flex items-center gap-2 flex-1">
-                    <span className="text-[13px] text-[#676879] leading-5">
+                    <span className="text-[13px] text-[#676879] leading-5 font-roboto">
                       {field.placeholder}
                     </span>
                   </div>
@@ -942,12 +913,12 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
             <div className="flex gap-6 w-full">
               <div className="flex flex-col gap-2 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
                     User Upload Options
                   </h3>
                 </div>
                 <div className="flex items-center gap-2 w-full">
-                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5 font-roboto">
                     Selected upload methods for document submission.
                   </p>
                 </div>
@@ -978,12 +949,12 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
             <div className="flex gap-6 w-full">
               <div className="flex flex-col gap-2 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
                     Unreadable Document Handling
                   </h3>
                 </div>
                 <div className="flex items-center gap-2 w-full">
-                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5 font-roboto">
                     Action taken if submitted document is unclear.
                   </p>
                 </div>
@@ -998,13 +969,13 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                     </div>
                     <div className="w-[538px] flex flex-col gap-2">
                       <div className="flex flex-col justify-center w-full h-2.5">
-                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                           {config.documentHandling === "retry"
                             ? "Allow Retries Before Rejection"
                             : "Reject Immediately"}
                         </span>
                       </div>
-                      <p className="w-full text-[13px] text-[#505258] leading-5">
+                      <p className="w-full text-[13px] text-[#505258] leading-5 font-roboto">
                         {config.documentHandling === "retry"
                           ? "Let users reattempt uploading the document before it's finally rejected."
                           : "Skip retry and reject unclear documents without further attempts."}
@@ -1024,12 +995,12 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
           <div className="flex gap-6 w-full">
             <div className="flex flex-col gap-2 flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                <h3 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
                   Supported Documents for Identity Verification
                 </h3>
               </div>
               <div className="flex items-center gap-2 w-full">
-                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                <p className="flex-1 text-[13px] text-[#172B4D] leading-5 font-roboto">
                   Only these document types are accepted.
                 </p>
               </div>
@@ -1038,7 +1009,7 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
           <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
             <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
               <div className="h-[42px] flex items-center gap-6 w-full">
-                <span className="text-sm font-medium text-black leading-[22px]">
+                <span className="text-sm font-medium text-black leading-[22px] font-roboto">
                   India
                 </span>
               </div>
@@ -1051,7 +1022,7 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                     <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
                       <Check className="w-3 h-3 text-white" />
                     </div>
-                    <span className="text-[13px] font-medium text-[#505258]">
+                    <span className="text-[13px] font-medium text-[#505258] font-roboto">
                       {doc}
                     </span>
                   </div>
@@ -1083,12 +1054,12 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
             <div className="flex flex-col items-center gap-4 flex-1">
               <div className="flex flex-col gap-2 w-full">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
                     Retry Attempts for Selfie Capture
                   </h3>
                 </div>
                 <div className="flex items-center gap-2 w-full">
-                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5 font-roboto">
                     Maximum retry attempts configured by admin.
                   </p>
                 </div>
@@ -1098,7 +1069,7 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
                   <div className="flex items-center gap-2 w-full">
                     <div className="flex flex-col gap-2 flex-1">
                       <div className="flex flex-col justify-center w-full h-2.5">
-                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                           Maximum number of retries
                         </span>
                       </div>
@@ -1106,7 +1077,7 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
                     <div className="w-80 flex gap-3 bg-[#F6F7FB]">
                       <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4] bg-[#F6F7FB]">
                         <div className="flex items-center gap-2 flex-1">
-                          <span className="text-[13px] text-[#676879] leading-5">
+                          <span className="text-[13px] text-[#676879] leading-5 font-roboto">
                             {String(config.maxRetries)}
                           </span>
                         </div>
@@ -1128,12 +1099,12 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
               <div className="flex gap-6 w-full">
                 <div className="flex flex-col gap-2 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                    <h3 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
                       Liveness Confidence Threshold (%)
                     </h3>
                   </div>
                   <div className="flex items-center gap-2 w-full">
-                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5 font-roboto">
                       Admin-configured action for low liveness scores.
                     </p>
                   </div>
@@ -1166,12 +1137,12 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
               <div className="flex gap-6 w-full">
                 <div className="flex flex-col gap-2 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                    <h3 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
                       Biometric Data Retention
                     </h3>
                   </div>
                   <div className="flex items-center gap-2 w-full">
-                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5 font-roboto">
                       Data storage duration configured by admin.
                     </p>
                   </div>
@@ -1182,7 +1153,7 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
                   <div className="flex items-center gap-2 w-full">
                     <div className="flex flex-col gap-2 flex-1">
                       <div className="flex flex-col justify-center w-full h-2.5">
-                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px]">
+                        <span className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                           Biometric data storage duration
                         </span>
                       </div>
@@ -1190,7 +1161,7 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
                     <div className="w-80 flex gap-3">
                       <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4]">
                         <div className="flex items-center gap-2 flex-1">
-                          <span className="text-[13px] text-[#676879] leading-5">
+                          <span className="text-[13px] text-[#676879] leading-5 font-roboto">
                             {config.dataRetention}
                           </span>
                         </div>
@@ -1217,10 +1188,10 @@ function DocListItem({ title, desc }) {
         </div>
         <div className="flex-1">
           <div className="flex flex-col">
-            <span className="text-[13px] font-medium text-[#172B4D]">
+            <span className="text-[13px] font-medium text-[#172B4D] font-roboto">
               {title}
             </span>
-            <p className="text-[13px] text-[#505258]">{desc}</p>
+            <p className="text-[13px] text-[#505258] font-roboto">{desc}</p>
           </div>
         </div>
       </div>

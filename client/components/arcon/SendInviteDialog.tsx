@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
-import { X, Search, Filter, Download, Upload, Check } from "lucide-react";
+import { X, Search, Filter, Download, Upload, Check, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import DepartmentFilterDropdown from "./DepartmentFilterDropdown";
 
 interface Employee {
@@ -92,6 +94,7 @@ export default function SendInviteDialog({
   isOpen,
   onClose,
 }: SendInviteDialogProps) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"select" | "bulk">("select");
   const [employees, setEmployees] = useState<Employee[]>(SAMPLE_EMPLOYEES);
 

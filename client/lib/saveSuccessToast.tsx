@@ -37,7 +37,7 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
     {
       duration: 4000,
       position: "top-center",
-    }
+    },
   );
 
   // store id so outside click handler can dismiss immediately
@@ -49,8 +49,7 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
     if (!id) return;
     const target = e.target as HTMLElement | null;
     if (!target) return;
-    const inside =
-      target.closest && target.closest(`[data-toast-id="${id}"]`);
+    const inside = target.closest && target.closest(`[data-toast-id="${id}"]`);
     if (!inside) {
       toast.dismiss(id);
     }

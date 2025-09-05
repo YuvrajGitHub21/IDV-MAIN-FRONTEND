@@ -153,7 +153,8 @@ export default function Preview() {
       tpl?.personal_info?.added_fields ??
       {};
     const out: AddedField[] = [];
-    if (a.dob) out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
+    if (a.dob)
+      out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
     if (a.Current_address || a.current_address) {
       out.push({
         id: "currentAddress",
@@ -183,8 +184,8 @@ export default function Preview() {
     const countries = Array.isArray(v.Countries_array)
       ? v.Countries_array
       : Array.isArray(v.countries_array)
-      ? v.countries_array
-      : [];
+        ? v.countries_array
+        : [];
 
     const selectedDocuments: string[] = [];
     countries.forEach((c: any) => {
@@ -202,15 +203,17 @@ export default function Preview() {
       documentHandling: unreadable.Allow_retries
         ? "retry"
         : unreadable.reject_immediately
-        ? "reject"
-        : undefined,
+          ? "reject"
+          : undefined,
       selectedDocuments,
     };
   };
 
   const getBiometricConfigFromDb = (tpl: any) => {
     const b = tpl?.Biometric_verification ?? tpl?.biometric_verification ?? {};
-    const retries = Array.isArray(b.number_of_retries) ? b.number_of_retries : [];
+    const retries = Array.isArray(b.number_of_retries)
+      ? b.number_of_retries
+      : [];
     const maxRetries = retries.length ? Math.max(...retries) : undefined;
     const l = b.liveness ?? {};
     const r = b.biometric_data_retention ?? {};
@@ -241,8 +244,8 @@ export default function Preview() {
         type: field.id.includes("email")
           ? "email"
           : field.id.includes("date")
-          ? "date"
-          : "text",
+            ? "date"
+            : "text",
         required: true,
         placeholder: field.placeholder,
       })),
@@ -256,7 +259,10 @@ export default function Preview() {
           order: index + 1,
           required: step.isRequired,
           settings: {
-            uploadOptions: { allowDeviceUpload: true, allowWebcamCapture: true },
+            uploadOptions: {
+              allowDeviceUpload: true,
+              allowWebcamCapture: true,
+            },
             documentHandling: { allowRetries: true },
             supportedCountries: [
               {
@@ -303,9 +309,12 @@ export default function Preview() {
     if (dbTemplate) {
       const sections: SectionConfig[] = [];
       const showPersonal = sectionStatus ? !!sectionStatus.persoanl_info : true;
-      const showDoc = sectionStatus ? !!sectionStatus.doc_verification : !!dbTemplate?.Doc_verification;
-      const showBio =
-        sectionStatus ? !!sectionStatus.Biometric_verification : !!dbTemplate?.Biometric_verification;
+      const showDoc = sectionStatus
+        ? !!sectionStatus.doc_verification
+        : !!dbTemplate?.Doc_verification;
+      const showBio = sectionStatus
+        ? !!sectionStatus.Biometric_verification
+        : !!dbTemplate?.Biometric_verification;
 
       // Personal Info
       if (showPersonal) {
@@ -332,7 +341,11 @@ export default function Preview() {
           description:
             "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
           enabled: true,
-          component: <DocumentVerificationSection config={getDocConfigFromDb(dbTemplate)} />,
+          component: (
+            <DocumentVerificationSection
+              config={getDocConfigFromDb(dbTemplate)}
+            />
+          ),
         });
       }
 
@@ -344,7 +357,11 @@ export default function Preview() {
           description:
             "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
           enabled: true,
-          component: <BiometricVerificationSection config={getBiometricConfigFromDb(dbTemplate)} />,
+          component: (
+            <BiometricVerificationSection
+              config={getBiometricConfigFromDb(dbTemplate)}
+            />
+          ),
         });
       }
 
@@ -376,7 +393,9 @@ export default function Preview() {
           description:
             "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
           enabled: step.isEnabled,
-          component: <DocumentVerificationSection config={docVerificationConfig} />,
+          component: (
+            <DocumentVerificationSection config={docVerificationConfig} />
+          ),
         });
       } else if (step.id === "biometric-verification" && step.isEnabled) {
         sections.push({
@@ -393,7 +412,6 @@ export default function Preview() {
     return sections;
   };
 
-
   const orderedSections = createSectionComponents();
 
   // Count visible personal fields for sidebar blurb
@@ -401,7 +419,9 @@ export default function Preview() {
     if (dbTemplate) {
       const base = getPersonalShowBase(dbTemplate);
       const baseCount =
-        (base.firstName ? 1 : 0) + (base.lastName ? 1 : 0) + (base.email ? 1 : 0);
+        (base.firstName ? 1 : 0) +
+        (base.lastName ? 1 : 0) +
+        (base.email ? 1 : 0);
       return baseCount + getPersonalAddedFields(dbTemplate).length;
     }
     return 3 + (templateData.addedFields?.length || 0);
@@ -524,7 +544,10 @@ export default function Preview() {
                 onClick={handleBack}
                 className="w-7 h-7 p-2 flex items-center justify-center rounded-full bg-[#F1F2F4] hover:bg-gray-200 transition-colors"
               >
-                <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
+                <ChevronLeft
+                  className="w-4 h-4 text-[#676879]"
+                  strokeWidth={2}
+                />
               </button>
               <h1 className="text-xl font-bold text-[#172B4D] leading-[30px]">
                 {displayName}

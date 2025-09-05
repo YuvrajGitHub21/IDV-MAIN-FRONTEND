@@ -33,7 +33,7 @@ export default function DepartmentFilterDropdown({
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* Dropdown */}
-      <div className="absolute top-full right-0 mt-1 z-50 w-[250px] bg-white rounded border border-[#C3C6D4] shadow-lg">
+      <div className="absolute top-full right-0 mt-1 z-50 w-[250px] bg-white rounded border border-[#C3C6D4] shadow-lg max-h-[240px] overflow-y-auto">
         <div className="flex flex-col p-2 gap-0.5">
           {departments.map((department) => {
             const isSelected = selectedDepartments.includes(department);

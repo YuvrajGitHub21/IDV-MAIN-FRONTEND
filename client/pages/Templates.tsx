@@ -964,7 +964,10 @@ export default function Templates() {
                 <span>Rows per page</span>
                 <select
                   value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
                   className="border border-gray-300 rounded px-2 py-1"
                 >
                   <option value={12}>12</option>

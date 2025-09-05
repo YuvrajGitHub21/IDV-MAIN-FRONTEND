@@ -42,11 +42,11 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
   );
 
   // store id so outside click handler can dismiss immediately
-  lastToastIdRef.current = toastId;
+  lastToastId = toastId;
 
   // Dismiss the toast when clicking/touching anywhere outside it
   const onDocInteract = (e: Event) => {
-    const id = lastToastIdRef.current;
+    const id = lastToastId;
     if (!id) return;
     const target = e.target as HTMLElement | null;
     if (!target) return;
@@ -63,6 +63,6 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
   setTimeout(() => {
     document.removeEventListener("mousedown", onDocInteract);
     document.removeEventListener("touchstart", onDocInteract);
-    lastToastIdRef.current = null;
+    lastToastId = null;
   }, 4200);
 }

@@ -201,19 +201,20 @@ const isSchemaMismatchError = (text: string) =>
   /(sections_order|current_step)/i.test(text);
 
 /* core fetch for a given page/pageSize */
-async function fetchPage({
-  search,
-  page,
-  pageSize,
-}: {
-  search?: string;
-  page: number;
-  pageSize: number;
-}) {
+async function fetchPage(filters: Partial<TemplateFilters> & { page: number; pageSize: number }) {
   const params = new URLSearchParams();
-  if (search) params.set("search", search);
-  params.set("page", String(page));
-  params.set("pageSize", String(pageSize));
+  if (filters.search) params.set("search", filters.search);
+  if (filters.isActive !== undefined) params.set("isActive", String(filters.isActive));
+  if (filters.createdBy) params.set("createdBy", String(filters.createdBy));
+  if (filters.sortBy) params.set("sortBy", String(filters.sortBy));
+  if (filters.sortOrder) params.set("sortOrder", String(filters.sortOrder));
+  if (filters.createdFrom) params.set("createdFrom", filters.createdFrom);
+  if (filters.createdTo) params.set("createdTo", filters.createdTo);
+  if (filters.updatedFrom) params.set("updatedFrom", filters.updatedFrom);
+  if (filters.updatedTo) params.set("updatedTo", filters.updatedTo);
+
+  params.set("page", String(filters.page));
+  params.set("pageSize", String(filters.pageSize));
 
   const token = getToken();
   const res = await fetch(`${API_BASE}/api/templates?${params.toString()}`, {

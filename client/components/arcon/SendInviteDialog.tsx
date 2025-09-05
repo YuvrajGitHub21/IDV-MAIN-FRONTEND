@@ -219,9 +219,8 @@ export default function SendInviteDialog({
 
   const handleSendInvite = () => {
     // Show success toast with custom design
-    toast.custom(
+    const toastId = toast.custom(
       (t) => {
-        lastToastIdRef.current = t.id;
         return (
           <div
             data-toast-id={t.id}
@@ -251,6 +250,9 @@ export default function SendInviteDialog({
         position: "top-center",
       },
     );
+
+    // store id so outside click handler can dismiss immediately
+    lastToastIdRef.current = toastId;
 
     // Dismiss the toast when clicking/touching anywhere outside it
     const onDocInteract = (e: Event) => {

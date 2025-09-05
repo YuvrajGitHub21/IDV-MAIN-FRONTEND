@@ -304,7 +304,7 @@ export default function Templates() {
           try {
             await deleteTemplate(confirmTemplateId);
             // show a simple destructive toast
-            toast.custom(
+            const toastId = toast.custom(
               (t) => (
                 <div className="flex items-center gap-4 bg-white rounded-lg p-4 shadow">
                   <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-50">
@@ -347,7 +347,7 @@ export default function Templates() {
                   </div>
                   <button
                     className="ml-auto"
-                    onClick={() => toast.dismiss(t.id)}
+                    onClick={() => toast.dismiss(toastId)}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                       <path

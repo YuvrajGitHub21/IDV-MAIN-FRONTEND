@@ -127,9 +127,7 @@ export default function SendInviteDialog({
   const uploadIntervalRef = useRef<number | null>(null);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
-  if (!isOpen) return null;
-
-  // Ensure we clear any running interval when component unmounts or dialog closes
+  // Ensure we clear any running interval when component unmounts
   useEffect(() => {
     return () => {
       if (uploadIntervalRef.current) {
@@ -138,6 +136,16 @@ export default function SendInviteDialog({
       }
     };
   }, []);
+
+  // Also clear when dialog closes
+  useEffect(() => {
+    if (!isOpen && uploadIntervalRef.current) {
+      clearInterval(uploadIntervalRef.current);
+      uploadIntervalRef.current = null;
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
 
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =

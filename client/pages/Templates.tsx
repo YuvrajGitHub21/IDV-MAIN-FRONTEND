@@ -296,7 +296,7 @@ export default function Templates() {
   const home_page = () => navigate("/home", { replace: true });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <ConfirmDeleteDialog
         open={confirmOpen}
         onOpenChange={(open) => {
@@ -422,12 +422,12 @@ export default function Templates() {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside
           ref={sidebarRef}
           className={cn(
-            "fixed inset-y-0 left-0 z-50 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11",
+            "fixed top-11 bottom-0 left-0 z-50 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 overflow-auto",
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",
@@ -687,7 +687,7 @@ export default function Templates() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-h-screen pt-11">
+        <main className="flex-1 min-h-0 overflow-auto">
           {/* Sub Header */}
           <div className="border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between px-4 py-2">

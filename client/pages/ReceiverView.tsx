@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import {
   ChevronLeft,
@@ -10,6 +10,8 @@ import {
   Save,
   Check,
   X,
+  FileText,
+  Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +26,8 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
+
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
 
 interface FormData {
   firstName: string;
@@ -62,72 +66,151 @@ export default function ReceiverView() {
   const location = useLocation();
   const { templateId } = useParams();
 
-  // Get template configuration from location state or build from templateData or use defaults
-  const templateConfig: TemplateConfig =
-    location.state?.templateConfig ||
-    (location.state?.templateData
-      ? {
-          templateName:
-            location.state.templateData.templateName || "New Template",
-          personalInfo: {
-            enabled: true,
-            fields: {
-              firstName: true,
-              lastName: true,
-              email: true,
-              dateOfBirth:
-                location.state.templateData.addedFields?.some((f: any) =>
-                  f.id.includes("date"),
-                ) || false,
-            },
+  // Load template from database or state
+  const [dbTemplate, setDbTemplate] = useState<any>(null);
+  const [loadingTpl, setLoadingTpl] = useState(false);
+
+  useEffect(() => {
+    if (!templateId) return;
+    const run = async () => {
+      setLoadingTpl(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/templates/${templateId}`);
+        if (!res.ok) throw new Error(`Failed to fetch template`);
+        const json = await res.json();
+        setDbTemplate(json);
+      } catch (e: any) {
+        console.error("Failed to load template:", e);
+      } finally {
+        setLoadingTpl(false);
+      }
+    };
+    run();
+  }, [templateId]);
+
+  // Get template configuration from location state or build from dbTemplate or use defaults
+  const templateConfig: TemplateConfig = React.useMemo(() => {
+    if (location.state?.templateConfig) {
+      return location.state.templateConfig;
+    }
+
+    if (dbTemplate) {
+      const sectionStatus = dbTemplate.Section_status || {};
+      const personalInfo = dbTemplate.Personal_info || {};
+      const docVerification = dbTemplate.Doc_verification || {};
+      const biometricVerification = dbTemplate.Biometric_verification || {};
+
+      return {
+        templateName: dbTemplate.nameOfTemplate || "New Template",
+        personalInfo: {
+          enabled: sectionStatus.persoanl_info !== false,
+          fields: {
+            firstName: personalInfo.firstName !== false,
+            lastName: personalInfo.LastName !== false,
+            email: personalInfo.Email !== false,
+            dateOfBirth: !!personalInfo.Added_fields?.dob,
           },
-          documentVerification: {
-            enabled:
-              location.state.templateData.verificationSteps?.some(
-                (s: any) => s.id === "document-verification",
+        },
+        documentVerification: {
+          enabled:
+            sectionStatus.doc_verification !== false &&
+            !!docVerification.user_uploads,
+          allowUploadFromDevice: !!docVerification.user_uploads?.Allow_uploads,
+          allowCaptureWebcam: !!docVerification.user_uploads?.allow_capture,
+          supportedDocuments: extractSupportedDocuments(docVerification),
+        },
+        biometricVerification: {
+          enabled:
+            sectionStatus.Biometric_verification !== false &&
+            !!biometricVerification.number_of_retries,
+        },
+      };
+    }
+
+    // Fallback to location state
+    if (location.state?.templateData) {
+      return {
+        templateName:
+          location.state.templateData.templateName || "New Template",
+        personalInfo: {
+          enabled: true,
+          fields: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            dateOfBirth:
+              location.state.templateData.addedFields?.some((f: any) =>
+                f.id.includes("date"),
               ) || false,
-            allowUploadFromDevice: true,
-            allowCaptureWebcam: true,
-            supportedDocuments: [
-              "Passport",
-              "Aadhar Card",
-              "Drivers License",
-              "Pan Card",
-            ],
           },
-          biometricVerification: {
-            enabled:
-              location.state.templateData.verificationSteps?.some(
-                (s: any) => s.id === "biometric-verification",
-              ) || false,
-          },
+        },
+        documentVerification: {
+          enabled:
+            location.state.templateData.verificationSteps?.some(
+              (s: any) => s.id === "document-verification",
+            ) || false,
+          allowUploadFromDevice: true,
+          allowCaptureWebcam: true,
+          supportedDocuments: [
+            "Passport",
+            "Aadhar Card",
+            "Drivers License",
+            "Pan Card",
+          ],
+        },
+        biometricVerification: {
+          enabled:
+            location.state.templateData.verificationSteps?.some(
+              (s: any) => s.id === "biometric-verification",
+            ) || false,
+        },
+      };
+    }
+
+    // Default config
+    return {
+      templateName: "New Template",
+      personalInfo: {
+        enabled: true,
+        fields: {
+          firstName: true,
+          lastName: true,
+          email: true,
+          dateOfBirth: true,
+        },
+      },
+      documentVerification: {
+        enabled: true,
+        allowUploadFromDevice: true,
+        allowCaptureWebcam: true,
+        supportedDocuments: [
+          "Passport",
+          "Aadhar Card",
+          "Drivers License",
+          "Pan Card",
+        ],
+      },
+      biometricVerification: {
+        enabled: true,
+      },
+    };
+  }, [location.state, dbTemplate]);
+
+  function extractSupportedDocuments(docVerification: any): string[] {
+    const countries = Array.isArray(docVerification.Countries_array)
+      ? docVerification.Countries_array
+      : [];
+    const supportedDocs: string[] = [];
+    countries.forEach((country: any) => {
+      const listOfDocs = country?.listOfdocs || {};
+      Object.entries(listOfDocs).forEach(([docType, isEnabled]) => {
+        if (isEnabled && !supportedDocs.includes(docType)) {
+          supportedDocs.push(docType);
         }
-      : {
-          templateName: "New Template",
-          personalInfo: {
-            enabled: true,
-            fields: {
-              firstName: true,
-              lastName: true,
-              email: true,
-              dateOfBirth: true,
-            },
-          },
-          documentVerification: {
-            enabled: true,
-            allowUploadFromDevice: true,
-            allowCaptureWebcam: true,
-            supportedDocuments: [
-              "Passport",
-              "Aadhar Card",
-              "Drivers License",
-              "Pan Card",
-            ],
-          },
-          biometricVerification: {
-            enabled: true,
-          },
-        });
+      });
+    });
+    return supportedDocs;
+  }
 
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
@@ -224,6 +307,46 @@ export default function ReceiverView() {
     ),
   );
 
+  // Build sections in order based on template configuration
+  const buildSections = () => {
+    const sections = [];
+
+    // Get sections order from database or use default
+    const sectionsOrder = dbTemplate?.sections_order || [
+      "Personal_info",
+      "Doc_verification",
+      "Biometric_verification",
+    ];
+
+    const sectionMap = {
+      Personal_info: {
+        id: "personal-info",
+        enabled: templateConfig.personalInfo.enabled,
+        component: renderPersonalInformation(),
+      },
+      Doc_verification: {
+        id: "document-verification",
+        enabled: templateConfig.documentVerification.enabled,
+        component: renderDocumentVerification(),
+      },
+      Biometric_verification: {
+        id: "biometric-verification",
+        enabled: templateConfig.biometricVerification.enabled,
+        component: renderBiometricVerification(),
+      },
+    };
+
+    // Add sections in the specified order, only if enabled
+    sectionsOrder.forEach((sectionKey: string) => {
+      const section = sectionMap[sectionKey as keyof typeof sectionMap];
+      if (section && section.enabled) {
+        sections.push(section);
+      }
+    });
+
+    return sections;
+  };
+
   const renderPersonalInformation = () => {
     if (!templateConfig.personalInfo.enabled) return null;
 
@@ -232,23 +355,10 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-2 py-4 bg-white border-b border-[#DEDEDD]">
           <div className="flex items-center gap-2 pb-1">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g clipPath="url(#clip0_5163_43897)">
-                <path
-                  d="M6.00391 9H12.0039M16.5039 9C16.5039 13.1421 13.146 16.5 9.00391 16.5C4.86177 16.5 1.50391 13.1421 1.50391 9C1.50391 4.85786 4.86177 1.5 9.00391 1.5C13.146 1.5 16.5039 4.85786 16.5039 9Z"
-                  stroke="#323238"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </g>
-            </svg>
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3">
               Personal Information
             </h2>
@@ -385,23 +495,10 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-3 py-4 bg-white border-b border-[#DEDEDD]">
           <div className="flex items-center gap-2 pb-1">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g clipPath="url(#clip0_5163_43973)">
-                <path
-                  d="M6.00195 9H12.002M16.502 9C16.502 13.1421 13.1441 16.5 9.00195 16.5C4.85982 16.5 1.50195 13.1421 1.50195 9C1.50195 4.85786 4.85982 1.5 9.00195 1.5C13.1441 1.5 16.502 4.85786 16.502 9Z"
-                  stroke="#323238"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </g>
-            </svg>
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3">
               Document Verification
             </h2>
@@ -508,8 +605,11 @@ export default function ReceiverView() {
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
                           >
-                            {/* Icon content would be specific to each document type */}
-                            <circle cx="12" cy="12" r="10" fill="white" />
+                            {/* Default icon - you can customize per document type */}
+                            <path
+                              d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z"
+                              fill="white"
+                            />
                           </svg>
                         </div>
                         <span className="text-sm font-medium text-[#172B4D] leading-[22px]">
@@ -707,23 +807,10 @@ export default function ReceiverView() {
         {/* Section Header */}
         <div className="px-3 py-4 bg-white border-b border-[#DEDEDD]">
           <div className="flex items-center gap-2 pb-1">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g clipPath="url(#clip0_5163_44082)">
-                <path
-                  d="M6.00195 9H12.002M16.502 9C16.502 13.1421 13.1441 16.5 9.00195 16.5C4.85982 16.5 1.50195 13.1421 1.50195 9C1.50195 4.85786 4.85982 1.5 9.00195 1.5C13.1441 1.5 16.502 4.85786 16.502 9Z"
-                  stroke="#323238"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </g>
-            </svg>
+            <Minus
+              className="w-[18px] h-[18px] text-[#323238]"
+              strokeWidth={1.5}
+            />
             <h2 className="text-base font-bold text-[#172B4D] leading-3">
               Biometric Verification
             </h2>
@@ -856,6 +943,16 @@ export default function ReceiverView() {
     );
   };
 
+  if (loadingTpl) {
+    return (
+      <div className="min-h-screen bg-white font-roboto flex items-center justify-center">
+        <div className="text-sm text-gray-600">Loading template...</div>
+      </div>
+    );
+  }
+
+  const sections = buildSections();
+
   return (
     <div className="min-h-screen bg-white font-roboto">
       {/* Header */}
@@ -866,7 +963,7 @@ export default function ReceiverView() {
           className="w-[90px] h-7"
         />
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 p-2 rounded-full bg-[#F65F7C] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-[#F65F7C] flex items-center justify-center">
             <span className="text-white text-xs font-medium leading-[10px]">
               OS
             </span>
@@ -880,21 +977,7 @@ export default function ReceiverView() {
         <div className="h-[38px] px-4 flex items-center gap-2">
           <div className="flex items-center gap-2">
             <div className="flex h-8 items-center gap-1">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9.33268 1.51562V4.26932C9.33268 4.64268 9.33268 4.82937 9.40535 4.97198C9.46928 5.09742 9.57122 5.1994 9.69668 5.26332C9.83928 5.33598 10.0259 5.33598 10.3993 5.33598H13.153M9.33268 11.3359H5.33268M10.666 8.66927H5.33268M13.3327 6.66142V11.4693C13.3327 12.5894 13.3327 13.1494 13.1147 13.5773C12.9229 13.9536 12.617 14.2595 12.2407 14.4513C11.8128 14.6693 11.2528 14.6693 10.1327 14.6693H5.86602C4.74591 14.6693 4.18586 14.6693 3.75804 14.4513C3.38171 14.2595 3.07575 13.9536 2.884 13.5773C2.66602 13.1494 2.66602 12.5894 2.66602 11.4693V4.53594C2.66602 3.41583 2.66602 2.85578 2.884 2.42796C3.07575 2.05163 3.38171 1.74567 3.75804 1.55392C4.18586 1.33594 4.74591 1.33594 5.86602 1.33594H8.00722C8.49635 1.33594 8.74095 1.33594 8.97115 1.3912C9.17522 1.44019 9.37028 1.521 9.54928 1.63066C9.75108 1.75434 9.92402 1.92729 10.2699 2.2732L12.3954 4.39868C12.7413 4.74458 12.9143 4.91754 13.0379 5.11937C13.1476 5.29831 13.2284 5.4934 13.2774 5.69747C13.3327 5.92765 13.3327 6.17224 13.3327 6.66142Z"
-                  stroke="#515257"
-                  strokeWidth="1.09091"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <FileText className="w-4 h-4 text-[#515257]" strokeWidth={1.09} />
               <span className="text-xs text-[#505258] font-medium leading-3">
                 Template
               </span>
@@ -1002,7 +1085,7 @@ export default function ReceiverView() {
       </div>
 
       {/* Main Content */}
-      <div className="w-full h-[1673px] pb-4 flex flex-col items-center">
+      <div className="w-full pb-4 flex flex-col items-center">
         <div className="flex items-start w-full">
           {/* Sidebar */}
           <div className="w-[332px] px-4 pr-2 py-4 flex flex-col gap-2 bg-white">
@@ -1053,10 +1136,18 @@ export default function ReceiverView() {
           {/* Main Content Area */}
           <div className="w-[987px] h-[1641px] p-6 flex flex-col items-center gap-6">
             <div className="flex flex-col items-center gap-4 w-full">
-              {/* Render enabled sections based on admin configuration */}
-              {renderPersonalInformation()}
-              {renderDocumentVerification()}
-              {renderBiometricVerification()}
+              {/* Render sections in the order specified by the admin */}
+              {sections.map((section, index) => (
+                <div key={section.id} className="w-full">
+                  {section.component}
+                </div>
+              ))}
+
+              {sections.length === 0 && (
+                <div className="text-sm text-gray-500 text-center py-8">
+                  No sections enabled for this template.
+                </div>
+              )}
             </div>
           </div>
         </div>

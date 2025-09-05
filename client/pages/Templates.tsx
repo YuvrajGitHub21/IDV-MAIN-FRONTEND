@@ -66,13 +66,18 @@ export default function Templates() {
       Boolean,
     );
     // If createdBy is a plain name, show it as both id & label; if it's an ID, try resolve to users map.
-    return ids.map((id) => ({ id, name: isObjectId(id) ? (users[id] || id) : id }));
+    return ids.map((id) => ({
+      id,
+      name: isObjectId(id) ? users[id] || id : id,
+    }));
   }, [templates, users]);
 
   // Resolve creator display name for the table
   const resolveCreatorName = (createdBy: string) => {
     if (!createdBy) return "User Not Found";
-    return isObjectId(createdBy) ? (users[createdBy] || "User Not Found") : createdBy;
+    return isObjectId(createdBy)
+      ? users[createdBy] || "User Not Found"
+      : createdBy;
   };
 
   useEffect(() => {
@@ -106,8 +111,10 @@ export default function Templates() {
     if (templates.length > 0) {
       const objectIds = Array.from(
         new Set(
-          templates.map((template) => template.createdBy).filter((id) => isObjectId(id))
-        )
+          templates
+            .map((template) => template.createdBy)
+            .filter((id) => isObjectId(id)),
+        ),
       );
       if (objectIds.length) {
         fetchMultipleUsers(objectIds);
@@ -173,7 +180,7 @@ export default function Templates() {
     console.log("Choose template");
   };
 
-    // ⬆️ near your other imports
+  // ⬆️ near your other imports
   // (use the same base URL as your useTemplates hook)
   const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
   const getToken = () =>
@@ -197,8 +204,12 @@ export default function Templates() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   // confirm delete dialog state
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmTemplateId, setConfirmTemplateId] = useState<string | null>(null);
-  const [confirmTemplateName, setConfirmTemplateName] = useState<string | undefined>(undefined);
+  const [confirmTemplateId, setConfirmTemplateId] = useState<string | null>(
+    null,
+  );
+  const [confirmTemplateName, setConfirmTemplateName] = useState<
+    string | undefined
+  >(undefined);
 
   // DELETE call
   const deleteTemplate = async (id: string) => {
@@ -222,7 +233,7 @@ export default function Templates() {
         throw new Error(
           `Delete failed: ${res.status} ${res.statusText}${
             text ? ` — ${text.slice(0, 200)}` : ""
-          }`
+          }`,
         );
       } else console.log("deleted template");
 
@@ -235,7 +246,6 @@ export default function Templates() {
       setDeletingId(null);
     }
   };
-
 
   const handleTemplateAction = (action: string, templateId: string) => {
     console.log(`Action: ${action} for template: ${templateId}`);
@@ -291,22 +301,59 @@ export default function Templates() {
                 <div className="flex items-center gap-4 bg-white rounded-lg p-4 shadow">
                   <div className="w-10 h-10 flex items-center justify-center rounded-full bg-red-50">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                      <path d="M3 6h18" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M10 11v6" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M14 11v6" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M3 6h18"
+                        stroke="#DC2626"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6"
+                        stroke="#DC2626"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M10 11v6"
+                        stroke="#DC2626"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M14 11v6"
+                        stroke="#DC2626"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </div>
                   <div className="flex flex-col">
-                    <div className="font-roboto font-semibold text-sm text-[#323238]">{`"${confirmTemplateName || 'Template'}" deleted`}</div>
-                    <div className="text-xs text-[#676879]">Template has been removed.</div>
+                    <div className="font-roboto font-semibold text-sm text-[#323238]">{`"${confirmTemplateName || "Template"}" deleted`}</div>
+                    <div className="text-xs text-[#676879]">
+                      Template has been removed.
+                    </div>
                   </div>
-                  <button className="ml-auto" onClick={() => toast.dismiss(t.id)}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#676879" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <button
+                    className="ml-auto"
+                    onClick={() => toast.dismiss(t.id)}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M18 6L6 18M6 6l12 12"
+                        stroke="#676879"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
                   </button>
                 </div>
               ),
-              { duration: 4000, position: "top-center" }
+              { duration: 4000, position: "top-center" },
             );
             setConfirmOpen(false);
           } catch (err) {
@@ -801,7 +848,9 @@ export default function Templates() {
                             {getStatusBadge(template.isActive)}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
-                            {formatDate(template.updatedAtUtc ?? template.createdAtUtc)}
+                            {formatDate(
+                              template.updatedAtUtc ?? template.createdAtUtc,
+                            )}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
                             <TemplateActionsDropdown

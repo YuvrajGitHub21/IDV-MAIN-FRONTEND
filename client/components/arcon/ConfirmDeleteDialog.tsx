@@ -35,8 +35,8 @@ export default function ConfirmDeleteDialog({
         </AlertDialogHeader>
         <div className="px-5 py-2">
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{templateName}</strong>? This
-            action cannot be undone.
+            Are you sure you want to delete <strong>{templateName}</strong>?
+            This action cannot be undone.
           </AlertDialogDescription>
         </div>
         <AlertDialogFooter>

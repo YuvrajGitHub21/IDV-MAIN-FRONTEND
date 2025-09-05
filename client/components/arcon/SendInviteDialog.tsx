@@ -248,8 +248,8 @@ export default function SendInviteDialog({
     // Close dialog
     onClose();
 
-    // Navigate to home page
-    navigate("/home");
+    // Navigate to templates (dashboard) page
+    navigate("/dashboard");
   };
 
   return (

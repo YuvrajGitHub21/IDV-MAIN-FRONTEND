@@ -201,10 +201,13 @@ const isSchemaMismatchError = (text: string) =>
   /(sections_order|current_step)/i.test(text);
 
 /* core fetch for a given page/pageSize */
-async function fetchPage(filters: Partial<TemplateFilters> & { page: number; pageSize: number }) {
+async function fetchPage(
+  filters: Partial<TemplateFilters> & { page: number; pageSize: number },
+) {
   const params = new URLSearchParams();
   if (filters.search) params.set("search", filters.search);
-  if (filters.isActive !== undefined) params.set("isActive", String(filters.isActive));
+  if (filters.isActive !== undefined)
+    params.set("isActive", String(filters.isActive));
   if (filters.createdBy) params.set("createdBy", String(filters.createdBy));
   if (filters.sortBy) params.set("sortBy", String(filters.sortBy));
   if (filters.sortOrder) params.set("sortOrder", String(filters.sortOrder));

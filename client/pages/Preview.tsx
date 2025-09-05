@@ -429,6 +429,61 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
 
   const displayName = dbTemplate?.nameOfTemplate ?? templateData.templateName;
 
+  // Helper function to convert template data to format expected by ReceiverView
+  const buildTemplateConfigForReceiverView = () => {
+    if (dbTemplate) {
+      // Convert database template to receiver view config
+      const personalAddedFields = getPersonalAddedFields(dbTemplate);
+      const personalShowBase = getPersonalShowBase(dbTemplate);
+      const docConfig = getDocConfigFromDb(dbTemplate);
+
+      return {
+        templateName: dbTemplate.nameOfTemplate || "New Template",
+        personalInfo: {
+          enabled: sectionStatus ? !!sectionStatus.personal_info : true,
+          fields: {
+            firstName: personalShowBase.firstName,
+            lastName: personalShowBase.lastName,
+            email: personalShowBase.email,
+            dateOfBirth: personalAddedFields.some(f => f.id === "dob"),
+          },
+        },
+        documentVerification: {
+          enabled: sectionStatus ? !!sectionStatus.doc_verification : !!dbTemplate.Doc_verification,
+          allowUploadFromDevice: docConfig.allowUploadFromDevice,
+          allowCaptureWebcam: docConfig.allowCaptureWebcam,
+          supportedDocuments: docConfig.selectedDocuments,
+        },
+        biometricVerification: {
+          enabled: sectionStatus ? !!sectionStatus.biometric_verification : !!dbTemplate.Biometric_verification,
+        },
+      };
+    } else {
+      // Convert builder state to receiver view config
+      return {
+        templateName: templateData.templateName,
+        personalInfo: {
+          enabled: true,
+          fields: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            dateOfBirth: templateData.addedFields?.some(f => f.id.includes("date")) || false,
+          },
+        },
+        documentVerification: {
+          enabled: templateData.verificationSteps?.some(s => s.id === "document-verification") || false,
+          allowUploadFromDevice: true,
+          allowCaptureWebcam: true,
+          supportedDocuments: ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
+        },
+        biometricVerification: {
+          enabled: templateData.verificationSteps?.some(s => s.id === "biometric-verification") || false,
+        },
+      };
+    }
+  };
+
   const handleBack = () => {
     navigate("/template-builder");
   };

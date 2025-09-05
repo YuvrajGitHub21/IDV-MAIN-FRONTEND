@@ -707,7 +707,7 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
                     if (e.key === "Enter" || e.key === " ") {
                       navigate(
                         templateId ? `/receiver-view/${templateId}` : "/receiver-view",
-                        { state: templateData },
+                        { state: { templateConfig: buildTemplateConfigForReceiverView(), templateData } },
                       );
                     }
                   }}

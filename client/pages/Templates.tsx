@@ -11,6 +11,8 @@ import { AddNewTemplateDropdown } from "@/components/arcon/AddNewTemplateDropdow
 import { TemplateActionsDropdown } from "@/components/arcon/TemplateActionsDropdown";
 import { InviteesAvatarGroup } from "@/components/arcon/InviteesAvatarGroup";
 import TemplateFilterDropdown from "@/components/arcon/TemplateFilterDropdown";
+import ConfirmDeleteDialog from "@/components/arcon/ConfirmDeleteDialog";
+import { toast } from "sonner";
 
 export default function Templates() {
   const [searchQuery, setSearchQuery] = useState("");

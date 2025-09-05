@@ -122,6 +122,14 @@ export default function Templates() {
     }
   }, [templates, fetchMultipleUsers]);
 
+  // Ensure currentPage is within valid range when totalItems or pageSize change
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalItems, pageSize, currentPage]);
+
   // Enhanced click outside functionality for mobile sidebar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

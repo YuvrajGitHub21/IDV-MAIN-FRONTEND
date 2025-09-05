@@ -3,7 +3,8 @@ import { CheckCircle, X } from "lucide-react";
 import { toast } from "sonner";
 
 export function showSaveSuccessToast(templateName: string = "New Template") {
-  const lastToastIdRef = useRef<string | null>(null);
+  // Do NOT use React hooks here — this is a plain utility function.
+  let lastToastId: string | null = null;
 
   const toastId = toast.custom(
     (t) => {
@@ -41,11 +42,11 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
   );
 
   // store id so outside click handler can dismiss immediately
-  lastToastIdRef.current = toastId;
+  lastToastId = toastId;
 
   // Dismiss the toast when clicking/touching anywhere outside it
   const onDocInteract = (e: Event) => {
-    const id = lastToastIdRef.current;
+    const id = lastToastId;
     if (!id) return;
     const target = e.target as HTMLElement | null;
     if (!target) return;
@@ -62,6 +63,6 @@ export function showSaveSuccessToast(templateName: string = "New Template") {
   setTimeout(() => {
     document.removeEventListener("mousedown", onDocInteract);
     document.removeEventListener("touchstart", onDocInteract);
-    lastToastIdRef.current = null;
+    lastToastId = null;
   }, 4200);
 }

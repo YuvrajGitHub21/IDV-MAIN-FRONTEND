@@ -63,7 +63,9 @@ export default function Preview() {
         const res = await fetch(`${API_BASE}/api/templates/${templateId}`);
         if (!res.ok) {
           const text = await res.text().catch(() => "");
-          throw new Error(`${res.status} ${res.statusText}${text ? ` — ${text}` : ""}`);
+          throw new Error(
+            `${res.status} ${res.statusText}${text ? ` — ${text}` : ""}`,
+          );
         }
         const json = await res.json();
         setDbTemplate(json);
@@ -102,101 +104,105 @@ export default function Preview() {
       biometricVerification: false,
     },
   };
-  
+
   // ---------- NEW: bridge helpers to map Mongo doc -> UI components ----------
   // Order coming from Mongo; fallback if missing/empty/invalid
-const DEFAULT_SECTION_ORDER = [
-  "Personal_info",
-  "Doc_verification",
-  "Biometric_verification",
-] as const;
+  const DEFAULT_SECTION_ORDER = [
+    "Personal_info",
+    "Doc_verification",
+    "Biometric_verification",
+  ] as const;
 
-type SectionKey = typeof DEFAULT_SECTION_ORDER[number];
+  type SectionKey = (typeof DEFAULT_SECTION_ORDER)[number];
 
-const isValidKey = (k: string): k is SectionKey =>
-  (DEFAULT_SECTION_ORDER as readonly string[]).includes(k);
+  const isValidKey = (k: string): k is SectionKey =>
+    (DEFAULT_SECTION_ORDER as readonly string[]).includes(k);
 
-// Build the three sections from the Mongo doc, in the exact order specified
-function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
-  if (!tpl) return [];
+  // Build the three sections from the Mongo doc, in the exact order specified
+  function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
+    if (!tpl) return [];
 
-  const order: string[] = Array.isArray(tpl.sections_order) && tpl.sections_order.length
-    ? tpl.sections_order
-    : [...DEFAULT_SECTION_ORDER];
+    const order: string[] =
+      Array.isArray(tpl.sections_order) && tpl.sections_order.length
+        ? tpl.sections_order
+        : [...DEFAULT_SECTION_ORDER];
 
-  const status = tpl.Section_status || {};
-  const enabledPersonal = status.persoanl_info ?? true;
-  const enabledDoc = status.doc_verification ?? !!tpl.Doc_verification;
-  const enabledBio = status.Biometric_verification ?? !!tpl.Biometric_verification;
+    const status = tpl.Section_status || {};
+    const enabledPersonal = status.persoanl_info ?? true;
+    const enabledDoc = status.doc_verification ?? !!tpl.Doc_verification;
+    const enabledBio =
+      status.Biometric_verification ?? !!tpl.Biometric_verification;
 
-  const personalNode: SectionConfig | null = enabledPersonal
-    ? {
-        id: "personal-info",
-        title: "Personal Information",
-        description:
-          "Please provide your basic personal information to begin the identity verification process.",
-        enabled: true,
-        component: (
-          <PersonalInformationSection
-            addedFields={getPersonalAddedFields(tpl)}
-            showBase={getPersonalShowBase(tpl)}
-          />
-        ),
-      }
-    : null;
+    const personalNode: SectionConfig | null = enabledPersonal
+      ? {
+          id: "personal-info",
+          title: "Personal Information",
+          description:
+            "Please provide your basic personal information to begin the identity verification process.",
+          enabled: true,
+          component: (
+            <PersonalInformationSection
+              addedFields={getPersonalAddedFields(tpl)}
+              showBase={getPersonalShowBase(tpl)}
+            />
+          ),
+        }
+      : null;
 
-  const docNode: SectionConfig | null = enabledDoc
-    ? {
-        id: "document-verification",
-        title: "Document Verification",
-        description:
-          "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
-        enabled: true,
-        component: (
-          <DocumentVerificationSection config={getDocConfigFromDb(tpl)} />
-        ),
-      }
-    : null;
+    const docNode: SectionConfig | null = enabledDoc
+      ? {
+          id: "document-verification",
+          title: "Document Verification",
+          description:
+            "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
+          enabled: true,
+          component: (
+            <DocumentVerificationSection config={getDocConfigFromDb(tpl)} />
+          ),
+        }
+      : null;
 
-  const bioNode: SectionConfig | null = enabledBio
-    ? {
-        id: "biometric-verification",
-        title: "Biometric Verification",
-        description:
-          "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
-        enabled: true,
-        component: (
-          <BiometricVerificationSection config={getBiometricConfigFromDb(tpl)} />
-        ),
-      }
-    : null;
+    const bioNode: SectionConfig | null = enabledBio
+      ? {
+          id: "biometric-verification",
+          title: "Biometric Verification",
+          description:
+            "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
+          enabled: true,
+          component: (
+            <BiometricVerificationSection
+              config={getBiometricConfigFromDb(tpl)}
+            />
+          ),
+        }
+      : null;
 
-  const mapByKey: Record<SectionKey, SectionConfig | null> = {
-    Personal_info: personalNode,
-    Doc_verification: docNode,
-    Biometric_verification: bioNode,
-  };
+    const mapByKey: Record<SectionKey, SectionConfig | null> = {
+      Personal_info: personalNode,
+      Doc_verification: docNode,
+      Biometric_verification: bioNode,
+    };
 
-  const visited = new Set<string>();
-  const out: SectionConfig[] = [];
-  for (const rawKey of order) {
-    if (!isValidKey(rawKey)) continue;
-    if (visited.has(rawKey)) continue;
-    visited.add(rawKey);
-    const node = mapByKey[rawKey];
-    if (node && node.enabled) out.push(node);
-  }
-
-  // If none enabled (edge case), fall back to default order
-  if (!out.length) {
-    for (const k of DEFAULT_SECTION_ORDER) {
-      const n = mapByKey[k];
-      if (n && n.enabled) out.push(n);
+    const visited = new Set<string>();
+    const out: SectionConfig[] = [];
+    for (const rawKey of order) {
+      if (!isValidKey(rawKey)) continue;
+      if (visited.has(rawKey)) continue;
+      visited.add(rawKey);
+      const node = mapByKey[rawKey];
+      if (node && node.enabled) out.push(node);
     }
-  }
 
-  return out;
-}
+    // If none enabled (edge case), fall back to default order
+    if (!out.length) {
+      for (const k of DEFAULT_SECTION_ORDER) {
+        const n = mapByKey[k];
+        if (n && n.enabled) out.push(n);
+      }
+    }
+
+    return out;
+  }
 
   const getPersonalShowBase = (tpl: any) => {
     const p = tpl?.Personal_info || {};
@@ -210,14 +216,15 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
   const getPersonalAddedFields = (tpl: any): AddedField[] => {
     const a = tpl?.Personal_info?.Added_fields || {};
     const out: AddedField[] = [];
-// <<<<<<< ai_main_a5c275984259
-//     if (a.dob)
-//       out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
-//     if (a.Current_address || a.current_address) {
-// =======
-    if (a.dob) out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
+    // <<<<<<< ai_main_a5c275984259
+    //     if (a.dob)
+    //       out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
+    //     if (a.Current_address || a.current_address) {
+    // =======
+    if (a.dob)
+      out.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
     if (a.Current_address)
-// >>>>>>> main
+      // >>>>>>> main
       out.push({
         id: "currentAddress",
         name: "Current Address",
@@ -229,30 +236,31 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
         name: "Permanent Address",
         placeholder: "Enter your permanent address",
       });
-    if (a.Gender) out.push({ id: "gender", name: "Gender", placeholder: "Select gender" });
+    if (a.Gender)
+      out.push({ id: "gender", name: "Gender", placeholder: "Select gender" });
     return out;
   };
 
   const getDocConfigFromDb = (tpl: any) => {
-// <<<<<<< ai_main_a5c275984259
-//     const v = tpl?.Doc_verification ?? tpl?.doc_verification ?? {};
-//     const uploads = v.user_uploads ?? {};
-//     const unreadable = v.Unreadable_docs ?? v.unreadable_docs ?? {};
+    // <<<<<<< ai_main_a5c275984259
+    //     const v = tpl?.Doc_verification ?? tpl?.doc_verification ?? {};
+    //     const uploads = v.user_uploads ?? {};
+    //     const unreadable = v.Unreadable_docs ?? v.unreadable_docs ?? {};
 
-//     // flatten all enabled docs across countries (defensive typing)
-//     const countries = Array.isArray(v.Countries_array)
-//       ? v.Countries_array
-//       : Array.isArray(v.countries_array)
-//         ? v.countries_array
-//         : [];
+    //     // flatten all enabled docs across countries (defensive typing)
+    //     const countries = Array.isArray(v.Countries_array)
+    //       ? v.Countries_array
+    //       : Array.isArray(v.countries_array)
+    //         ? v.countries_array
+    //         : [];
 
-// =======
+    // =======
     const v = tpl?.Doc_verification || {};
     const uploads = v.user_uploads || {};
     const unreadable = v.Unreadable_docs || {};
     // flatten all enabled docs across countries
     const countries = Array.isArray(v.Countries_array) ? v.Countries_array : [];
-// >>>>>>> main
+    // >>>>>>> main
     const selectedDocuments: string[] = [];
     countries.forEach((c: any) => {
       const list = c?.listOfdocs || {};
@@ -274,15 +282,17 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
   };
 
   const getBiometricConfigFromDb = (tpl: any) => {
-// <<<<<<< ai_main_a5c275984259
-//     const b = tpl?.Biometric_verification ?? tpl?.biometric_verification ?? {};
-//     const retries = Array.isArray(b.number_of_retries)
-//       ? b.number_of_retries
-//       : [];
-// =======
+    // <<<<<<< ai_main_a5c275984259
+    //     const b = tpl?.Biometric_verification ?? tpl?.biometric_verification ?? {};
+    //     const retries = Array.isArray(b.number_of_retries)
+    //       ? b.number_of_retries
+    //       : [];
+    // =======
     const b = tpl?.Biometric_verification || {};
-    const retries = Array.isArray(b.number_of_retries) ? b.number_of_retries : [];
-// >>>>>>> main
+    const retries = Array.isArray(b.number_of_retries)
+      ? b.number_of_retries
+      : [];
+    // >>>>>>> main
     const maxRetries = retries.length ? Math.max(...retries) : undefined;
     const l = b.liveness || {};
     const r = b.biometric_data_retention || {};
@@ -333,7 +343,15 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
             },
             documentHandling: { allowRetries: true },
             supportedCountries: [
-              { country: "India", supportedDocuments: ["Aadhar Card", "Driving License", "Pan Card", "Passport"] },
+              {
+                country: "India",
+                supportedDocuments: [
+                  "Aadhar Card",
+                  "Driving License",
+                  "Pan Card",
+                  "Passport",
+                ],
+              },
             ],
           },
         });
@@ -345,7 +363,10 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
           required: step.isRequired,
           settings: {
             maxRetryAttempts: 4,
-            livenessThreshold: { action: "ask-retry", description: "Ask the user to try again" },
+            livenessThreshold: {
+              action: "ask-retry",
+              description: "Ask the user to try again",
+            },
             dataRetention: { enabled: true, duration: "6 Months" },
           },
         });
@@ -363,7 +384,7 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
 
   // ---------- Build sections to render (DB first, fallback to builder state) ----------
   // Create section components (DB first with sections_order, else builder fallback)
- // ---------- Build sections to render (DB first, fallback to builder state) ----------
+  // ---------- Build sections to render (DB first, fallback to builder state) ----------
   const createSectionComponents = (): SectionConfig[] => {
     if (dbTemplate) {
       return buildSectionsFromDbTemplate(dbTemplate);
@@ -394,7 +415,9 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
           description:
             "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
           enabled: step.isEnabled,
-          component: <DocumentVerificationSection config={docVerificationConfig} />,
+          component: (
+            <DocumentVerificationSection config={docVerificationConfig} />
+          ),
         });
       } else if (step.id === "biometric-verification" && step.isEnabled) {
         sections.push({
@@ -410,7 +433,6 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
 
     return sections;
   };
-
 
   const orderedSections = createSectionComponents();
 
@@ -445,17 +467,21 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
             firstName: personalShowBase.firstName,
             lastName: personalShowBase.lastName,
             email: personalShowBase.email,
-            dateOfBirth: personalAddedFields.some(f => f.id === "dob"),
+            dateOfBirth: personalAddedFields.some((f) => f.id === "dob"),
           },
         },
         documentVerification: {
-          enabled: sectionStatus ? !!sectionStatus.doc_verification : !!dbTemplate.Doc_verification,
+          enabled: sectionStatus
+            ? !!sectionStatus.doc_verification
+            : !!dbTemplate.Doc_verification,
           allowUploadFromDevice: docConfig.allowUploadFromDevice,
           allowCaptureWebcam: docConfig.allowCaptureWebcam,
           supportedDocuments: docConfig.selectedDocuments,
         },
         biometricVerification: {
-          enabled: sectionStatus ? !!sectionStatus.biometric_verification : !!dbTemplate.Biometric_verification,
+          enabled: sectionStatus
+            ? !!sectionStatus.biometric_verification
+            : !!dbTemplate.Biometric_verification,
         },
       };
     } else {
@@ -468,17 +494,30 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
             firstName: true,
             lastName: true,
             email: true,
-            dateOfBirth: templateData.addedFields?.some(f => f.id.includes("date")) || false,
+            dateOfBirth:
+              templateData.addedFields?.some((f) => f.id.includes("date")) ||
+              false,
           },
         },
         documentVerification: {
-          enabled: templateData.verificationSteps?.some(s => s.id === "document-verification") || false,
+          enabled:
+            templateData.verificationSteps?.some(
+              (s) => s.id === "document-verification",
+            ) || false,
           allowUploadFromDevice: true,
           allowCaptureWebcam: true,
-          supportedDocuments: ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
+          supportedDocuments: [
+            "Passport",
+            "Aadhar Card",
+            "Drivers License",
+            "Pan Card",
+          ],
         },
         biometricVerification: {
-          enabled: templateData.verificationSteps?.some(s => s.id === "biometric-verification") || false,
+          enabled:
+            templateData.verificationSteps?.some(
+              (s) => s.id === "biometric-verification",
+            ) || false,
         },
       };
     }
@@ -557,7 +596,13 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
           <div className="flex items-center gap-2">
             <div className="flex h-8 items-center gap-1">
               {/* icon kept */}
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M9.33268 1.51562V4.26932C9.33268 4.64268 9.33268 4.82937 9.40535 4.97198C9.46928 5.09742 9.57122 5.1994 9.69668 5.26332C9.83928 5.33598 10.0259 5.33598 10.3993 5.33598H13.153M9.33268 11.3359H5.33268M10.666 8.66927H5.33268M13.3327 6.66142V11.4693C13.3327 12.5894 13.3327 13.1494 13.1147 13.5773C12.9229 13.9536 12.617 14.2595 12.2407 14.4513C11.8128 14.6693 11.2528 14.6693 10.1327 14.6693H5.86602C4.74591 14.6693 4.18586 14.6693 3.75804 14.4513C3.38171 14.2595 3.07575 13.9536 2.884 13.5773C2.66602 13.1494 2.66602 12.5894 2.66602 11.4693V4.53594C2.66602 3.41583 2.66602 2.85578 2.884 2.42796C3.07575 2.05163 3.38171 1.74567 3.75804 1.55392C4.18586 1.33594 4.74591 1.33594 5.86602 1.33594H8.00722C8.49635 1.33594 8.74095 1.33594 8.97115 1.3912C9.17522 1.44019 9.37028 1.521 9.54928 1.63066C9.75108 1.75434 9.92402 1.92729 10.2699 2.2732L12.3954 4.39868C12.7413 4.74458 12.9143 4.91754 13.0379 5.11937C13.1476 5.29831 13.2284 5.4934 13.2774 5.69747C13.3327 5.92765 13.3327 6.17224 13.3327 6.66142Z"
                   stroke="#515257"
@@ -566,15 +611,21 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="text-xs text-[#505258] font-medium leading-3">Template</span>
+              <span className="text-xs text-[#505258] font-medium leading-3">
+                Template
+              </span>
             </div>
             <div className="flex h-8 items-center gap-2">
-              <span className="text-xs text-[#505258] font-medium leading-3">/</span>
+              <span className="text-xs text-[#505258] font-medium leading-3">
+                /
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex h-8 items-center gap-1">
-              <span className="text-xs text-[#505258] font-medium leading-3">Create New Template</span>
+              <span className="text-xs text-[#505258] font-medium leading-3">
+                Create New Template
+              </span>
             </div>
           </div>
         </div>
@@ -603,7 +654,9 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
               className="h-8 px-2 py-[9px] flex items-center gap-1 rounded border border-[#0073EA] bg-white hover:bg-blue-50 transition-colors"
             >
               <Send className="w-4 h-4 text-[#0073EA]" strokeWidth={1.33} />
-              <span className="text-[13px] font-medium text-[#0073EA]">Save & Send Invite</span>
+              <span className="text-[13px] font-medium text-[#0073EA]">
+                Save & Send Invite
+              </span>
             </button>
             <button
               onClick={handleSave}
@@ -626,7 +679,13 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
               <div className="flex flex-col items-center gap-1.5">
                 <div className="p-1.5 rounded-full border-2 border-[#258750]">
                   <div className="w-8 h-8 rounded-full bg-[#258750] flex items-center justify-center">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
                       <path
                         d="M7.16241 11.2116L13.438 4.93608C13.6089 4.76515 13.8117 4.67969 14.0463 4.67969C14.281 4.67969 14.4837 4.76515 14.6547 4.93608C14.8256 5.107 14.9111 5.30979 14.9111 5.54444C14.9111 5.77908 14.8256 5.98186 14.6547 6.15278L7.76363 13.0438C7.59271 13.2147 7.3923 13.3002 7.16241 13.3002C6.93253 13.3002 6.73212 13.2147 6.5612 13.0438L3.34516 9.82778C3.17423 9.65686 3.09115 9.45408 3.0959 9.21944C3.10066 8.98479 3.1885 8.782 3.35943 8.61108C3.53035 8.44015 3.73314 8.35469 3.96779 8.35469C4.20243 8.35469 4.40521 8.44015 4.57613 8.61108L7.16241 11.2116Z"
                         fill="white"
@@ -634,7 +693,9 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
                     </svg>
                   </div>
                 </div>
-                <span className="text-[13px] font-medium text-[#172B4D]">Form builder</span>
+                <span className="text-[13px] font-medium text-[#172B4D]">
+                  Form builder
+                </span>
               </div>
 
               {/* Connection Line */}
@@ -644,10 +705,14 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
               <div className="flex flex-col items-center gap-1.5">
                 <div className="p-1.5 rounded-full border-2 border-[#0073EA]">
                   <div className="w-8 h-8 rounded-full bg-[#0073EA] flex items-center justify-center">
-                    <span className="text-white text-base font-bold leading-4">2</span>
+                    <span className="text-white text-base font-bold leading-4">
+                      2
+                    </span>
                   </div>
                 </div>
-                <span className="text-[13px] font-medium text-[#172B4D]">Preview</span>
+                <span className="text-[13px] font-medium text-[#172B4D]">
+                  Preview
+                </span>
               </div>
             </div>
           </div>
@@ -658,12 +723,16 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
             className="absolute left-8 flex items-center gap-1 rounded hover:bg-gray-50 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
-            <span className="text-[13px] font-medium text-[#505258]">Previous</span>
+            <span className="text-[13px] font-medium text-[#505258]">
+              Previous
+            </span>
           </button>
 
           {activeView === "receiver" && (
             <div className="absolute right-8 flex items-center gap-1 rounded">
-              <span className="text-[13px] font-medium text-[#505258]">Next</span>
+              <span className="text-[13px] font-medium text-[#505258]">
+                Next
+              </span>
             </div>
           )}
         </div>
@@ -686,7 +755,8 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        Showing exactly what admin selected: {orderedSections.length} sections with{" "}
+                        Showing exactly what admin selected:{" "}
+                        {orderedSections.length} sections with{" "}
                         {visiblePersonalCount} fields total.
                       </p>
                     </div>
@@ -699,15 +769,30 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
                   tabIndex={0}
                   onClick={() =>
                     navigate(
-                      templateId ? `/receiver-view/${templateId}` : "/receiver-view",
-                      { state: { templateConfig: buildTemplateConfigForReceiverView(), templateData } },
+                      templateId
+                        ? `/receiver-view/${templateId}`
+                        : "/receiver-view",
+                      {
+                        state: {
+                          templateConfig: buildTemplateConfigForReceiverView(),
+                          templateData,
+                        },
+                      },
                     )
                   }
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       navigate(
-                        templateId ? `/receiver-view/${templateId}` : "/receiver-view",
-                        { state: { templateConfig: buildTemplateConfigForReceiverView(), templateData } },
+                        templateId
+                          ? `/receiver-view/${templateId}`
+                          : "/receiver-view",
+                        {
+                          state: {
+                            templateConfig:
+                              buildTemplateConfigForReceiverView(),
+                            templateData,
+                          },
+                        },
                       );
                     }
                   }}
@@ -721,7 +806,8 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
                     </div>
                     <div className="flex items-center gap-2">
                       <p className="flex-1 text-[13px] text-[#505258] leading-[18px]">
-                        This is exactly how users will experience the verification process.
+                        This is exactly how users will experience the
+                        verification process.
                       </p>
                     </div>
                   </div>
@@ -741,15 +827,25 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
           <div className="flex flex-col items-center gap-4 w-full">
             {/* Render sections in configured order - NO ORDER BADGES */}
             {orderedSections.map((section) => (
-              <div key={section.id} className="flex flex-col gap-4 w-full rounded bg-white">
+              <div
+                key={section.id}
+                className="flex flex-col gap-4 w-full rounded bg-white"
+              >
                 <div className="p-0 pb-px pl-px pr-px flex flex-col w-full rounded border border-[#DEDEDD]">
                   <div className="px-2 py-4 flex flex-col items-center gap-2 w/full bg-white">
                     <div className="flex items-center gap-2 w-full pb-1">
-                      <Minus className="w-[18px] h-[18px] text-[#323238]" strokeWidth={1.5} />
-                      <h2 className="text-base font-bold text-[#172B4D] leading-3">{section.title}</h2>
+                      <Minus
+                        className="w-[18px] h-[18px] text-[#323238]"
+                        strokeWidth={1.5}
+                      />
+                      <h2 className="text-base font-bold text-[#172B4D] leading-3">
+                        {section.title}
+                      </h2>
                     </div>
                     <div className="flex items-center gap-2.5 w-full pl-7">
-                      <p className="flex-1 text-[13px] text-[#172B4D] leading-5">{section.description}</p>
+                      <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                        {section.description}
+                      </p>
                     </div>
                   </div>
                   <div className="px-[34px] py-5 flex flex-col w-full border-t border-[#DEDEDD] bg-white">
@@ -759,7 +855,9 @@ function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
               </div>
             ))}
             {!orderedSections.length && (
-              <div className="text-sm text-gray-500">No sections enabled for this template.</div>
+              <div className="text-sm text-gray-500">
+                No sections enabled for this template.
+              </div>
             )}
           </div>
         </div>
@@ -811,7 +909,11 @@ const PersonalInformationSection = ({
   }
 
   if (!allFields.length) {
-    return <div className="text-[13px] text-[#676879]">No personal fields enabled.</div>;
+    return (
+      <div className="text-[13px] text-[#676879]">
+        No personal fields enabled.
+      </div>
+    );
   }
 
   return (
@@ -863,7 +965,9 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
             <div className="flex gap-6 w-full">
               <div className="flex flex-col gap-2 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-[#172B4D] leading-3">User Upload Options</h3>
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                    User Upload Options
+                  </h3>
                 </div>
                 <div className="flex items-center gap-2 w-full">
                   <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
@@ -897,7 +1001,9 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
             <div className="flex gap-6 w-full">
               <div className="flex flex-col gap-2 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-[#172B4D] leading-3">Unreadable Document Handling</h3>
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                    Unreadable Document Handling
+                  </h3>
                 </div>
                 <div className="flex items-center gap-2 w-full">
                   <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
@@ -946,14 +1052,18 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                 </h3>
               </div>
               <div className="flex items-center gap-2 w-full">
-                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">Only these document types are accepted.</p>
+                <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                  Only these document types are accepted.
+                </p>
               </div>
             </div>
           </div>
           <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
             <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
               <div className="h-[42px] flex items-center gap-6 w-full">
-                <span className="text-sm font-medium text-black leading-[22px]">India</span>
+                <span className="text-sm font-medium text-black leading-[22px]">
+                  India
+                </span>
               </div>
               <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
                 {config.selectedDocuments.map((doc: string) => (
@@ -964,7 +1074,9 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                     <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
                       <Check className="w-3 h-3 text-white" />
                     </div>
-                    <span className="text-[13px] font-medium text-[#505258]">{doc}</span>
+                    <span className="text-[13px] font-medium text-[#505258]">
+                      {doc}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -994,10 +1106,14 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
             <div className="flex flex-col items-center gap-4 flex-1">
               <div className="flex flex-col gap-2 w-full">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-[#172B4D] leading-3">Retry Attempts for Selfie Capture</h3>
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                    Retry Attempts for Selfie Capture
+                  </h3>
                 </div>
                 <div className="flex items-center gap-2 w-full">
-                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5">Maximum retry attempts configured by admin.</p>
+                  <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                    Maximum retry attempts configured by admin.
+                  </p>
                 </div>
               </div>
               <div className="pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
@@ -1035,7 +1151,9 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
               <div className="flex gap-6 w-full">
                 <div className="flex flex-col gap-2 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-[#172B4D] leading-3">Liveness Confidence Threshold (%)</h3>
+                    <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                      Liveness Confidence Threshold (%)
+                    </h3>
                   </div>
                   <div className="flex items-center gap-2 w-full">
                     <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
@@ -1046,7 +1164,10 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
               </div>
               <div className="pt-6 px-6 pb-0 flex flex-col gap-5 w-full rounded bg-[#F6F7FB]">
                 {config.askUserRetry && (
-                  <DocListItem title="Ask the user to try again" desc="Prompt the user to reattempt the selfie." />
+                  <DocListItem
+                    title="Ask the user to try again"
+                    desc="Prompt the user to reattempt the selfie."
+                  />
                 )}
                 {config.blockAfterRetries && (
                   <DocListItem
@@ -1068,10 +1189,14 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
               <div className="flex gap-6 w-full">
                 <div className="flex flex-col gap-2 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-[#172B4D] leading-3">Biometric Data Retention</h3>
+                    <h3 className="text-base font-bold text-[#172B4D] leading-3">
+                      Biometric Data Retention
+                    </h3>
                   </div>
                   <div className="flex items-center gap-2 w-full">
-                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">Data storage duration configured by admin.</p>
+                    <p className="flex-1 text-[13px] text-[#172B4D] leading-5">
+                      Data storage duration configured by admin.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1088,7 +1213,9 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
                     <div className="w-80 flex gap-3">
                       <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4]">
                         <div className="flex items-center gap-2 flex-1">
-                          <span className="text-[13px] text-[#676879] leading-5">{config.dataRetention}</span>
+                          <span className="text-[13px] text-[#676879] leading-5">
+                            {config.dataRetention}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1113,7 +1240,9 @@ function DocListItem({ title, desc }) {
         </div>
         <div className="flex-1">
           <div className="flex flex-col">
-            <span className="text-[13px] font-medium text-[#172B4D]">{title}</span>
+            <span className="text-[13px] font-medium text-[#172B4D]">
+              {title}
+            </span>
             <p className="text-[13px] text-[#505258]">{desc}</p>
           </div>
         </div>

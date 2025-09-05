@@ -25,7 +25,7 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
 const getToken = () =>
   typeof window !== "undefined" ? localStorage.getItem("access") : null;
 
-const apiGet = async (path: string) => {
+const apiGet = async <T = any,>(path: string): Promise<T> => {
   const token = getToken();
   const res = await fetch(`${API_BASE}${path}`, {
     method: "GET",
@@ -161,9 +161,9 @@ const DocumentVerificationSection: React.FC<{
     documentHandling: string;
     setDocumentHandling: (v: string) => void;
     selectedCountries: string[];
-    setSelectedCountries: (v: string[] | ((prev: string[]) => string[])) => void;
+    setSelectedCountries: React.Dispatch<React.SetStateAction<string[]>>;
     selectedDocuments: string[];
-    setSelectedDocuments: (v: string[] | ((prev: string[]) => string[])) => void;
+    setSelectedDocuments: React.Dispatch<React.SetStateAction<string[]>>;
   };
 }> = ({ isExpanded, onToggle, stateBag }) => {
   const {
@@ -223,24 +223,24 @@ const DocumentVerificationSection: React.FC<{
   ]);
 
   // toggle one document type in the list
-const toggleDocument = (docType: string) => {
-  setSelectedDocuments((prev: string[]) =>
-    prev.includes(docType) ? prev.filter(d => d !== docType) : [...prev, docType],
-  );
-};
+  const toggleDocument = (docType: string) => {
+    setSelectedDocuments((prev) =>
+      prev.includes(docType)
+        ? prev.filter((d) => d !== docType)
+        : [...prev, docType],
+    );
+  };
 
-const removeCountry = (country: string) => {
-  setSelectedCountries(prev => prev.filter(c => c !== country));
-};
+  const removeCountry = (country: string) => {
+    setSelectedCountries((prev) => prev.filter((c) => c !== country));
+  };
 
-const documentTypes: string[] = [
-  "Aadhar Card",
-  "Pan Card",
-  "Driving License",
-  "Passport",
-];
-
-
+  const documentTypes: string[] = [
+    "Aadhar Card",
+    "Pan Card",
+    "Driving License",
+    "Passport",
+  ];
 
   return (
     <div className="border border-gray-300 rounded">
@@ -605,7 +605,8 @@ export default function TemplateBuilder() {
       {
         id: "personal-info",
         title: "Personal Information",
-        description: "Set up fields to collect basic user details like name, contact.",
+        description:
+          "Set up fields to collect basic user details like name, contact.",
         isRequired: true,
         isEnabled: true,
       },
@@ -705,10 +706,8 @@ export default function TemplateBuilder() {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
-// make sure these lines look exactly like this:
-const [selectedCountries, setSelectedCountries] = useState<string[]>(["India"]);
-const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(["India"]);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
   // biometric verification state bag
   const [maxRetries, setMaxRetries] = useState("4");
@@ -720,6 +719,32 @@ const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+
+  /* ============ hydrate personal Added_fields from backend (optional) ============ */
+  useEffect(() => {
+    if (!templateId) return;
+    (async () => {
+      try {
+        const tpl: any = await apiGet(`/api/templates/${templateId}`);
+        const added =
+          tpl?.Added_fields ??
+          tpl?.Personal_info?.Added_fields ??
+          {};
+
+        const isChecked = (id: string) => {
+          if (id === "date-of-birth") return !!added.dob;
+          if (id === "current-address") return !!added.Current_address;
+          if (id === "permanent-address") return !!added.permanent_address;
+          if (id === "gender") return !!added.Gender;
+          return false;
+        };
+
+        setOptionalFields((prev) => prev.map((f) => ({ ...f, checked: isChecked(f.id) })));
+      } catch (e) {
+        console.warn("Could not hydrate personal Added_fields:", e);
+      }
+    })();
+  }, [templateId]);
 
   /* ============ Step list helpers ============ */
   const addVerificationStep = (stepId: string) => {
@@ -761,59 +786,53 @@ const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
   const handlePrevious = () => navigate("/dashboard");
 
-  /* ============ Payload builders ============ */
+  /* ============ Payload builders (root-level, match Swagger) ============ */
   const buildPersonalPayload = () => ({
-    Personal_info: {
-      section_id: 1,
-      firstName: true,
-      LastName: true,
-      Email: true,
-      Added_fields: {
-        dob: optionalFields.find((f) => f.id === "date-of-birth")?.checked ?? false,
-        Current_address: optionalFields.find((f) => f.id === "current-address")?.checked ?? false,
-        permanent_address: optionalFields.find((f) => f.id === "permanent-address")?.checked ?? false,
-        Gender: optionalFields.find((f) => f.id === "gender")?.checked ?? false,
-      },
+    section_id: 1,
+    firstName: true,
+    LastName: true,
+    Email: true,
+    Added_fields: {
+      dob: optionalFields.find((f) => f.id === "date-of-birth")?.checked ?? false,
+      Current_address: optionalFields.find((f) => f.id === "current-address")?.checked ?? false,
+      permanent_address: optionalFields.find((f) => f.id === "permanent-address")?.checked ?? false,
+      Gender: optionalFields.find((f) => f.id === "gender")?.checked ?? false,
     },
   });
 
   const buildDocsPayload = () => ({
-    Doc_verification: {
-      section_id: 2,
-      user_uploads: {
-        Allow_uploads: allowUploadFromDevice,
-        allow_capture: allowCaptureWebcam,
-      },
-      Unreadable_docs: {
-        reject_immediately: documentHandling === "reject",
-        Allow_retries: documentHandling === "retry",
-      },
-      Countries_array: selectedCountries.map((country) => ({
-        country_name: country,
-        listOfdocs: selectedDocuments.reduce((acc: Record<string, boolean>, d) => {
-          acc[d] = true;
-          return acc;
-        }, {}),
-      })),
+    section_id: 2,
+    user_uploads: {
+      Allow_uploads: allowUploadFromDevice,
+      allow_capture: allowCaptureWebcam,
     },
+    Unreadable_docs: {
+      reject_immediately: documentHandling === "reject",
+      Allow_retries: documentHandling === "retry",
+    },
+    Countries_array: selectedCountries.map((country) => ({
+      country_name: country,
+      listOfdocs: selectedDocuments.reduce((acc: Record<string, boolean>, d) => {
+        acc[d] = true;
+        return acc;
+      }, {}),
+    })),
   });
 
   const buildBiometricPayload = () => ({
-    Biometric_verification: {
-      section_id: 3,
-      number_of_retries: maxRetries ? [parseInt(maxRetries, 10)] : [],
-      liveness: {
-        try_again: askUserRetry,
-        Block_further: blockAfterRetries,
-      },
-      biometric_data_retention: {
-        duration: dataRetention ? [dataRetention] : [],
-      },
+    section_id: 3,
+    number_of_retries: maxRetries ? [parseInt(maxRetries, 10)] : [],
+    liveness: {
+      try_again: askUserRetry,
+      Block_further: blockAfterRetries,
+    },
+    biometric_data_retention: {
+      duration: dataRetention ? [dataRetention] : [],
     },
   });
 
-  // sections_order must ALWAYS be 3 items (API requirement)
-  const buildOrderPayload = () => {
+  // sections_order must ALWAYS have 3 items; include current_step in body
+  const buildOrderPayload = (currentStep: number) => {
     const map: Record<string, string> = {
       "personal-info": "Personal_info",
       "document-verification": "Doc_verification",
@@ -824,70 +843,76 @@ const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
     const all = ["Personal_info", "Doc_verification", "Biometric_verification"];
     for (const sec of all) if (!ordered.includes(sec)) ordered.push(sec);
 
-    return { sections_order: ordered.slice(0, 3) };
+    return {
+      sections_order: ordered.slice(0, 3),
+      current_step: Math.max(1, Math.min(3, currentStep)),
+    };
   };
 
-  /* ============ Persist to backend (GET→PUT) ============ */
-  const saveProgress = useCallback(async () => {
-    if (!templateId) throw new Error("Missing template id");
+  /* ============ Persist to backend (section PUTs + order) ============ */
+  const saveProgress = useCallback(
+    async (currentStepNumber: number) => {
+      if (!templateId) throw new Error("Missing template id");
 
-    setSaving(true);
-    setSaveError(null);
-    setSaveSuccess(null);
+      setSaving(true);
+      setSaveError(null);
+      setSaveSuccess(null);
 
-    const hasDocs = verificationSteps.some((s) => s.id === "document-verification");
-    const hasBiometric = verificationSteps.some((s) => s.id === "biometric-verification");
+      try {
+        // Always persist personal (step 1)
+        await apiPut(
+          `/api/templates/${templateId}/personal?currentStep=1`,
+          buildPersonalPayload(),
+        );
 
-    try {
-      // PUT sub-sections that are present
-      await apiPut(`/api/templates/${templateId}/personal`, buildPersonalPayload());
-      if (hasDocs) await apiPut(`/api/templates/${templateId}/docs`, buildDocsPayload());
-      if (hasBiometric) await apiPut(`/api/templates/${templateId}/biometric`, buildBiometricPayload());
+        // Docs if present
+        if (verificationSteps.some((s) => s.id === "document-verification")) {
+          await apiPut(
+            `/api/templates/${templateId}/docs?currentStep=2`,
+            buildDocsPayload(),
+          );
+        }
 
-      // PUT order (always 3)
-      await apiPut(`/api/templates/${templateId}/order`, buildOrderPayload());
+        // Biometric if present
+        if (verificationSteps.some((s) => s.id === "biometric-verification")) {
+          await apiPut(
+            `/api/templates/${templateId}/biometric?currentStep=3`,
+            buildBiometricPayload(),
+          );
+        }
 
-      // GET full doc, flip Section_status + meta, PUT full
-      const tpl = await apiGet(`/api/templates/${templateId}`);
+        // Order + current_step
+        await apiPut(
+          `/api/templates/${templateId}/order`,
+          buildOrderPayload(currentStepNumber),
+        );
 
-      const updated = {
-        ...tpl,
-        Section_status: {
-          ...(tpl?.Section_status ?? {}),
-          persoanl_info: true, // (first section completed)
-          doc_verification: hasDocs,
-          Biometric_verification: hasBiometric,
-        },
-        current_step: 1,
-        last_updated: new Date().toISOString(),
-      };
-
-      await apiPut(`/api/templates/${templateId}`, updated);
-
-      setSaveSuccess("Progress saved.");
-    } catch (e: any) {
-      setSaveError(e?.message || "Failed to save progress.");
-      throw e;
-    } finally {
-      setSaving(false);
-    }
-  }, [
-    templateId,
-    verificationSteps,
-    allowUploadFromDevice,
-    allowCaptureWebcam,
-    documentHandling,
-    selectedCountries,
-    selectedDocuments,
-    maxRetries,
-    askUserRetry,
-    blockAfterRetries,
-    dataRetention,
-  ]);
+        setSaveSuccess("Progress saved.");
+      } catch (e: any) {
+        setSaveError(e?.message || "Failed to save progress.");
+        throw e;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [
+      templateId,
+      verificationSteps,
+      optionalFields,
+      allowUploadFromDevice,
+      allowCaptureWebcam,
+      documentHandling,
+      selectedCountries,
+      selectedDocuments,
+      maxRetries,
+      askUserRetry,
+      blockAfterRetries,
+      dataRetention,
+    ],
+  );
 
   /* ============ Next button ============ */
   const handleNext = async () => {
-    // drive the stepper UI
     const sections = [
       { name: "personal-info", setExpanded: setPersonalInfoExpanded },
       { name: "document-verification", setExpanded: setDocumentVerificationExpanded },
@@ -900,12 +925,13 @@ const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
         verificationSteps.some((s) => s.id === section.name),
     );
 
-    // Save to backend before advancing
+    // step number we're leaving (1-based)
+    const currentStepNumber = Math.min(activeSections.length, currentSectionIndex + 1);
+
     try {
-      await saveProgress();
+      await saveProgress(currentStepNumber);
     } catch {
-      // keep user on current page and show error
-      return;
+      return; // stay on current page if save failed
     }
 
     if (currentSectionIndex < activeSections.length) {
@@ -997,7 +1023,7 @@ const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
                 variant="ghost"
                 size="sm"
                 className="w-7 h-7 p-0 rounded-full bg-gray-100"
-                onClick={handlePrevious}
+                onClick={() => navigate("/dashboard")}
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -1008,7 +1034,7 @@ const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
         {/* Stepper */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-          <Button variant="ghost" className="text-gray-600 text-sm" onClick={handlePrevious}>
+          <Button variant="ghost" className="text-gray-600 text-sm" onClick={() => navigate("/dashboard")}>
             <ChevronLeft className="w-4 h-4 mr-1" />
             Previous
           </Button>

@@ -131,6 +131,45 @@ export default function Templates() {
     }
   }, [totalItems, pageSize, currentPage]);
 
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [templateIdToRename, setTemplateIdToRename] = useState<string | null>(null);
+  
+  const handleRenameSubmit = async () => {
+    const token = getToken();
+    if (!token) {
+      alert("You're not logged in.");
+      return;
+    }
+
+    if (!templateIdToRename || !newTemplateName) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/templates/${templateIdToRename}/template_name`, {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nameOfTemplate: newTemplateName }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(`Rename failed: ${res.status} ${res.statusText}${text ? ` — ${text.slice(0, 200)}` : ""}`);
+      }
+
+      // Refresh templates after renaming
+      await fetchTemplates(buildCurrentFilters());
+      setRenameDialogOpen(false); // Close dialog
+      toast.success("Template renamed successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to rename template");
+    }
+  };
+
   // Enhanced click outside functionality for mobile sidebar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -279,6 +318,11 @@ export default function Templates() {
         const tpl = templates.find((t) => t.id === templateId);
         setConfirmTemplateName(tpl?.name || "Template");
         setConfirmOpen(true);
+        break;
+      case "rename":
+        // Open the rename dialog
+        setTemplateIdToRename(templateId);
+        setRenameDialogOpen(true);
         break;
       default:
         console.log(`Action ${action} not yet implemented`);
@@ -1119,6 +1163,36 @@ export default function Templates() {
               </div>
             </div>
           </div>
+          
+          {/* Rename Dialog */}
+          {renameDialogOpen && (
+            <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+              <div className="bg-white p-6 rounded-lg w-96">
+                <h2 className="text-lg font-semibold mb-4">Rename Template</h2>
+                <input
+                  type="text"
+                  className="w-full p-2 border border-gray-300 rounded mb-4"
+                  placeholder="Enter new template name"
+                  value={newTemplateName}
+                  onChange={(e) => setNewTemplateName(e.target.value)}
+                />
+                <div className="flex justify-end gap-2">
+                  <button
+                    className="px-4 py-2 bg-gray-300 rounded text-sm"
+                    onClick={() => setRenameDialogOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                    onClick={handleRenameSubmit}
+                  >
+                    Rename
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <footer className="border-t border-gray-200 bg-white p-4">

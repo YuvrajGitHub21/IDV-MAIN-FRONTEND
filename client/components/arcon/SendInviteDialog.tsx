@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
-import { X, Search, Filter, Download, Upload, Check, CheckCircle } from "lucide-react";
+import {
+  X,
+  Search,
+  Filter,
+  Download,
+  Upload,
+  Check,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -234,7 +242,7 @@ export default function SendInviteDialog({
       {
         duration: 5000,
         position: "top-center",
-      }
+      },
     );
 
     // Close dialog

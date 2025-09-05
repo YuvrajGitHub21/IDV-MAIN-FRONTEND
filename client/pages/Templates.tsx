@@ -388,7 +388,7 @@ export default function Templates() {
       />
 
       {/* Header */}
-      <header className="flex items-center justify-between px-3 md:px-4 h-11 border-b border-gray-200 bg-white">
+      <header className="sticky top-0 z-40 flex items-center justify-between px-3 md:px-4 h-11 border-b border-gray-200 bg-white">
         <div className="flex items-center gap-3">
           {/* Mobile menu button */}
           <button
@@ -427,7 +427,7 @@ export default function Templates() {
         <aside
           ref={sidebarRef}
           className={cn(
-            "fixed inset-y-0 left-0 z-50 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+            "fixed inset-y-0 left-0 z-50 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11",
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",
@@ -687,7 +687,7 @@ export default function Templates() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-h-screen">
+        <main className="flex-1 min-h-screen pt-11">
           {/* Sub Header */}
           <div className="border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between px-4 py-2">

@@ -687,7 +687,7 @@ export default function Templates() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-h-screen pt-11">
+        <main className="flex-1 min-h-0 overflow-auto">
           {/* Sub Header */}
           <div className="border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between px-4 py-2">

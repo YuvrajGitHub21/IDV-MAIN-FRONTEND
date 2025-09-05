@@ -75,6 +75,7 @@ export default {
       },
       fontFamily: {
         roboto: ["Roboto", "system-ui", "sans-serif"],
+        figtree: ["Figtree", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

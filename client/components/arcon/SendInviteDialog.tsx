@@ -1,8 +1,18 @@
 import React, { useEffect, useState, useRef } from "react";
-import { X, Search, Filter, Download, Upload, Check } from "lucide-react";
+import {
+  X,
+  Search,
+  Filter,
+  Download,
+  Upload,
+  Check,
+  CheckCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import DepartmentFilterDropdown from "./DepartmentFilterDropdown";
 
 interface Employee {
@@ -92,6 +102,7 @@ export default function SendInviteDialog({
   isOpen,
   onClose,
 }: SendInviteDialogProps) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"select" | "bulk">("select");
   const [employees, setEmployees] = useState<Employee[]>(SAMPLE_EMPLOYEES);
 
@@ -203,6 +214,42 @@ export default function SendInviteDialog({
 
       uploadIntervalRef.current = id;
     }
+  };
+
+  const handleSendInvite = () => {
+    // Show success toast with custom design
+    toast.custom(
+      (t) => (
+        <div className="flex w-[540px] p-6 justify-center items-center gap-4 rounded-lg bg-white shadow-[0_20px_24px_-4px_rgba(16,24,40,0.08),0_8px_8px_-4px_rgba(16,24,40,0.03)]">
+          <div className="flex w-12 h-12 p-3 justify-center items-center flex-shrink-0 rounded-[28px] border-[8px] border-[#ECFDF3] bg-[#D1FADF]">
+            <CheckCircle className="w-6 h-6 text-[#039855]" />
+          </div>
+          <div className="flex flex-col items-start gap-7 flex-1">
+            <div className="flex flex-col items-start gap-2 self-stretch">
+              <div className="self-stretch text-[#323238] font-figtree text-base font-bold leading-[26px]">
+                Invite has been sent
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => toast.dismiss(t)}
+            className="flex w-8 h-8 justify-center items-center gap-[10px] flex-shrink-0 rounded-[50px] bg-white"
+          >
+            <X className="w-5 h-5 text-[#676879]" />
+          </button>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+      },
+    );
+
+    // Close dialog
+    onClose();
+
+    // Navigate to home page
+    navigate("/home");
   };
 
   return (
@@ -489,7 +536,10 @@ export default function SendInviteDialog({
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button className="bg-[#0073EA] hover:bg-[#0073EA]/90">
+            <Button
+              className="bg-[#0073EA] hover:bg-[#0073EA]/90"
+              onClick={handleSendInvite}
+            >
               Send Invite
             </Button>
           </div>

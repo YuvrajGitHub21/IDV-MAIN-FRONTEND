@@ -27,6 +27,8 @@ export function NameTemplateDialog({
   onSave,
   onCancel,
 }: NameTemplateDialogProps) {
+  const MAX_LEN = 30;
+
   const [templateName, setTemplateName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
@@ -35,25 +37,21 @@ export function NameTemplateDialog({
     const name = templateName.trim();
     if (!name) return;
 
-    // Length constraint check
-    if (name.length > 30) {
-      setErrorMessage("Template name cannot exceed 30 characters.");
+    // Length constraint check (server-guard too)
+    if (name.length > MAX_LEN) {
+      setErrorMessage("Max length is 30 characters.");
       return;
     }
 
     try {
-      // 1) Create on server — stamps created_by & timestamps
       const created = await createTemplateMin(name);
 
-      // 2) Optional notify parent
       onSave?.(name);
 
-      // 3) Close dialog
       setTemplateName("");
-      setErrorMessage(""); // Clear error
+      setErrorMessage("");
       onOpenChange(false);
 
-      // 4) Navigate to builder with new template id + name
       navigate("/template-builder", {
         state: { templateId: created.id, templateName: created.name },
       });
@@ -64,14 +62,14 @@ export function NameTemplateDialog({
 
   const handleCancel = () => {
     setTemplateName("");
-    setErrorMessage(""); // Clear error on cancel
+    setErrorMessage("");
     onCancel?.();
     onOpenChange(false);
   };
 
   const handleClose = () => {
     setTemplateName("");
-    setErrorMessage(""); // Clear error on close
+    setErrorMessage("");
     onOpenChange(false);
   };
 
@@ -84,7 +82,7 @@ export function NameTemplateDialog({
         )}
         onInteractOutside={(e) => e.preventDefault()}
       >
-        {/* Custom Header */}
+        {/* Header */}
         <div className="flex items-center justify-between px-5 py-2.5 border-b border-gray-300 bg-white">
           <DialogTitle className="text-lg font-bold text-gray-900 leading-7">
             Name Your Template
@@ -117,29 +115,30 @@ export function NameTemplateDialog({
                 onChange={(e) => {
                   const name = e.target.value;
                   setTemplateName(name);
-                  if (name.length > 30) {
-                    setErrorMessage("Template name cannot exceed 30 characters.");
+                  if (name.trim().length > MAX_LEN) {
+                    setErrorMessage("Max length is 30 characters.");
                   } else {
-                    setErrorMessage(""); // Clear error if within limit
+                    setErrorMessage("");
                   }
                 }}
                 placeholder="Enter Template Name"
                 className={cn(
-                  "h-[38px] px-3 py-2 text-sm border border-gray-300 rounded",
+                  "h-[38px] px-3 py-2 text-sm border rounded",
+                  errorMessage ? "border-red-500" : "border-gray-300",
                   "focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
                   "placeholder:text-gray-500"
                 )}
+                aria-invalid={errorMessage ? "true" : "false"}
+                aria-describedby={errorMessage ? "template-name-error" : undefined}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSave();
-                  }
-                  if (e.key === "Escape") {
-                    handleCancel();
-                  }
+                  if (e.key === "Enter") handleSave();
+                  if (e.key === "Escape") handleCancel();
                 }}
               />
               {errorMessage && (
-                <p className="text-xs text-red-500 mt-1">{errorMessage}</p>
+                <p id="template-name-error" className="text-xs text-red-500 mt-1">
+                  {errorMessage}
+                </p>
               )}
             </div>
           </div>
@@ -159,7 +158,7 @@ export function NameTemplateDialog({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!templateName.trim() || errorMessage !== ""}
+            disabled={!templateName.trim() || !!errorMessage}
             className={cn(
               "h-8 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700",
               "rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"

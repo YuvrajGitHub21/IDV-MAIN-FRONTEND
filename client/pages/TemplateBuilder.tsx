@@ -850,8 +850,9 @@ export default function TemplateBuilder() {
   };
 
   /* ============ Persist to backend (section PUTs + order) ============ */
-  const saveProgress = useCallback(
-    async (currentStepNumber: number) => {
+  // Save only the current section, not all
+  const saveCurrentSection = useCallback(
+    async (currentStepNumber: number, sectionName: string) => {
       if (!templateId) throw new Error("Missing template id");
 
       setSaving(true);
@@ -859,29 +860,24 @@ export default function TemplateBuilder() {
       setSaveSuccess(null);
 
       try {
-        // Always persist personal (step 1)
-        await apiPut(
-          `/api/templates/${templateId}/personal?currentStep=1`,
-          buildPersonalPayload(),
-        );
-
-        // Docs if present
-        if (verificationSteps.some((s) => s.id === "document-verification")) {
+        if (sectionName === "personal-info") {
+          await apiPut(
+            `/api/templates/${templateId}/personal?currentStep=1`,
+            buildPersonalPayload(),
+          );
+        } else if (sectionName === "document-verification") {
           await apiPut(
             `/api/templates/${templateId}/docs?currentStep=2`,
             buildDocsPayload(),
           );
-        }
-
-        // Biometric if present
-        if (verificationSteps.some((s) => s.id === "biometric-verification")) {
+        } else if (sectionName === "biometric-verification") {
           await apiPut(
             `/api/templates/${templateId}/biometric?currentStep=3`,
             buildBiometricPayload(),
           );
         }
 
-        // Order + current_step
+        // Always update order + current_step
         await apiPut(
           `/api/templates/${templateId}/order`,
           buildOrderPayload(currentStepNumber),
@@ -927,9 +923,10 @@ export default function TemplateBuilder() {
 
     // step number we're leaving (1-based)
     const currentStepNumber = Math.min(activeSections.length, currentSectionIndex + 1);
+    const currentSectionName = activeSections[currentSectionIndex]?.name;
 
     try {
-      await saveProgress(currentStepNumber);
+      await saveCurrentSection(currentStepNumber, currentSectionName);
     } catch {
       return; // stay on current page if save failed
     }

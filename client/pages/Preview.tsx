@@ -99,8 +99,8 @@ export default function Preview() {
     addedFields: [],
     templateData: {
       personalInfo: true,
-      documentVerification: false,
-      biometricVerification: false,
+      documentVerification: true ,
+      biometricVerification: true,
     },
   };
 
@@ -350,7 +350,7 @@ export default function Preview() {
       templateName: dbTemplate?.nameOfTemplate ?? templateData.templateName,
       sections: orderedSections,
       createdAt: new Date().toISOString(),
-      status: "draft",
+      status: "false",
     };
   }, [templateData, templateId, dbTemplate]);
 
@@ -503,8 +503,29 @@ export default function Preview() {
     setShowSendInviteDialog(true);
   };
 
+ // ...existing code...
   const handleSave = async () => {
     console.log("API Payload for Save:", apiPayload);
+
+    // Send PUT request to update template status
+    if (templateId) {
+      try {
+        const res = await fetch(`${API_BASE}/api/templates/${templateId}/status`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "*/*",
+          },
+          body: JSON.stringify({ Template_status: true }),
+        });
+        if (!res.ok) {
+          throw new Error(`Failed to update status: ${res.statusText}`);
+        }
+      } catch (err) {
+        console.error("Error updating template status:", err);
+        // Optionally show an error toast here
+      }
+    }
 
     // Show success toast
     showSaveSuccessToast(templateData?.templateName || "New Template");
@@ -512,6 +533,7 @@ export default function Preview() {
     // Navigate to templates page
     navigate("/dashboard");
   };
+// ...existing code...
 
   const handlePrevious = () => {
     navigate("/template-builder", {

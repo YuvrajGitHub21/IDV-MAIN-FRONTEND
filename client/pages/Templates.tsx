@@ -134,6 +134,7 @@ export default function Templates() {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [templateIdToRename, setTemplateIdToRename] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
   
   const handleRenameSubmit = async () => {
     const token = getToken();
@@ -142,33 +143,48 @@ export default function Templates() {
       return;
     }
 
-    if (!templateIdToRename || !newTemplateName) return;
+    // trim and validate
+    const name = (newTemplateName ?? "").trim();
+    if (!templateIdToRename || !name) return;
+
+    if (name.length > 30) {
+      // show message ONLY when it exceeds 30
+      setErrorMessage("Max length is 30 characters.");
+      return;
+    }
 
     try {
-      const res = await fetch(`${API_BASE}/api/templates/${templateIdToRename}/template_name`, {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `${API_BASE}/api/templates/${templateIdToRename}/template_name`,
+        {
+          method: "PUT",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ nameOfTemplate: name }), // use trimmed name
         },
-        body: JSON.stringify({ nameOfTemplate: newTemplateName }),
-      });
+      );
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        throw new Error(`Rename failed: ${res.status} ${res.statusText}${text ? ` — ${text.slice(0, 200)}` : ""}`);
+        throw new Error(
+          `Rename failed: ${res.status} ${res.statusText}${
+            text ? ` — ${text.slice(0, 200)}` : ""
+          }`,
+        );
       }
 
-      // Refresh templates after renaming
       await fetchTemplates(buildCurrentFilters());
-      setRenameDialogOpen(false); // Close dialog
+      setRenameDialogOpen(false);
       toast.success("Template renamed successfully");
     } catch (err) {
       console.error(err);
       alert("Failed to rename template");
     }
   };
+
 
   // Enhanced click outside functionality for mobile sidebar
   useEffect(() => {
@@ -1213,23 +1229,56 @@ export default function Templates() {
             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
               <div className="bg-white p-6 rounded-lg w-96">
                 <h2 className="text-lg font-semibold mb-4">Rename Template</h2>
+
                 <input
                   type="text"
-                  className="w-full p-2 border border-gray-300 rounded mb-4"
+                  className={cn(
+                    "w-full p-2 border rounded mb-1",
+                    errorMessage ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                  )}
                   placeholder="Enter new template name"
                   value={newTemplateName}
-                  onChange={(e) => setNewTemplateName(e.target.value)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setNewTemplateName(v);
+                    if (v.trim().length > 30) {
+                      setErrorMessage("Max length is 30 characters.");
+                    } else {
+                      setErrorMessage("");
+                    }
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleRenameSubmit();
+                    if (e.key === "Escape") setRenameDialogOpen(false);
+                  }}
+                  aria-invalid={!!errorMessage}
+                  aria-describedby={errorMessage ? "rename-error" : undefined}
                 />
-                <div className="flex justify-end gap-2">
+
+                {/* Only show when it exceeds 30 */}
+                {errorMessage && (
+                  <p id="rename-error" className="text-xs text-red-600 mb-3">
+                    {errorMessage}
+                  </p>
+                )}
+
+                <div className="flex justify-end gap-2 mt-2">
                   <button
                     className="px-4 py-2 bg-gray-300 rounded text-sm"
-                    onClick={() => setRenameDialogOpen(false)}
+                    onClick={() => {
+                      setErrorMessage("");
+                      setRenameDialogOpen(false);
+                    }}
                   >
                     Cancel
                   </button>
                   <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded text-sm"
+                    className={cn(
+                      "px-4 py-2 bg-blue-600 text-white rounded text-sm",
+                      (!newTemplateName.trim() || !!errorMessage) && "opacity-50 cursor-not-allowed"
+                    )}
                     onClick={handleRenameSubmit}
+                    disabled={!newTemplateName.trim() || !!errorMessage}
                   >
                     Rename
                   </button>
@@ -1237,6 +1286,7 @@ export default function Templates() {
               </div>
             </div>
           )}
+
 
           {/* Footer */}
           <footer className="border-t border-gray-200 bg-white p-4">

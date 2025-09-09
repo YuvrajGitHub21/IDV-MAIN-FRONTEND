@@ -22,12 +22,6 @@ import ChooseTemplate from "./pages/ChooseTemplate";
 
 const queryClient = new QueryClient();
 // 1st change
-
-// 2nd change
-
-// 3rd change
-
-// 4th Change
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

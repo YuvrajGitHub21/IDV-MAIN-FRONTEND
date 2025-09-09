@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
   const loadUsers = async () => {
     try {
       const token = getAccessToken();
-      const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://localhost:5074";
+      const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
       const res = await fetch(`${API_BASE}/api/User`, {
         headers: {
           Accept: "application/json",
@@ -81,7 +81,7 @@ const Dashboard: React.FC = () => {
   const loadProfile = async () => {
     try {
       const token = getAccessToken();
-      const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://localhost:5074";
+      const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
       const res = await fetch(`${API_BASE}/api/User/profile`, {
         headers: {
           Accept: "application/json",
@@ -116,7 +116,7 @@ const Dashboard: React.FC = () => {
     lastName: string;
   }) => {
     const token = getAccessToken();
-    const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://localhost:5074";
+    const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
     const res = await fetch(`${API_BASE}/api/User/profile`, {
       method: "PUT",
       headers: {

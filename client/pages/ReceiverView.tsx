@@ -27,7 +27,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
 
 interface FormData {
   firstName: string;

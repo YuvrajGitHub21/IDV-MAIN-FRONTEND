@@ -102,12 +102,13 @@ export const refreshAccessToken = async (): Promise<AuthResponse | null> => {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
 
-  // Use relative URL when in development with proxy, absolute URL in production
-  const API_BASE = import.meta.env.DEV ? "" : (import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://localhost:5074");
+  // Use direct connection (bypass proxy since backend has CORS configured)
+  const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
   
   try {
     const response = await fetch(`${API_BASE}/api/auth/refresh`, {
       method: "POST",
+      mode: 'cors',
       headers: {
         "Content-Type": "application/json",
       },
@@ -129,13 +130,14 @@ export const refreshAccessToken = async (): Promise<AuthResponse | null> => {
 // Logout user
 export const logout = async (): Promise<void> => {
   const refreshToken = getRefreshToken();
-  // Use relative URL when in development with proxy, absolute URL in production
-  const API_BASE = import.meta.env.DEV ? "" : (import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://localhost:5074");
+  // Use direct connection (bypass proxy since backend has CORS configured)
+  const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
   
   if (refreshToken) {
     try {
       await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
+        mode: 'cors',
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${getAccessToken()}`,

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 /* ===================== API config / helpers ===================== */
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
 const getToken = () => {
   if (typeof window !== "undefined") {
     return localStorage.getItem("access_token") || localStorage.getItem("access");

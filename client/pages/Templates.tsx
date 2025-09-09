@@ -143,39 +143,34 @@ export default function Templates() {
       return;
     }
 
-    // trim and validate
     const name = (newTemplateName ?? "").trim();
     if (!templateIdToRename || !name) return;
 
     if (name.length > 30) {
-      // show message ONLY when it exceeds 30
       setErrorMessage("Max length is 30 characters.");
       return;
     }
 
     try {
-      const res = await fetch(
-        `${API_BASE}/api/templates/${templateIdToRename}/template_name`,
-        {
-          method: "PUT",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ nameOfTemplate: name }), // use trimmed name
+      const res = await fetch(`${API_BASE}/api/Template/${templateIdToRename}`, {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-      );
+        // only send fields that you want to update
+        body: JSON.stringify({ name }),
+      });
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new Error(
-          `Rename failed: ${res.status} ${res.statusText}${
-            text ? ` — ${text.slice(0, 200)}` : ""
-          }`,
+          `Rename failed: ${res.status} ${res.statusText}${text ? ` — ${text.slice(0, 200)}` : ""}`,
         );
       }
 
+      // Some backends return 204 No Content — that's fine. Just refetch.
       await fetchTemplates(buildCurrentFilters());
       setRenameDialogOpen(false);
       toast.success("Template renamed successfully");
@@ -184,6 +179,7 @@ export default function Templates() {
       alert("Failed to rename template");
     }
   };
+
 
 
   // Enhanced click outside functionality for mobile sidebar
@@ -246,7 +242,9 @@ export default function Templates() {
 
   // ⬆️ near your other imports
   // (use the same base URL as your useTemplates hook)
-  const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+  // const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+  const API_BASE = "http://10.10.2.133:8080";
+  
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("access") : null;
 

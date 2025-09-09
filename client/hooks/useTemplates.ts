@@ -118,7 +118,8 @@ const mockUsers: Record<string, string> = {
 };
 
 /* ===================== Config ===================== */
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+// const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+const API_BASE = "http://10.10.2.133:8080";
 
 const getToken = () =>
   typeof window !== "undefined" ? localStorage.getItem("access") : null;
@@ -136,43 +137,51 @@ const objectIdToIso = (id?: string): string => {
 };
 
 // Map backend Template -> UI TemplateItem (matches updated .NET model)
+// Map backend Template -> UI TemplateItem (matches current /api/Template schema)
 const mapTemplateDoc = (doc: any): TemplateItem => {
   const id = String(doc?.id ?? doc?.Id ?? "");
+  const name = String(doc?.name ?? "Untitled");
 
-  // Status from Template_status
-  const isActive =
-    typeof doc?.Template_status === "boolean" ? doc.Template_status : false;
+  // Prefer the display name; fall back to numeric createdBy or a placeholder
+  const createdBy: string =
+    (doc?.createdByName && String(doc.createdByName)) ??
+    (doc?.createdBy !== undefined ? String(doc.createdBy) : "Unknown User");
 
-  // Created by / dates from new dashboard fields
-  const createdBy = String(doc?.created_by ?? "Unknown User");
+  const description: string | null =
+    doc?.description !== undefined && doc?.description !== null
+      ? String(doc.description)
+      : null;
 
-  const createdAtUtc = (() => {
-    const raw = doc?.created_template_date;
-    if (raw) {
-      const d = new Date(raw);
-      if (!isNaN(d.getTime())) return d.toISOString();
-    }
-    return objectIdToIso(id);
-  })();
+  // Template rules text if present
+  const templateRules: string | null =
+    doc?.templateRuleInfo !== undefined && doc?.templateRuleInfo !== null
+      ? String(doc.templateRuleInfo)
+      : null;
 
-  const updatedAtUtc = (() => {
-    const raw = doc?.last_updated;
-    if (!raw) return undefined;
-    const d = new Date(raw);
-    return isNaN(d.getTime()) ? undefined : d.toISOString();
-  })();
+  // Dates
+  const createdAtUtc =
+    doc?.createdAt ? new Date(doc.createdAt).toISOString() : objectIdToIso(id);
+
+  const updatedAtUtc =
+    doc?.updatedAt && !isNaN(new Date(doc.updatedAt).getTime())
+      ? new Date(doc.updatedAt).toISOString()
+      : undefined;
+
+  // Your API doesn't expose an "active/completed" flag; keep a stable default
+  const isActive = true;
 
   return {
     id,
-    name: String(doc?.nameOfTemplate ?? "Untitled"),
-    description: null, // not in your model
+    name,
+    description,
     createdBy,
-    templateRules: null, // not in your model
+    templateRules,
     isActive,
     createdAtUtc,
     updatedAtUtc,
   };
 };
+
 
 // Normalize controller PageResult<Template>
 const normalizeListResponse = (
@@ -201,34 +210,32 @@ const isSchemaMismatchError = (text: string) =>
   /(sections_order|current_step)/i.test(text);
 
 /* core fetch for a given page/pageSize */
+/* core fetch */
 async function fetchPage(
   filters: Partial<TemplateFilters> & { page: number; pageSize: number },
 ) {
   const params = new URLSearchParams();
+
+  // If your API eventually supports search, keep this; otherwise it will be ignored harmlessly
   if (filters.search) params.set("search", filters.search);
-  if (filters.isActive !== undefined)
-    params.set("isActive", String(filters.isActive));
-  if (filters.createdBy) params.set("createdBy", String(filters.createdBy));
-  if (filters.sortBy) params.set("sortBy", String(filters.sortBy));
-  if (filters.sortOrder) params.set("sortOrder", String(filters.sortOrder));
-  if (filters.createdFrom) params.set("createdFrom", filters.createdFrom);
-  if (filters.createdTo) params.set("createdTo", filters.createdTo);
-  if (filters.updatedFrom) params.set("updatedFrom", filters.updatedFrom);
-  if (filters.updatedTo) params.set("updatedTo", filters.updatedTo);
 
-  params.set("page", String(filters.page));
-  params.set("pageSize", String(filters.pageSize));
-
+  const qs = params.toString();
   const token = getToken();
-  const res = await fetch(`${API_BASE}/api/templates?${params.toString()}`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+
+  const res = await fetch(
+    `${API_BASE}/api/Template${qs ? `?${qs}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     },
-  });
+  );
+
   return res;
 }
+
 
 /**
  * Probe mode:

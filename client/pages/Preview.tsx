@@ -280,7 +280,7 @@ export default function Preview() {
   const sectionStatus = dbTemplate?.Section_status || null;
 
   // ---------- API-ready data structure (kept from your code) ----------
-  const apiPayload = useMemo(() => {
+  const  apiPayload = useMemo(() => {
     const orderedSections: any[] = [];
 
     // Personal Information (kept as in your builder flow)
@@ -505,7 +505,11 @@ export default function Preview() {
 
  // ...existing code...
   const handleSave = async () => {
-    console.log("API Payload for Save:", apiPayload);
+    console.log("This is the HandleSave Function ")
+    //console.log("API Payload for Save:", apiPayload);
+    console.log("templateId:", templateId);
+    const bodyData = { Template_status: true };
+    console.log("Request body:", bodyData);
 
     // Send PUT request to update template status
     if (templateId) {
@@ -516,8 +520,11 @@ export default function Preview() {
             "Content-Type": "application/json",
             accept: "*/*",
           },
-          body: JSON.stringify({ Template_status: true }),
+          body: JSON.stringify(bodyData),
         });
+        const responseText = await res.text();
+        console.log("Response status:", res.status);
+        console.log("Response text:", responseText);
         if (!res.ok) {
           throw new Error(`Failed to update status: ${res.statusText}`);
         }
@@ -525,6 +532,8 @@ export default function Preview() {
         console.error("Error updating template status:", err);
         // Optionally show an error toast here
       }
+    } else {
+      console.warn("No templateId found, not sending PUT request.");
     }
 
     // Show success toast

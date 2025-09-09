@@ -939,7 +939,7 @@ export default function TemplateBuilder() {
       if (nextIndex < activeSections.length) {
         activeSections[nextIndex].setExpanded(true);
       } else {
-        navigate("/preview", {
+        navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
             templateName,
             verificationSteps,

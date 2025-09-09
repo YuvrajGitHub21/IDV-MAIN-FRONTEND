@@ -19,6 +19,7 @@ import ReceiverView from "./pages/ReceiverView";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import ChooseTemplate from "./pages/ChooseTemplate";
+import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
 // 1st change
@@ -46,6 +47,7 @@ const App = () => (
 
               <Route path="/home" element={<Home />} />
               <Route path="/choose-template" element={<ChooseTemplate />} />
+              <Route path="/debug" element={<Debug />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

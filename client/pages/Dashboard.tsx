@@ -5,6 +5,7 @@ import DataTable, { Column } from "@/components/arcon/DataTable";
 import EditProfileDialog from "@/components/arcon/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { getAccessToken, isAuthenticated } from "@/lib/auth";
 //Every thing is running fine with new Database and frontend commit.
 interface User {
   id: number;
@@ -39,11 +40,9 @@ const Dashboard: React.FC = () => {
   const [error, setError] = React.useState("");
 
   const navigate = useNavigate();
-  const tokenRef = React.useRef<string | null>(null);
 
   React.useEffect(() => {
-    tokenRef.current = localStorage.getItem("access");
-    if (!tokenRef.current) {
+    if (!isAuthenticated()) {
       navigate("/login");
       return;
     }
@@ -59,10 +58,12 @@ const Dashboard: React.FC = () => {
 
   const loadUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5074/api/User", {
+      const token = getAccessToken();
+      const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://localhost:5074";
+      const res = await fetch(`${API_BASE}/api/User`, {
         headers: {
           Accept: "application/json",
-          Authorization: `Bearer ${tokenRef.current}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       if (!res.ok) {
@@ -79,10 +80,12 @@ const Dashboard: React.FC = () => {
 
   const loadProfile = async () => {
     try {
-      const res = await fetch("http://localhost:5074/api/User/profile", {
+      const token = getAccessToken();
+      const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://localhost:5074";
+      const res = await fetch(`${API_BASE}/api/User/profile`, {
         headers: {
           Accept: "application/json",
-          Authorization: `Bearer ${tokenRef.current}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       if (!res.ok) return;
@@ -112,11 +115,13 @@ const Dashboard: React.FC = () => {
     firstName: string;
     lastName: string;
   }) => {
-    const res = await fetch("http://localhost:5074/api/User/profile", {
+    const token = getAccessToken();
+    const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://localhost:5074";
+    const res = await fetch(`${API_BASE}/api/User/profile`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${tokenRef.current}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         firstName: data.firstName,

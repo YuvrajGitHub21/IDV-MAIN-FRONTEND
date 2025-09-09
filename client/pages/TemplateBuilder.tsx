@@ -22,8 +22,12 @@ import {
 
 /* ===================== API config / helpers ===================== */
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
-const getToken = () =>
-  typeof window !== "undefined" ? localStorage.getItem("access") : null;
+const getToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("access_token") || localStorage.getItem("access");
+  }
+  return null;
+};
 
 const apiGet = async <T = any,>(path: string): Promise<T> => {
   const token = getToken();

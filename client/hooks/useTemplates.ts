@@ -120,8 +120,12 @@ const mockUsers: Record<string, string> = {
 /* ===================== Config ===================== */
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
 
-const getToken = () =>
-  typeof window !== "undefined" ? localStorage.getItem("access") : null;
+const getToken = () => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("access_token") || localStorage.getItem("access");
+  }
+  return null;
+};
 
 /* ===================== Helpers ===================== */
 // derive ISO date from MongoDB ObjectId

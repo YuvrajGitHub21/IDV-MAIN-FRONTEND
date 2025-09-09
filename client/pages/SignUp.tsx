@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { storeAuthData, isAuthenticated, type RegisterRequest, type AuthResponse } from "@/lib/auth";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    phone: "", // Added phone field to match backend
     password: "",
     confirmPassword: "",
   });
@@ -13,25 +15,51 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.firstName.trim())
+    if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    } else if (formData.firstName.length > 100) {
+      newErrors.firstName = "First name must be 100 characters or less";
+    }
 
-    if (!formData.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
+    if (!formData.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    } else if (formData.lastName.length > 100) {
+      newErrors.lastName = "Last name must be 100 characters or less";
+    }
+
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
+    } else if (formData.email.length > 320) {
+      newErrors.email = "Email must be 320 characters or less";
+    }
 
-    if (!formData.password) newErrors.password = "Password is required";
-    else if (formData.password.length < 6)
+    // Phone is optional, but validate if provided
+    if (formData.phone && formData.phone.length > 40) {
+      newErrors.phone = "Phone number must be 40 characters or less";
+    }
+
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
+    }
 
-    if (!formData.confirmPassword)
+    if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
-    else if (formData.confirmPassword !== formData.password)
+    } else if (formData.confirmPassword !== formData.password) {
       newErrors.confirmPassword = "Passwords do not match";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -42,28 +70,41 @@ export default function SignUp() {
 
     setIsLoading(true);
     setErrors({});
-    const API = import.meta.env.VITE_API_BASE;
+    // Use direct connection (bypass proxy since backend has CORS configured)
+    const API = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
+    
     try {
-      const response = await fetch(`${API}/api/Auth/register`, {
+      const registerData: RegisterRequest = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+      };
+
+      // Only include phone if it's provided
+      if (formData.phone.trim()) {
+        registerData.phone = formData.phone.trim();
+      }
+
+      const response = await fetch(`${API}/api/auth/register`, {
         method: "POST",
+        mode: 'cors',
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-          confirmPassword: formData.confirmPassword,
-        }),
+        body: JSON.stringify(registerData),
       });
 
       if (response.ok) {
-        navigate("/login", { replace: true });
+        const authResponse: AuthResponse = await response.json();
+        storeAuthData(authResponse);
+        navigate("/dashboard", { replace: true });
       } else {
         let message = "Registration failed";
         try {
           const errorData = await response.json();
-          message = errorData.message || message;
-        } catch {}
+          message = errorData.detail || errorData.message || message;
+        } catch {
+          // Use default error message if parsing fails
+        }
         setErrors({ submit: message });
       }
     } catch {
@@ -308,6 +349,29 @@ export default function SignUp() {
               {errors.email && (
                 <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.email}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+                Phone Number (Optional)
+              </label>
+              <div className="relative">
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  placeholder="Enter your phone number"
+                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                    errors.phone ? "border-red-500" : "border-arcon-gray-border"
+                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                />
+              </div>
+              {errors.phone && (
+                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                  {errors.phone}
                 </p>
               )}
             </div>

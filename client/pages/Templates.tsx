@@ -345,10 +345,9 @@ export default function Templates() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("access");
-    localStorage.removeItem("refresh");
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    const { logout } = await import("@/lib/auth");
+    await logout();
     navigate("/login", { replace: true });
   };
 

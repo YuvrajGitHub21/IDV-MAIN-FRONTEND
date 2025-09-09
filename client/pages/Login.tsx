@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { storeAuthData, isAuthenticated, type LoginRequest, type AuthResponse } from "@/lib/auth";
 
 export default function Login() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LoginRequest>({
     email: "",
     password: "",
   });
@@ -10,11 +11,11 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (typeof window !== "undefined" && localStorage.getItem("access")) {
-  //     navigate("/dashboard", { replace: true });
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -27,12 +28,19 @@ export default function Login() {
 
     if (!formData.password) {
       newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const API = import.meta.env.VITE_API_BASE;
+
+  // Force direct connection (bypass proxy for now since backend has CORS configured)
+  const getApiUrl = () => {
+    return import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -42,8 +50,12 @@ export default function Login() {
     setErrors({});
 
     try {
-      const response = await fetch(`${API}/api/Auth/login`, {
+      const apiUrl = getApiUrl();
+      console.log('Attempting login with API URL:', apiUrl);
+      
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: "POST",
+        mode: 'cors',
         headers: {
           "Content-Type": "application/json",
         },
@@ -54,13 +66,18 @@ export default function Login() {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("access", data.data.accessToken);
-        localStorage.setItem("name", data.data.user.firstName);
+        const authResponse: AuthResponse = await response.json();
+        storeAuthData(authResponse);
         navigate("/dashboard", { replace: true });
       } else {
-        const errorData = await response.json();
-        setErrors({ submit: errorData.message || "Login failed" });
+        let errorMessage = "Login failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch {
+          // Use default error message if parsing fails
+        }
+        setErrors({ submit: errorMessage });
       }
     } catch (error) {
       setErrors({ submit: "Network error. Please try again." });

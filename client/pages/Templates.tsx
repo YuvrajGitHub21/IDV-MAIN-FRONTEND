@@ -285,7 +285,7 @@ export default function Templates() {
     }
     setDeletingId(id);
     try {
-      const res = await fetch(`${API_BASE}/api/templates/${id}`, {
+      const res = await fetch(`${API_BASE}/api/Template/${id}`, {
         method: "DELETE",
         headers: {
           Accept: "application/json",

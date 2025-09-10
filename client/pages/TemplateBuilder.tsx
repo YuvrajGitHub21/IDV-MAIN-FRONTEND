@@ -617,10 +617,7 @@ export default function TemplateBuilder() {
   const navigate = useNavigate();
   const location = useLocation() as any;
   const templateName = location?.state?.templateName || "New Template";
-  const templateId: string =
-    location?.state?.templateId ||
-    localStorage.getItem("arcon_current_template_id") ||
-    "";
+  const templateId: string = location?.state?.templateId || "";
 
   // left-rail steps
   const [verificationSteps, setVerificationSteps] = useState<
@@ -696,29 +693,7 @@ export default function TemplateBuilder() {
           setAddedFields(incoming.addedFields);
         return;
       }
-      const raw = localStorage.getItem("arcon_verification_steps");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          const hasPI = parsed.some((s: any) => s?.id === "personal-info");
-          const normalized = hasPI
-            ? parsed
-            : [
-                {
-                  id: "personal-info",
-                  title: "Personal Information",
-                  description:
-                    "Set up fields to collect basic user details like name, contact.",
-                  isRequired: true,
-                  isEnabled: true,
-                },
-                ...parsed,
-              ];
-          setVerificationSteps(
-            normalized.filter((s: any) => s && typeof s.id === "string"),
-          );
-        }
-      }
+      // rely on per-template hydration; no global fallback
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

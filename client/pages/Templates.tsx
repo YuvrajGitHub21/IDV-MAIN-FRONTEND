@@ -778,8 +778,7 @@ export default function Templates() {
                 <span className="text-xs font-semibold mt-1">Users</span>
               </div>
             </nav>
-          </div>
-          <div className="px-2 py-4 border-t bg-white">
+            <div className="px-2 py-4 border-t bg-white">
             <div
               className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
               onClick={handleLogout}
@@ -821,6 +820,7 @@ export default function Templates() {
                 />
               </svg>
               <span className="text-xs font-semibold mt-1">Help</span>
+            </div>
             </div>
           </div>
         </aside>

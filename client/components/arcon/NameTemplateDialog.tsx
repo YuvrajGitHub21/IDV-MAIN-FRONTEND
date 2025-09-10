@@ -56,7 +56,8 @@ export function NameTemplateDialog({
         state: { templateId: created.id, templateName: created.name },
       });
     } catch (err: any) {
-      alert(err?.message || "Failed to create template");
+      const msg = (err?.message || "Failed to create template").toString();
+      setErrorMessage(msg);
     }
   };
 

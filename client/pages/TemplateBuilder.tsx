@@ -748,6 +748,21 @@ export default function TemplateBuilder() {
 
   // Per-template storage key
   const templateStorageKey = (id: string) => `arcon_tpl_state:${id}`;
+  const DRAFT_ID_KEY = "arcon_current_draft_id";
+  const buildKey = (id: string) => `arcon_tpl_state:${id}`;
+  const getActiveStorageKey = () => {
+    if (templateId) return templateStorageKey(templateId);
+    try {
+      let draftId = sessionStorage.getItem(DRAFT_ID_KEY);
+      if (!draftId) {
+        draftId = `draft-${Date.now()}`;
+        sessionStorage.setItem(DRAFT_ID_KEY, draftId);
+      }
+      return buildKey(draftId);
+    } catch {
+      return buildKey("draft");
+    }
+  };
 
   // Reset builder to defaults (blank state for new templates)
   const resetToDefaults = () => {
@@ -832,33 +847,97 @@ export default function TemplateBuilder() {
     },
   });
 
-  // Hydrate from storage when templateId changes
+  // Hydrate from storage when templateId changes or on mount (handle drafts too)
   useEffect(() => {
-    if (!templateId) {
-      resetToDefaults();
+    const returning = (() => {
       try {
+        return sessionStorage.getItem("arcon_return_to_builder") === "1";
+      } catch {
+        return false;
+      }
+    })();
+
+    if (!templateId) {
+      if (!returning) {
+        // New template session: start fresh and create a new draft id
+        try {
+          const prevDraft = sessionStorage.getItem(DRAFT_ID_KEY);
+          if (prevDraft) localStorage.removeItem(buildKey(prevDraft));
+          sessionStorage.setItem(DRAFT_ID_KEY, `draft-${Date.now()}`);
+          sessionStorage.removeItem("arcon_return_to_builder");
+        } catch {}
+        resetToDefaults();
+        return;
+      }
+      // Returning to an unsaved draft
+      let raw: string | null = null;
+      try {
+        let draftId = sessionStorage.getItem(DRAFT_ID_KEY);
+        if (!draftId) {
+          draftId = `draft-${Date.now()}`;
+          sessionStorage.setItem(DRAFT_ID_KEY, draftId);
+        }
+        raw = localStorage.getItem(buildKey(draftId));
         sessionStorage.removeItem("arcon_return_to_builder");
       } catch {}
+      if (!raw) {
+        resetToDefaults();
+        return;
+      }
+      try {
+        const s = JSON.parse(raw);
+        if (Array.isArray(s.verificationSteps))
+          setVerificationSteps(s.verificationSteps);
+        if (Array.isArray(s.addedFields)) setAddedFields(s.addedFields);
+        if (Array.isArray(s.optionalFields))
+          setOptionalFields(s.optionalFields);
+        if (typeof s.personalInfoExpanded === "boolean")
+          setPersonalInfoExpanded(s.personalInfoExpanded);
+        if (typeof s.documentVerificationExpanded === "boolean")
+          setDocumentVerificationExpanded(s.documentVerificationExpanded);
+        if (typeof s.biometricVerificationExpanded === "boolean")
+          setBiometricVerificationExpanded(s.biometricVerificationExpanded);
+        if (typeof s.currentSectionId === "string")
+          setCurrentSectionId(s.currentSectionId);
+        const d = s.doc || {};
+        if (typeof d.allowUploadFromDevice === "boolean")
+          setAllowUploadFromDevice(d.allowUploadFromDevice);
+        if (typeof d.allowCaptureWebcam === "boolean")
+          setAllowCaptureWebcam(d.allowCaptureWebcam);
+        if (typeof d.documentHandling === "string")
+          setDocumentHandling(d.documentHandling);
+        if (Array.isArray(d.selectedCountries))
+          setSelectedCountries(d.selectedCountries);
+        if (Array.isArray(d.selectedDocuments))
+          setSelectedDocuments(d.selectedDocuments);
+        const b = s.biometric || {};
+        if (typeof b.maxRetries === "string") setMaxRetries(b.maxRetries);
+        if (typeof b.askUserRetry === "boolean")
+          setAskUserRetry(b.askUserRetry);
+        if (typeof b.blockAfterRetries === "boolean")
+          setBlockAfterRetries(b.blockAfterRetries);
+        if (typeof b.dataRetention === "string")
+          setDataRetention(b.dataRetention);
+      } catch {
+        resetToDefaults();
+      }
       return;
     }
+
+    // With a real templateId
     try {
       localStorage.setItem("arcon_current_template_id", templateId);
       sessionStorage.removeItem("arcon_return_to_builder");
     } catch {}
 
-    const raw = (() => {
-      try {
-        return localStorage.getItem(templateStorageKey(templateId));
-      } catch {
-        return null;
-      }
-    })();
-
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem(templateStorageKey(templateId));
+    } catch {}
     if (!raw) {
       resetToDefaults();
       return;
     }
-
     try {
       const s = JSON.parse(raw);
       if (Array.isArray(s.verificationSteps))
@@ -873,7 +952,6 @@ export default function TemplateBuilder() {
         setBiometricVerificationExpanded(s.biometricVerificationExpanded);
       if (typeof s.currentSectionId === "string")
         setCurrentSectionId(s.currentSectionId);
-
       const d = s.doc || {};
       if (typeof d.allowUploadFromDevice === "boolean")
         setAllowUploadFromDevice(d.allowUploadFromDevice);
@@ -885,7 +963,6 @@ export default function TemplateBuilder() {
         setSelectedCountries(d.selectedCountries);
       if (Array.isArray(d.selectedDocuments))
         setSelectedDocuments(d.selectedDocuments);
-
       const b = s.biometric || {};
       if (typeof b.maxRetries === "string") setMaxRetries(b.maxRetries);
       if (typeof b.askUserRetry === "boolean") setAskUserRetry(b.askUserRetry);
@@ -898,14 +975,11 @@ export default function TemplateBuilder() {
     }
   }, [templateId]);
 
-  // Persist snapshot whenever relevant state changes (scoped by templateId)
+  // Persist snapshot whenever relevant state changes (supports drafts)
   const persistSnapshot = () => {
-    if (!templateId) return;
     try {
-      localStorage.setItem(
-        templateStorageKey(templateId),
-        JSON.stringify(buildSnapshot()),
-      );
+      const key = getActiveStorageKey();
+      localStorage.setItem(key, JSON.stringify(buildSnapshot()));
     } catch {}
   };
 

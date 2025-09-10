@@ -1141,6 +1141,7 @@ export default function TemplateBuilder() {
       if (nextIndex < activeSections.length) {
         setCurrentSection(activeSections[nextIndex].name as VerificationStep["id"]);
       } else {
+        try { persistSnapshot(); } catch {}
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
             templateName,

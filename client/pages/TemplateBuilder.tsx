@@ -836,7 +836,9 @@ export default function TemplateBuilder() {
   useEffect(() => {
     if (!templateId) {
       resetToDefaults();
-      try { sessionStorage.removeItem("arcon_return_to_builder"); } catch {}
+      try {
+        sessionStorage.removeItem("arcon_return_to_builder");
+      } catch {}
       return;
     }
     try {
@@ -1324,8 +1326,12 @@ export default function TemplateBuilder() {
           activeSections[nextIndex].name as VerificationStep["id"],
         );
       } else {
-        try { persistSnapshot(); } catch {}
-        try { sessionStorage.setItem("arcon_return_to_builder", "1"); } catch {}
+        try {
+          persistSnapshot();
+        } catch {}
+        try {
+          sessionStorage.setItem("arcon_return_to_builder", "1");
+        } catch {}
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
             templateName,

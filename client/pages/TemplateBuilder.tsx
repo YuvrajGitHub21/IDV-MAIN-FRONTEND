@@ -930,8 +930,6 @@ export default function TemplateBuilder() {
   const orderedSectionIds: VerificationStep["id"][] = verificationSteps.map(
     (s) => s.id,
   );
-  const [currentSectionId, setCurrentSectionId] =
-    useState<VerificationStep["id"]>("personal-info");
 
   // system fields (readonly UI)
   const [systemFieldAlerts, setSystemFieldAlerts] = useState<{

@@ -21,10 +21,12 @@ import {
 } from "lucide-react";
 
 /* ===================== API config / helpers ===================== */
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
 const getToken = () => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("access_token") || localStorage.getItem("access");
+    return (
+      localStorage.getItem("access_token") || localStorage.getItem("access")
+    );
   }
   return null;
 };
@@ -183,49 +185,6 @@ const DocumentVerificationSection: React.FC<{
     setSelectedDocuments,
   } = stateBag;
 
-  // Load persisted UI state
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("arcon_doc_verification_form");
-      if (raw) {
-        const p = JSON.parse(raw);
-        if (typeof p.allowUploadFromDevice === "boolean")
-          setAllowUploadFromDevice(p.allowUploadFromDevice);
-        if (typeof p.allowCaptureWebcam === "boolean")
-          setAllowCaptureWebcam(p.allowCaptureWebcam);
-        if (typeof p.documentHandling === "string")
-          setDocumentHandling(p.documentHandling);
-        if (Array.isArray(p.selectedCountries))
-          setSelectedCountries(p.selectedCountries);
-        if (Array.isArray(p.selectedDocuments))
-          setSelectedDocuments(p.selectedDocuments);
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Persist UI state
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "arcon_doc_verification_form",
-        JSON.stringify({
-          allowUploadFromDevice,
-          allowCaptureWebcam,
-          documentHandling,
-          selectedCountries,
-          selectedDocuments,
-        }),
-      );
-    } catch {}
-  }, [
-    allowUploadFromDevice,
-    allowCaptureWebcam,
-    documentHandling,
-    selectedCountries,
-    selectedDocuments,
-  ]);
-
   const toggleDocument = (docType: string) => {
     setSelectedDocuments((prev) =>
       prev.includes(docType)
@@ -248,16 +207,24 @@ const DocumentVerificationSection: React.FC<{
   return (
     <div className="border border-gray-300 rounded">
       <div className="flex items-center gap-2 p-3 border-b border-gray-300 bg-white">
-        <Button variant="ghost" size="sm" className="p-0 h-auto" onClick={onToggle}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-0 h-auto"
+          onClick={onToggle}
+        >
           <Minus className="w-5 h-5 text-gray-700" />
         </Button>
-        <h2 className="font-bold text-base text-gray-900">Document Verification</h2>
+        <h2 className="font-bold text-base text-gray-900">
+          Document Verification
+        </h2>
       </div>
 
       {!isExpanded && (
         <div className="px-4 lg:px-9 pb-3">
           <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-            Define how users can submit ID documents and what happens if files are unclear.
+            Define how users can submit ID documents and what happens if files
+            are unclear.
           </p>
         </div>
       )}
@@ -267,8 +234,12 @@ const DocumentVerificationSection: React.FC<{
           {/* Upload Options */}
           <div className="space-y-4">
             <div>
-              <h4 className="text-base font-bold text-gray-900 mb-2">User Upload Options</h4>
-              <p className="text-sm text-gray-600">Select how users are allowed to submit documents.</p>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                User Upload Options
+              </h4>
+              <p className="text-sm text-gray-600">
+                Select how users are allowed to submit documents.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-6 space-y-5">
@@ -277,14 +248,21 @@ const DocumentVerificationSection: React.FC<{
                   <Checkbox
                     id="upload-device"
                     checked={allowUploadFromDevice}
-                    onCheckedChange={(v) => setAllowUploadFromDevice(v === true)}
+                    onCheckedChange={(v) =>
+                      setAllowUploadFromDevice(v === true)
+                    }
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
-                    <Label htmlFor="upload-device" className="text-sm font-medium text-gray-900 block mb-2">
+                    <Label
+                      htmlFor="upload-device"
+                      className="text-sm font-medium text-gray-900 block mb-2"
+                    >
                       Allow Upload from Device
                     </Label>
-                    <p className="text-sm text-gray-600">Let users upload existing documents from their device.</p>
+                    <p className="text-sm text-gray-600">
+                      Let users upload existing documents from their device.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -298,10 +276,15 @@ const DocumentVerificationSection: React.FC<{
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
-                    <Label htmlFor="capture-webcam" className="text-sm font-medium text-gray-900 block mb-2">
+                    <Label
+                      htmlFor="capture-webcam"
+                      className="text-sm font-medium text-gray-900 block mb-2"
+                    >
                       Allow Capture via Webcam
                     </Label>
-                    <p className="text-sm text-gray-600">Enable webcam access for real-time capture.</p>
+                    <p className="text-sm text-gray-600">
+                      Enable webcam access for real-time capture.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -311,33 +294,58 @@ const DocumentVerificationSection: React.FC<{
           {/* Unreadable Handling */}
           <div className="space-y-4">
             <div>
-              <h4 className="text-base font-bold text-gray-900 mb-2">Unreadable Document Handling</h4>
-              <p className="text-sm text-gray-600">Choose what happens when an upload is not clear.</p>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                Unreadable Document Handling
+              </h4>
+              <p className="text-sm text-gray-600">
+                Choose what happens when an upload is not clear.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-6">
-              <RadioGroup value={documentHandling} onValueChange={setDocumentHandling}>
+              <RadioGroup
+                value={documentHandling}
+                onValueChange={setDocumentHandling}
+              >
                 <div className="space-y-5">
                   <div className="pb-5 border-b border-gray-200">
                     <div className="flex items-start gap-2">
-                      <RadioGroupItem value="reject" id="reject" className="mt-0.5 w-4 h-4" />
+                      <RadioGroupItem
+                        value="reject"
+                        id="reject"
+                        className="mt-0.5 w-4 h-4"
+                      />
                       <div className="flex-1 min-w-0">
-                        <Label htmlFor="reject" className="text-sm font-medium text-gray-900 block mb-2">
+                        <Label
+                          htmlFor="reject"
+                          className="text-sm font-medium text-gray-900 block mb-2"
+                        >
                           Reject Immediately
                         </Label>
-                        <p className="text-sm text-gray-600">Reject unclear documents without retries.</p>
+                        <p className="text-sm text-gray-600">
+                          Reject unclear documents without retries.
+                        </p>
                       </div>
                     </div>
                   </div>
 
                   <div>
                     <div className="flex items-start gap-2">
-                      <RadioGroupItem value="retry" id="retry" className="mt-0.5 w-4 h-4" />
+                      <RadioGroupItem
+                        value="retry"
+                        id="retry"
+                        className="mt-0.5 w-4 h-4"
+                      />
                       <div className="flex-1 min-w-0">
-                        <Label htmlFor="retry" className="text-sm font-medium text-gray-900 block mb-2">
+                        <Label
+                          htmlFor="retry"
+                          className="text-sm font-medium text-gray-900 block mb-2"
+                        >
                           Allow Retries Before Rejection
                         </Label>
-                        <p className="text-sm text-gray-600">Let users retry before a final rejection.</p>
+                        <p className="text-sm text-gray-600">
+                          Let users retry before a final rejection.
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -349,15 +357,24 @@ const DocumentVerificationSection: React.FC<{
           {/* Supported Countries */}
           <div className="space-y-4">
             <div>
-              <h4 className="text-base font-bold text-gray-900 mb-2">Supported Countries</h4>
-              <p className="text-sm text-gray-600">Only documents from these countries are supported.</p>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                Supported Countries
+              </h4>
+              <p className="text-sm text-gray-600">
+                Only documents from these countries are supported.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-6 space-y-4">
               <div>
-                <Label className="text-sm font-medium text-gray-900 block mb-2">Which countries are supported?</Label>
+                <Label className="text-sm font-medium text-gray-900 block mb-2">
+                  Which countries are supported?
+                </Label>
                 <div className="relative max-w-80">
-                  <Button variant="outline" className="w-full h-8 justify-between text-sm text-gray-600 border-gray-300 bg-white">
+                  <Button
+                    variant="outline"
+                    className="w-full h-8 justify-between text-sm text-gray-600 border-gray-300 bg-white"
+                  >
                     Select Countries
                     <ChevronDown className="w-2.5 h-2.5" />
                   </Button>
@@ -367,7 +384,9 @@ const DocumentVerificationSection: React.FC<{
               {selectedCountries.map((country) => (
                 <div key={country} className="bg-white rounded p-3">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-black">{country}</span>
+                    <span className="text-sm font-medium text-black">
+                      {country}
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -380,14 +399,20 @@ const DocumentVerificationSection: React.FC<{
 
                   <div className="bg-gray-50 rounded p-3 flex flex-wrap gap-2">
                     {documentTypes.map((docType) => (
-                      <div key={docType} className="flex items-center gap-2 bg-gray-50 rounded-full px-2 py-2">
+                      <div
+                        key={docType}
+                        className="flex items-center gap-2 bg-gray-50 rounded-full px-2 py-2"
+                      >
                         <Checkbox
                           id={`${country}-${docType}`}
                           checked={selectedDocuments.includes(docType)}
                           onCheckedChange={() => toggleDocument(docType)}
                           className="w-4 h-4"
                         />
-                        <Label htmlFor={`${country}-${docType}`} className="text-sm font-medium text-gray-600 cursor-pointer">
+                        <Label
+                          htmlFor={`${country}-${docType}`}
+                          className="text-sm font-medium text-gray-600 cursor-pointer"
+                        >
                           {docType}
                         </Label>
                       </div>
@@ -429,50 +454,27 @@ const BiometricVerificationSection: React.FC<{
     setDataRetention,
   } = stateBag;
 
-  // Load persisted UI state
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("arcon_biometric_verification_form");
-      if (raw) {
-        const p = JSON.parse(raw);
-        if (typeof p.maxRetries === "string") setMaxRetries(p.maxRetries);
-        if (typeof p.askUserRetry === "boolean") setAskUserRetry(p.askUserRetry);
-        if (typeof p.blockAfterRetries === "boolean")
-          setBlockAfterRetries(p.blockAfterRetries);
-        if (typeof p.dataRetention === "string") setDataRetention(p.dataRetention);
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Persist UI state
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "arcon_biometric_verification_form",
-        JSON.stringify({
-          maxRetries,
-          askUserRetry,
-          blockAfterRetries,
-          dataRetention,
-        }),
-      );
-    } catch {}
-  }, [maxRetries, askUserRetry, blockAfterRetries, dataRetention]);
-
   return (
     <div className="border border-gray-300 rounded">
       <div className="flex items-center gap-2 p-3 border-b border-gray-300 bg-white">
-        <Button variant="ghost" size="sm" className="p-0 h-auto" onClick={onToggle}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="p-0 h-auto"
+          onClick={onToggle}
+        >
           <Minus className="w-5 h-5 text-gray-700" />
         </Button>
-        <h2 className="font-bold text-base text-gray-900">Biometric Verification</h2>
+        <h2 className="font-bold text-base text-gray-900">
+          Biometric Verification
+        </h2>
       </div>
 
       {!isExpanded && (
         <div className="px-4 lg:px-9 pb-3">
           <p className="text-xs lg:text-[13px] text-[#505258] leading-relaxed">
-            Configure selfie capture retries, liveness threshold, and data storage.
+            Configure selfie capture retries, liveness threshold, and data
+            storage.
           </p>
         </div>
       )}
@@ -519,7 +521,9 @@ const BiometricVerificationSection: React.FC<{
               <h4 className="text-base font-bold text-gray-900 mb-2">
                 Liveness Confidence Threshold (%)
               </h4>
-              <p className="text-sm text-gray-600">Choose what happens on low liveness score.</p>
+              <p className="text-sm text-gray-600">
+                Choose what happens on low liveness score.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-6 space-y-5">
@@ -532,10 +536,15 @@ const BiometricVerificationSection: React.FC<{
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
-                    <Label htmlFor="ask-retry" className="text-sm font-medium text-gray-900 block mb-2">
+                    <Label
+                      htmlFor="ask-retry"
+                      className="text-sm font-medium text-gray-900 block mb-2"
+                    >
                       Ask the user to try again
                     </Label>
-                    <p className="text-sm text-gray-600">Prompt the user to reattempt the selfie.</p>
+                    <p className="text-sm text-gray-600">
+                      Prompt the user to reattempt the selfie.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -549,10 +558,15 @@ const BiometricVerificationSection: React.FC<{
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
-                    <Label htmlFor="block-attempts" className="text-sm font-medium text-gray-900 block mb-2">
+                    <Label
+                      htmlFor="block-attempts"
+                      className="text-sm font-medium text-gray-900 block mb-2"
+                    >
                       Block further attempts after allowed retries fail
                     </Label>
-                    <p className="text-sm text-gray-600">Send submission for manual verification.</p>
+                    <p className="text-sm text-gray-600">
+                      Send submission for manual verification.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -562,13 +576,19 @@ const BiometricVerificationSection: React.FC<{
           {/* Data retention */}
           <div className="space-y-4">
             <div>
-              <h4 className="text-base font-bold text-gray-900 mb-2">Biometric Data Retention</h4>
-              <p className="text-sm text-gray-600">Define retention duration.</p>
+              <h4 className="text-base font-bold text-gray-900 mb-2">
+                Biometric Data Retention
+              </h4>
+              <p className="text-sm text-gray-600">
+                Define retention duration.
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-6 space-y-5">
               <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-900">Retention period</Label>
+                <Label className="text-sm font-medium text-gray-900">
+                  Retention period
+                </Label>
                 <div className="w-full max-w-80 relative">
                   <select
                     value={dataRetention}
@@ -603,18 +623,18 @@ export default function TemplateBuilder() {
     "";
 
   // left-rail steps
-  const [verificationSteps, setVerificationSteps] = useState<VerificationStep[]>(
-    [
-      {
-        id: "personal-info",
-        title: "Personal Information",
-        description:
-          "Set up fields to collect basic user details like name, contact.",
-        isRequired: true,
-        isEnabled: true,
-      },
-    ],
-  );
+  const [verificationSteps, setVerificationSteps] = useState<
+    VerificationStep[]
+  >([
+    {
+      id: "personal-info",
+      title: "Personal Information",
+      description:
+        "Set up fields to collect basic user details like name, contact.",
+      isRequired: true,
+      isEnabled: true,
+    },
+  ]);
 
   const [availableSteps] = useState<VerificationStep[]>([
     {
@@ -627,7 +647,8 @@ export default function TemplateBuilder() {
     {
       id: "biometric-verification",
       title: "Biometric Verification",
-      description: "Set selfie retries, liveness threshold, and biometric storage",
+      description:
+        "Set selfie retries, liveness threshold, and biometric storage",
       isRequired: false,
       isEnabled: false,
     },
@@ -653,8 +674,11 @@ export default function TemplateBuilder() {
               },
               ...parsed,
             ];
-        setVerificationSteps(normalized.filter((s: any) => s && typeof s.id === "string"));
-        if (Array.isArray(incoming.addedFields)) setAddedFields(incoming.addedFields);
+        setVerificationSteps(
+          normalized.filter((s: any) => s && typeof s.id === "string"),
+        );
+        if (Array.isArray(incoming.addedFields))
+          setAddedFields(incoming.addedFields);
         return;
       }
       const raw = localStorage.getItem("arcon_verification_steps");
@@ -675,7 +699,9 @@ export default function TemplateBuilder() {
                 },
                 ...parsed,
               ];
-          setVerificationSteps(normalized.filter((s: any) => s && typeof s.id === "string"));
+          setVerificationSteps(
+            normalized.filter((s: any) => s && typeof s.id === "string"),
+          );
         }
       }
     } catch {}
@@ -684,24 +710,233 @@ export default function TemplateBuilder() {
 
   // right rail (optional personal-info fields)
   const [optionalFields, setOptionalFields] = useState<FieldOption[]>([
-    { id: "date-of-birth", name: "Date Of Birth", placeholder: "10/07/1997", checked: false },
-    { id: "current-address", name: "Current Address", placeholder: "Enter your current address", checked: false },
-    { id: "permanent-address", name: "Permanent Address", placeholder: "Enter your permanent address", checked: false },
-    { id: "gender", name: "Gender", placeholder: "Select gender", checked: false },
+    {
+      id: "date-of-birth",
+      name: "Date Of Birth",
+      placeholder: "10/07/1997",
+      checked: false,
+    },
+    {
+      id: "current-address",
+      name: "Current Address",
+      placeholder: "Enter your current address",
+      checked: false,
+    },
+    {
+      id: "permanent-address",
+      name: "Permanent Address",
+      placeholder: "Enter your permanent address",
+      checked: false,
+    },
+    {
+      id: "gender",
+      name: "Gender",
+      placeholder: "Select gender",
+      checked: false,
+    },
   ]);
   const [addedFields, setAddedFields] = useState<AddedField[]>([]);
 
   // section expand/collapse
   const [personalInfoExpanded, setPersonalInfoExpanded] = useState(true);
-  const [documentVerificationExpanded, setDocumentVerificationExpanded] = useState(false);
-  const [biometricVerificationExpanded, setBiometricVerificationExpanded] = useState(false);
+  const [documentVerificationExpanded, setDocumentVerificationExpanded] =
+    useState(false);
+  const [biometricVerificationExpanded, setBiometricVerificationExpanded] =
+    useState(false);
+
+  // Per-template storage key
+  const templateStorageKey = (id: string) => `arcon_tpl_state:${id}`;
+
+  // Reset builder to defaults (blank state for new templates)
+  const resetToDefaults = () => {
+    setVerificationSteps([
+      {
+        id: "personal-info",
+        title: "Personal Information",
+        description:
+          "Set up fields to collect basic user details like name, contact.",
+        isRequired: true,
+        isEnabled: true,
+      },
+    ]);
+
+    setOptionalFields([
+      {
+        id: "date-of-birth",
+        name: "Date Of Birth",
+        placeholder: "10/07/1997",
+        checked: false,
+      },
+      {
+        id: "current-address",
+        name: "Current Address",
+        placeholder: "Enter your current address",
+        checked: false,
+      },
+      {
+        id: "permanent-address",
+        name: "Permanent Address",
+        placeholder: "Enter your permanent address",
+        checked: false,
+      },
+      {
+        id: "gender",
+        name: "Gender",
+        placeholder: "Select gender",
+        checked: false,
+      },
+    ]);
+
+    setAddedFields([]);
+
+    setPersonalInfoExpanded(true);
+    setDocumentVerificationExpanded(false);
+    setBiometricVerificationExpanded(false);
+    setCurrentSectionId("personal-info");
+
+    setAllowUploadFromDevice(false);
+    setAllowCaptureWebcam(false);
+    setDocumentHandling("");
+    setSelectedCountries(["India"]);
+    setSelectedDocuments([]);
+
+    setMaxRetries("4");
+    setAskUserRetry(false);
+    setBlockAfterRetries(false);
+    setDataRetention("6 Months");
+  };
+
+  // Build a full snapshot of the current builder state
+  const buildSnapshot = () => ({
+    verificationSteps,
+    addedFields,
+    optionalFields,
+    personalInfoExpanded,
+    documentVerificationExpanded,
+    biometricVerificationExpanded,
+    currentSectionId,
+    doc: {
+      allowUploadFromDevice,
+      allowCaptureWebcam,
+      documentHandling,
+      selectedCountries,
+      selectedDocuments,
+    },
+    biometric: {
+      maxRetries,
+      askUserRetry,
+      blockAfterRetries,
+      dataRetention,
+    },
+  });
+
+  // Hydrate from storage when templateId changes
+  useEffect(() => {
+    if (!templateId) {
+      resetToDefaults();
+      return;
+    }
+    try {
+      localStorage.setItem("arcon_current_template_id", templateId);
+    } catch {}
+
+    const raw = (() => {
+      try {
+        return localStorage.getItem(templateStorageKey(templateId));
+      } catch {
+        return null;
+      }
+    })();
+
+    if (!raw) {
+      resetToDefaults();
+      return;
+    }
+
+    try {
+      const s = JSON.parse(raw);
+      if (Array.isArray(s.verificationSteps))
+        setVerificationSteps(s.verificationSteps);
+      if (Array.isArray(s.addedFields)) setAddedFields(s.addedFields);
+      if (Array.isArray(s.optionalFields)) setOptionalFields(s.optionalFields);
+      if (typeof s.personalInfoExpanded === "boolean")
+        setPersonalInfoExpanded(s.personalInfoExpanded);
+      if (typeof s.documentVerificationExpanded === "boolean")
+        setDocumentVerificationExpanded(s.documentVerificationExpanded);
+      if (typeof s.biometricVerificationExpanded === "boolean")
+        setBiometricVerificationExpanded(s.biometricVerificationExpanded);
+      if (typeof s.currentSectionId === "string")
+        setCurrentSectionId(s.currentSectionId);
+
+      const d = s.doc || {};
+      if (typeof d.allowUploadFromDevice === "boolean")
+        setAllowUploadFromDevice(d.allowUploadFromDevice);
+      if (typeof d.allowCaptureWebcam === "boolean")
+        setAllowCaptureWebcam(d.allowCaptureWebcam);
+      if (typeof d.documentHandling === "string")
+        setDocumentHandling(d.documentHandling);
+      if (Array.isArray(d.selectedCountries))
+        setSelectedCountries(d.selectedCountries);
+      if (Array.isArray(d.selectedDocuments))
+        setSelectedDocuments(d.selectedDocuments);
+
+      const b = s.biometric || {};
+      if (typeof b.maxRetries === "string") setMaxRetries(b.maxRetries);
+      if (typeof b.askUserRetry === "boolean") setAskUserRetry(b.askUserRetry);
+      if (typeof b.blockAfterRetries === "boolean")
+        setBlockAfterRetries(b.blockAfterRetries);
+      if (typeof b.dataRetention === "string")
+        setDataRetention(b.dataRetention);
+    } catch {
+      resetToDefaults();
+    }
+  }, [templateId]);
+
+  // Persist snapshot whenever relevant state changes (scoped by templateId)
+  const persistSnapshot = () => {
+    if (!templateId) return;
+    try {
+      localStorage.setItem(
+        templateStorageKey(templateId),
+        JSON.stringify(buildSnapshot()),
+      );
+    } catch {}
+  };
+
+  useEffect(() => {
+    persistSnapshot();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    templateId,
+    verificationSteps,
+    addedFields,
+    optionalFields,
+    personalInfoExpanded,
+    documentVerificationExpanded,
+    biometricVerificationExpanded,
+    currentSectionId,
+    allowUploadFromDevice,
+    allowCaptureWebcam,
+    documentHandling,
+    selectedCountries,
+    selectedDocuments,
+    maxRetries,
+    askUserRetry,
+    blockAfterRetries,
+    dataRetention,
+  ]);
 
   // single source of truth for which section is active (by id)
-  const orderedSectionIds: VerificationStep["id"][] = verificationSteps.map((s) => s.id);
-  const [currentSectionId, setCurrentSectionId] = useState<VerificationStep["id"]>("personal-info");
+  const orderedSectionIds: VerificationStep["id"][] = verificationSteps.map(
+    (s) => s.id,
+  );
+  const [currentSectionId, setCurrentSectionId] =
+    useState<VerificationStep["id"]>("personal-info");
 
   // system fields (readonly UI)
-  const [systemFieldAlerts, setSystemFieldAlerts] = useState<{ [key: string]: boolean }>({});
+  const [systemFieldAlerts, setSystemFieldAlerts] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [systemFieldValues] = useState({
     firstName: "Eg: John",
     lastName: "Eg: Wick",
@@ -712,7 +947,9 @@ export default function TemplateBuilder() {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
-  const [selectedCountries, setSelectedCountries] = useState<string[]>(["India"]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([
+    "India",
+  ]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
   // biometric verification state bag
@@ -733,9 +970,7 @@ export default function TemplateBuilder() {
       try {
         const tpl: any = await apiGet(`/api/templates/${templateId}`);
         const added =
-          tpl?.Added_fields ??
-          tpl?.Personal_info?.Added_fields ??
-          {};
+          tpl?.Added_fields ?? tpl?.Personal_info?.Added_fields ?? {};
 
         const isChecked = (id: string) => {
           if (id === "date-of-birth") return !!added.dob;
@@ -745,7 +980,9 @@ export default function TemplateBuilder() {
           return false;
         };
 
-        setOptionalFields((prev) => prev.map((f) => ({ ...f, checked: isChecked(f.id) })));
+        setOptionalFields((prev) =>
+          prev.map((f) => ({ ...f, checked: isChecked(f.id) })),
+        );
       } catch (e) {
         console.warn("Could not hydrate personal Added_fields:", e);
       }
@@ -756,7 +993,10 @@ export default function TemplateBuilder() {
   const addVerificationStep = (stepId: VerificationStep["id"]) => {
     const stepToAdd = availableSteps.find((s) => s.id === stepId);
     if (stepToAdd) {
-      setVerificationSteps((prev) => [...prev, { ...stepToAdd, isEnabled: true }]);
+      setVerificationSteps((prev) => [
+        ...prev,
+        { ...stepToAdd, isEnabled: true },
+      ]);
       // Do not change current section here; flow will follow Next
     }
   };
@@ -780,15 +1020,29 @@ export default function TemplateBuilder() {
     if (!field) return;
     if (field.checked) {
       setAddedFields((prev) => prev.filter((f) => f.id !== fieldId));
-      setOptionalFields((prev) => prev.map((f) => (f.id === fieldId ? { ...f, checked: false } : f)));
+      setOptionalFields((prev) =>
+        prev.map((f) => (f.id === fieldId ? { ...f, checked: false } : f)),
+      );
     } else {
-      setAddedFields((prev) => [...prev, { id: field.id, name: field.name, placeholder: field.placeholder, value: "" }]);
-      setOptionalFields((prev) => prev.map((f) => (f.id === fieldId ? { ...f, checked: true } : f)));
+      setAddedFields((prev) => [
+        ...prev,
+        {
+          id: field.id,
+          name: field.name,
+          placeholder: field.placeholder,
+          value: "",
+        },
+      ]);
+      setOptionalFields((prev) =>
+        prev.map((f) => (f.id === fieldId ? { ...f, checked: true } : f)),
+      );
     }
   };
   const removeAddedField = (fieldId: string) => {
     setAddedFields((prev) => prev.filter((f) => f.id !== fieldId));
-    setOptionalFields((prev) => prev.map((f) => (f.id === fieldId ? { ...f, checked: false } : f)));
+    setOptionalFields((prev) =>
+      prev.map((f) => (f.id === fieldId ? { ...f, checked: false } : f)),
+    );
   };
 
   /* ============ Section selectors ============ */
@@ -835,9 +1089,14 @@ export default function TemplateBuilder() {
     LastName: true,
     Email: true,
     Added_fields: {
-      dob: optionalFields.find((f) => f.id === "date-of-birth")?.checked ?? false,
-      Current_address: optionalFields.find((f) => f.id === "current-address")?.checked ?? false,
-      permanent_address: optionalFields.find((f) => f.id === "permanent-address")?.checked ?? false,
+      dob:
+        optionalFields.find((f) => f.id === "date-of-birth")?.checked ?? false,
+      Current_address:
+        optionalFields.find((f) => f.id === "current-address")?.checked ??
+        false,
+      permanent_address:
+        optionalFields.find((f) => f.id === "permanent-address")?.checked ??
+        false,
       Gender: optionalFields.find((f) => f.id === "gender")?.checked ?? false,
     },
   });
@@ -854,10 +1113,13 @@ export default function TemplateBuilder() {
     },
     Countries_array: selectedCountries.map((country) => ({
       country_name: country,
-      listOfdocs: selectedDocuments.reduce((acc: Record<string, boolean>, d) => {
-        acc[d] = true;
-        return acc;
-      }, {}),
+      listOfdocs: selectedDocuments.reduce(
+        (acc: Record<string, boolean>, d) => {
+          acc[d] = true;
+          return acc;
+        },
+        {},
+      ),
     })),
   });
 
@@ -881,7 +1143,9 @@ export default function TemplateBuilder() {
       "biometric-verification": "Biometric_verification",
     };
 
-    const ordered = verificationSteps.map((s) => map[s.id]).filter(Boolean) as string[];
+    const ordered = verificationSteps
+      .map((s) => map[s.id])
+      .filter(Boolean) as string[];
     const all = ["Personal_info", "Doc_verification", "Biometric_verification"];
     for (const sec of all) if (!ordered.includes(sec)) ordered.push(sec);
 
@@ -1008,7 +1272,7 @@ export default function TemplateBuilder() {
       setSaving(true);
       setSaveError(null);
       setSaveSuccess(null);
-      
+
       // Simple connection test - try to reach the API base URL or a simple endpoint
       const response = await fetch(`${API_BASE}/api/templates`, {
         method: "GET",
@@ -1017,16 +1281,21 @@ export default function TemplateBuilder() {
           ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
         },
       });
-      
+
       // Accept any response (including 401, 403, etc.) as long as we can connect
       if (response.status >= 200 && response.status < 500) {
         setSaveSuccess("Connection successful!");
         return true;
       } else {
-        throw new Error(`Connection failed: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Connection failed: ${response.status} ${response.statusText}`,
+        );
       }
     } catch (error: any) {
-      setSaveError(error?.message || "Connection failed. Please check your network and try again.");
+      setSaveError(
+        error?.message ||
+          "Connection failed. Please check your network and try again.",
+      );
       return false;
     } finally {
       setSaving(false);
@@ -1064,8 +1333,13 @@ export default function TemplateBuilder() {
       const nextIndex = currentIndex + 1;
 
       if (nextIndex < activeSections.length) {
-        setCurrentSection(activeSections[nextIndex].name as VerificationStep["id"]);
+        setCurrentSection(
+          activeSections[nextIndex].name as VerificationStep["id"],
+        );
       } else {
+        try {
+          persistSnapshot();
+        } catch {}
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
             templateName,
@@ -1073,8 +1347,12 @@ export default function TemplateBuilder() {
             addedFields,
             templateData: {
               personalInfo: true,
-              documentVerification: verificationSteps.some((s) => s.id === "document-verification"),
-              biometricVerification: verificationSteps.some((s) => s.id === "biometric-verification"),
+              documentVerification: verificationSteps.some(
+                (s) => s.id === "document-verification",
+              ),
+              biometricVerification: verificationSteps.some(
+                (s) => s.id === "biometric-verification",
+              ),
             },
           },
         });
@@ -1082,19 +1360,16 @@ export default function TemplateBuilder() {
     }
   };
 
-  // Persist chosen steps for back/forward nav
-  useEffect(() => {
-    const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
-    try {
-      localStorage.setItem("arcon_has_document_verification", JSON.stringify(hasDoc));
-      localStorage.setItem("arcon_verification_steps", JSON.stringify(verificationSteps));
-    } catch {}
-  }, [verificationSteps]);
+  // Persist chosen steps for back/forward nav (handled by per-template persistence)
+  useEffect(() => {}, [verificationSteps]);
 
   // After reordering, always focus the first section (keeps UI consistent)
   useEffect(() => {
     const first = orderedSectionIds[0] || "personal-info";
-    if (!orderedSectionIds.includes(currentSectionId) || currentSectionId !== first) {
+    if (
+      !orderedSectionIds.includes(currentSectionId) ||
+      currentSectionId !== first
+    ) {
       setCurrentSection(first);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1103,10 +1378,15 @@ export default function TemplateBuilder() {
   const handleSystemFieldFocus = (key: string) =>
     setSystemFieldAlerts((prev) => ({ ...prev, [key]: true }));
   const handleSystemFieldBlur = (key: string) =>
-    setTimeout(() => setSystemFieldAlerts((prev) => ({ ...prev, [key]: false })), 3000);
+    setTimeout(
+      () => setSystemFieldAlerts((prev) => ({ ...prev, [key]: false })),
+      3000,
+    );
 
   const getAvailableStepsToAdd = () =>
-    availableSteps.filter((s) => !verificationSteps.find((vs) => vs.id === s.id));
+    availableSteps.filter(
+      (s) => !verificationSteps.find((vs) => vs.id === s.id),
+    );
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -1144,14 +1424,20 @@ export default function TemplateBuilder() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <h1 className="text-xl font-bold text-gray-900">{templateName}</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                {templateName}
+              </h1>
             </div>
           </div>
         </div>
 
         {/* Stepper */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
-          <Button variant="ghost" className="text-gray-600 text-sm" onClick={handlePrev}>
+          <Button
+            variant="ghost"
+            className="text-gray-600 text-sm"
+            onClick={handlePrev}
+          >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Previous
           </Button>
@@ -1161,7 +1447,9 @@ export default function TemplateBuilder() {
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-2 border-blue-600 bg-blue-600">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
-              <span className="text-sm font-medium text-gray-900">Form builder</span>
+              <span className="text-sm font-medium text-gray-900">
+                Form builder
+              </span>
             </div>
 
             <div className="w-24 h-px bg-gray-300" />
@@ -1174,7 +1462,12 @@ export default function TemplateBuilder() {
             </div>
           </div>
 
-          <Button variant="ghost" className="text-gray-600 text-sm" onClick={handleNext} disabled={saving}>
+          <Button
+            variant="ghost"
+            className="text-gray-600 text-sm"
+            onClick={handleNext}
+            disabled={saving}
+          >
             {saving ? "Saving..." : "Next"}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
@@ -1202,9 +1495,12 @@ export default function TemplateBuilder() {
           <div className="w-80 p-4 border-r border-gray-200 bg-white">
             <div className="mb-8">
               <div className="mb-6">
-                <h2 className="text-base font-bold text-gray-900 mb-2">Build your process</h2>
+                <h2 className="text-base font-bold text-gray-900 mb-2">
+                  Build your process
+                </h2>
                 <p className="text-sm text-gray-600">
-                  Create a flow by adding required information fields and verification steps.
+                  Create a flow by adding required information fields and
+                  verification steps.
                 </p>
               </div>
 
@@ -1222,8 +1518,12 @@ export default function TemplateBuilder() {
             {getAvailableStepsToAdd().length > 0 && (
               <div>
                 <div className="mb-6">
-                  <h2 className="text-base font-bold text-gray-900 mb-2">Add Verification Steps</h2>
-                  <p className="text-sm text-gray-600">Insert secure verification steps as needed.</p>
+                  <h2 className="text-base font-bold text-gray-900 mb-2">
+                    Add Verification Steps
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    Insert secure verification steps as needed.
+                  </p>
                 </div>
 
                 {getAvailableStepsToAdd().map((step) => (
@@ -1231,8 +1531,12 @@ export default function TemplateBuilder() {
                     <div className="p-3 rounded border border-gray-200 bg-white">
                       <div className="flex items-start gap-3">
                         <div className="flex-1">
-                          <h3 className="font-bold text-sm text-gray-900 mb-1">{step.title}</h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
+                          <h3 className="font-bold text-sm text-gray-900 mb-1">
+                            {step.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {step.description}
+                          </p>
                         </div>
                         <Button
                           variant="ghost"
@@ -1267,17 +1571,22 @@ export default function TemplateBuilder() {
                           variant="ghost"
                           size="sm"
                           className="p-0 h-auto"
-                          onClick={() => setPersonalInfoExpanded(!personalInfoExpanded)}
+                          onClick={() =>
+                            setPersonalInfoExpanded(!personalInfoExpanded)
+                          }
                         >
                           <Minus className="w-5 h-5 text-gray-700" />
                         </Button>
-                        <h2 className="font-bold text-base text-gray-900">Personal Information</h2>
+                        <h2 className="font-bold text-base text-gray-900">
+                          Personal Information
+                        </h2>
                       </div>
 
                       {!personalInfoExpanded && (
                         <div className="px-4 lg:px-9 pb-3">
                           <p className="text-xs lg:text-[13px] text-[#505258]">
-                            Set up fields to collect basic user details like name, contact.
+                            Set up fields to collect basic user details like
+                            name, contact.
                           </p>
                         </div>
                       )}
@@ -1285,9 +1594,12 @@ export default function TemplateBuilder() {
                       {personalInfoExpanded && (
                         <div className="p-8">
                           <div className="mb-6">
-                            <h3 className="font-bold text-base text-gray-900 mb-2">System-required Fields</h3>
+                            <h3 className="font-bold text-base text-gray-900 mb-2">
+                              System-required Fields
+                            </h3>
                             <p className="text-sm text-gray-600">
-                              The following fields are required in every template.
+                              The following fields are required in every
+                              template.
                             </p>
                           </div>
 
@@ -1297,28 +1609,39 @@ export default function TemplateBuilder() {
                             <div
                               className={cn(
                                 "rounded-lg border-r border-b border-l bg-white",
-                                systemFieldAlerts.firstName ? "border-blue-500" : "border-gray-300",
+                                systemFieldAlerts.firstName
+                                  ? "border-blue-500"
+                                  : "border-gray-300",
                               )}
                             >
-                              {systemFieldAlerts.firstName && <div className="h-2 bg-blue-500 rounded-t-lg" />}
+                              {systemFieldAlerts.firstName && (
+                                <div className="h-2 bg-blue-500 rounded-t-lg" />
+                              )}
                               <div className="p-4">
                                 {systemFieldAlerts.firstName && (
                                   <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
                                     <Info className="w-5 h-5 text-red-500" />
                                     <span className="text-sm text-gray-900 font-medium">
-                                      This field is system-required and cannot be modified.
+                                      This field is system-required and cannot
+                                      be modified.
                                     </span>
                                   </div>
                                 )}
                                 <div className="mb-2">
                                   <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                                    <span className="text-sm font-semibold text-gray-900">First Name</span>
+                                    <span className="text-sm font-semibold text-gray-900">
+                                      First Name
+                                    </span>
                                   </div>
                                 </div>
                                 <Input
                                   value={systemFieldValues.firstName}
-                                  onFocus={() => handleSystemFieldFocus("firstName")}
-                                  onBlur={() => handleSystemFieldBlur("firstName")}
+                                  onFocus={() =>
+                                    handleSystemFieldFocus("firstName")
+                                  }
+                                  onBlur={() =>
+                                    handleSystemFieldBlur("firstName")
+                                  }
                                   className="border-gray-300 text-gray-600"
                                   readOnly
                                 />
@@ -1329,28 +1652,39 @@ export default function TemplateBuilder() {
                             <div
                               className={cn(
                                 "rounded-lg border-r border-b border-l bg-white",
-                                systemFieldAlerts.lastName ? "border-blue-500" : "border-gray-300",
+                                systemFieldAlerts.lastName
+                                  ? "border-blue-500"
+                                  : "border-gray-300",
                               )}
                             >
-                              {systemFieldAlerts.lastName && <div className="h-2 bg-blue-500 rounded-t-lg" />}
+                              {systemFieldAlerts.lastName && (
+                                <div className="h-2 bg-blue-500 rounded-t-lg" />
+                              )}
                               <div className="p-4">
                                 {systemFieldAlerts.lastName && (
                                   <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
                                     <Info className="w-5 h-5 text-red-500" />
                                     <span className="text-sm text-gray-900 font-medium">
-                                      This field is system-required and cannot be modified.
+                                      This field is system-required and cannot
+                                      be modified.
                                     </span>
                                   </div>
                                 )}
                                 <div className="mb-2">
                                   <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                                    <span className="text-sm font-semibold text-gray-900">Last Name</span>
+                                    <span className="text-sm font-semibold text-gray-900">
+                                      Last Name
+                                    </span>
                                   </div>
                                 </div>
                                 <Input
                                   value={systemFieldValues.lastName}
-                                  onFocus={() => handleSystemFieldFocus("lastName")}
-                                  onBlur={() => handleSystemFieldBlur("lastName")}
+                                  onFocus={() =>
+                                    handleSystemFieldFocus("lastName")
+                                  }
+                                  onBlur={() =>
+                                    handleSystemFieldBlur("lastName")
+                                  }
                                   className="border-gray-300 text-gray-600"
                                   readOnly
                                 />
@@ -1361,27 +1695,36 @@ export default function TemplateBuilder() {
                             <div
                               className={cn(
                                 "rounded-lg border-r border-b border-l bg-white",
-                                systemFieldAlerts.email ? "border-blue-500" : "border-gray-300",
+                                systemFieldAlerts.email
+                                  ? "border-blue-500"
+                                  : "border-gray-300",
                               )}
                             >
-                              {systemFieldAlerts.email && <div className="h-2 bg-blue-500 rounded-t-lg" />}
+                              {systemFieldAlerts.email && (
+                                <div className="h-2 bg-blue-500 rounded-t-lg" />
+                              )}
                               <div className="p-4">
                                 {systemFieldAlerts.email && (
                                   <div className="mb-4 p-2 bg-red-50 border-l-2 border-red-400 rounded flex items-center gap-2">
                                     <Info className="w-5 h-5 text-red-500" />
                                     <span className="text-sm text-gray-900 font-medium">
-                                      This field is system-required and cannot be modified.
+                                      This field is system-required and cannot
+                                      be modified.
                                     </span>
                                   </div>
                                 )}
                                 <div className="mb-2">
                                   <div className="h-10 px-3 py-2 bg-gray-100 rounded border border-gray-300 flex items-center">
-                                    <span className="text-sm font-semibold text-gray-900">Email Address</span>
+                                    <span className="text-sm font-semibold text-gray-900">
+                                      Email Address
+                                    </span>
                                   </div>
                                 </div>
                                 <Input
                                   value={systemFieldValues.email}
-                                  onFocus={() => handleSystemFieldFocus("email")}
+                                  onFocus={() =>
+                                    handleSystemFieldFocus("email")
+                                  }
                                   onBlur={() => handleSystemFieldBlur("email")}
                                   className="border-gray-300 text-gray-600"
                                   readOnly
@@ -1394,15 +1737,21 @@ export default function TemplateBuilder() {
                           {addedFields.length > 0 && (
                             <div>
                               <div className="mb-4">
-                                <h3 className="font-bold text-base text-gray-900 mb-2">Added Fields</h3>
+                                <h3 className="font-bold text-base text-gray-900 mb-2">
+                                  Added Fields
+                                </h3>
                                 <p className="text-sm text-gray-600">
-                                  Extra fields to collect specific to your verification flow.
+                                  Extra fields to collect specific to your
+                                  verification flow.
                                 </p>
                               </div>
 
                               <div className="space-y-4">
                                 {addedFields.map((field) => (
-                                  <div key={field.id} className="border border-gray-300 rounded-lg p-5 bg-white">
+                                  <div
+                                    key={field.id}
+                                    className="border border-gray-300 rounded-lg p-5 bg-white"
+                                  >
                                     <div className="flex items-center justify-between mb-3">
                                       <Label className="font-semibold text-sm text-gray-900">
                                         {field.name}
@@ -1411,12 +1760,16 @@ export default function TemplateBuilder() {
                                         variant="ghost"
                                         size="sm"
                                         className="p-1 h-auto text-red-500 hover:text-red-700"
-                                        onClick={() => removeAddedField(field.id)}
+                                        onClick={() =>
+                                          removeAddedField(field.id)
+                                        }
                                       >
                                         <Trash2 className="w-4 h-4" />
                                       </Button>
                                     </div>
-                                    <div className="text-sm text-gray-500">{field.placeholder}</div>
+                                    <div className="text-sm text-gray-500">
+                                      {field.placeholder}
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -1433,7 +1786,11 @@ export default function TemplateBuilder() {
                     <DocumentVerificationSection
                       key={id}
                       isExpanded={documentVerificationExpanded}
-                      onToggle={() => setDocumentVerificationExpanded(!documentVerificationExpanded)}
+                      onToggle={() =>
+                        setDocumentVerificationExpanded(
+                          !documentVerificationExpanded,
+                        )
+                      }
                       stateBag={{
                         allowUploadFromDevice,
                         setAllowUploadFromDevice,
@@ -1455,7 +1812,11 @@ export default function TemplateBuilder() {
                     <BiometricVerificationSection
                       key={id}
                       isExpanded={biometricVerificationExpanded}
-                      onToggle={() => setBiometricVerificationExpanded(!biometricVerificationExpanded)}
+                      onToggle={() =>
+                        setBiometricVerificationExpanded(
+                          !biometricVerificationExpanded,
+                        )
+                      }
                       stateBag={{
                         maxRetries,
                         setMaxRetries,
@@ -1479,8 +1840,12 @@ export default function TemplateBuilder() {
           {personalInfoExpanded ? (
             <div className="w-72 border-l border-gray-200 bg-white">
               <div className="p-3 border-b border-gray-300">
-                <h2 className="font-bold text-base text-gray-900 mb-1">Add Fields</h2>
-                <p className="text-sm text-gray-600">Add fields specific to your verification flow.</p>
+                <h2 className="font-bold text-base text-gray-900 mb-1">
+                  Add Fields
+                </h2>
+                <p className="text-sm text-gray-600">
+                  Add fields specific to your verification flow.
+                </p>
               </div>
               <div className="p-3">
                 <div className="space-y-3">
@@ -1494,7 +1859,10 @@ export default function TemplateBuilder() {
                           onCheckedChange={() => toggleOptionalField(field.id)}
                           className="w-4 h-4"
                         />
-                        <label htmlFor={field.id} className="text-sm font-bold text-gray-600 cursor-pointer">
+                        <label
+                          htmlFor={field.id}
+                          className="text-sm font-bold text-gray-600 cursor-pointer"
+                        >
                           {field.name}
                         </label>
                       </div>
@@ -1505,7 +1873,9 @@ export default function TemplateBuilder() {
           ) : (
             <div className="w-72 border-l border-gray-200 bg-white">
               <div className="p-3 text-center text-gray-500">
-                <p className="text-sm">Configure options for the selected section</p>
+                <p className="text-sm">
+                  Configure options for the selected section
+                </p>
               </div>
             </div>
           )}

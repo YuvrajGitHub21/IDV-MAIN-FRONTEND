@@ -27,7 +27,7 @@ export function NameTemplateDialog({
   onSave,
   onCancel,
 }: NameTemplateDialogProps) {
-  const MAX_LEN = 30;
+  const MAX_LEN = 40;
 
   const [templateName, setTemplateName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");

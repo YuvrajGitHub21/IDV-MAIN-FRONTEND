@@ -617,7 +617,17 @@ export default function TemplateBuilder() {
   const navigate = useNavigate();
   const location = useLocation() as any;
   const templateName = location?.state?.templateName || "New Template";
-  const templateId: string = location?.state?.templateId || "";
+  const templateId: string = (() => {
+    const idFromState = location?.state?.templateId;
+    if (idFromState) return idFromState;
+    try {
+      if (sessionStorage.getItem("arcon_return_to_builder") === "1") {
+        const last = localStorage.getItem("arcon_current_template_id");
+        return last || "";
+      }
+    } catch {}
+    return "";
+  })();
 
   // left-rail steps
   const [verificationSteps, setVerificationSteps] = useState<

@@ -39,7 +39,7 @@ export function NameTemplateDialog({
 
     // Length constraint check (server-guard too)
     if (name.length > MAX_LEN) {
-      setErrorMessage("Max length is 30 characters.");
+      setErrorMessage("Max length is 40 characters.");
       return;
     }
 
@@ -112,11 +112,12 @@ export function NameTemplateDialog({
               <Input
                 id="template-name"
                 value={templateName}
+                maxLength={MAX_LEN}
                 onChange={(e) => {
                   const name = e.target.value;
                   setTemplateName(name);
                   if (name.trim().length > MAX_LEN) {
-                    setErrorMessage("Max length is 30 characters.");
+                    setErrorMessage("Max length is 40 characters.");
                   } else {
                     setErrorMessage("");
                   }

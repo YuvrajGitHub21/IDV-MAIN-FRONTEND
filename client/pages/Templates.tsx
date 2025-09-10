@@ -159,9 +159,11 @@ export default function Templates() {
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
-  const [templateIdToRename, setTemplateIdToRename] = useState<string | null>(null);
+  const [templateIdToRename, setTemplateIdToRename] = useState<string | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState("");
-  
+
   const handleRenameSubmit = async () => {
     const token = getToken();
     if (!token) {
@@ -178,16 +180,19 @@ export default function Templates() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/Template/${templateIdToRename}`, {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `${API_BASE}/api/Template/${templateIdToRename}`,
+        {
+          method: "PUT",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          // only send fields that you want to update
+          body: JSON.stringify({ name }),
         },
-        // only send fields that you want to update
-        body: JSON.stringify({ name }),
-      });
+      );
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
@@ -209,8 +214,6 @@ export default function Templates() {
       alert("Failed to rename template");
     }
   };
-
-
 
   // Enhanced click outside functionality for mobile sidebar
   useEffect(() => {
@@ -266,7 +269,7 @@ export default function Templates() {
     // This function is called after the template is already created by NameTemplateDialog
     // We just need to refresh the templates list here, since NameTemplateDialog handles creation and navigation
     console.log("Template created with name:", templateName);
-    
+
     // Refresh the templates list to show the new template
     // await fetchTemplates(buildCurrentFilters());
     // ✅ First refetch all, then reapply filters
@@ -283,7 +286,7 @@ export default function Templates() {
   const handlePreviewTemplate = async (templateId: string) => {
     try {
       console.log("Fetching template details for preview:", templateId);
-      
+
       const token = getToken();
       if (!token) {
         toast.error("Authentication required. Please login again.");
@@ -294,8 +297,8 @@ export default function Templates() {
       const response = await fetch(`${API_BASE}/api/template/${templateId}`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
       });
 
@@ -305,26 +308,29 @@ export default function Templates() {
           return;
         }
         const errorData = await response.text().catch(() => "");
-        throw new Error(`Failed to fetch template: ${response.status} ${response.statusText}${errorData ? " - " + errorData : ""}`);
+        throw new Error(
+          `Failed to fetch template: ${response.status} ${response.statusText}${errorData ? " - " + errorData : ""}`,
+        );
       }
 
       const templateDetails: TemplateDto = await response.json();
       console.log("Template details fetched successfully:", templateDetails);
-      
+
       toast.success("Template details loaded successfully!");
-      
+
       // Navigate to preview page with template details
       navigate(`/preview/${templateId}`, {
         state: {
           templateDetails: templateDetails,
           templateName: templateDetails.Name,
-          templateId: templateId
-        }
+          templateId: templateId,
+        },
       });
-
     } catch (error: any) {
       console.error("Error fetching template details:", error);
-      toast.error(error.message || "Failed to load template details. Please try again.");
+      toast.error(
+        error.message || "Failed to load template details. Please try again.",
+      );
     }
   };
 
@@ -332,7 +338,7 @@ export default function Templates() {
   // (use the same base URL as your useTemplates hook)
   // const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5027" ;
   const API_BASE = "http://10.10.2.133:8080";
-  
+
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("access") : null;
 
@@ -576,7 +582,7 @@ export default function Templates() {
         <aside
           ref={sidebarRef}
           className={cn(
-            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 overflow-auto",
+            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 overflow-hidden",
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",
@@ -590,8 +596,8 @@ export default function Templates() {
             />
           )}
 
-          <div className="relative flex flex-col h-full pt-2 pb-24 z-10">
-            <nav className="flex-1 px-0 space-y-1">
+          <div className="relative flex flex-col h-full z-10 justify-between">
+            <nav className="px-0 space-y-1">
               {/* Home */}
               <div
                 className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
@@ -787,94 +793,49 @@ export default function Templates() {
                 <span className="text-xs font-semibold mt-1">Users</span>
               </div>
             </nav>
+            <div className="px-2 py-4 border-t bg-white">
+              <div
+                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                onClick={handleLogout}
+              >
+                <svg
+                  className="w-5 h-5"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M8.25 19.25H4.58333C4.17935 19.25 3.79185 19.0893 3.50429 18.8017C3.21673 18.5141 3.05556 18.1267 3.05556 17.7222V4.27778C3.05556 3.87326 3.21673 3.48587 3.50429 3.19831C3.79185 2.91075 4.17935 2.75 4.58333 2.75H8.25M15.5833 15.5833L19.25 11.9167M19.25 11.9167L15.5833 8.25M19.25 11.9167H8.25"
+                    stroke="#676879"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="text-xs font-semibold mt-1">Logout</span>
+              </div>
 
-            {/* Logout */}
-            <div
-              className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
-              onClick={handleLogout}
-            >
-              <svg
-                className="w-5 h-5"
-                width="22"
-                height="22"
-                viewBox="0 0 22 22"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8.25 19.25H4.58333C4.17935 19.25 3.79185 19.0893 3.50429 18.8017C3.21673 18.5141 3.05556 18.1267 3.05556 17.7222V4.27778C3.05556 3.87326 3.21673 3.48587 3.50429 3.19831C3.79185 2.91075 4.17935 2.75 4.58333 2.75H8.25M15.5833 15.5833L19.25 11.9167M19.25 11.9167L15.5833 8.25M19.25 11.9167H8.25"
-                  stroke="#676879"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-xs font-semibold mt-1">Logout</span>
-            </div>
-
-            {/* Help */}
-            <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
-              <svg
-                className="w-5 h-5"
-                width="22"
-                height="22"
-                viewBox="0 0 22 22"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8.3312 8.2487C8.54671 7.63606 8.97209 7.11947 9.53203 6.7904C10.0919 6.46134 10.7502 6.34106 11.3903 6.45085C12.0304 6.56065 12.6109 6.89342 13.0292 7.39027C13.4474 7.8871 13.6764 8.51592 13.6754 9.16536C13.6754 10.9987 10.9254 11.9154 10.9254 11.9154M10.9987 15.582H11.0079M20.1654 10.9987C20.1654 16.0613 16.0613 20.1654 10.9987 20.1654C5.93609 20.1654 1.83203 16.0613 1.83203 10.9987C1.83203 5.93609 5.93609 1.83203 10.9987 1.83203C16.0613 1.83203 20.1654 5.93609 20.1654 10.9987Z"
-                  stroke="#676879"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-xs font-semibold mt-1">Help</span>
-            </div>
-          </div>
-          <div className="absolute bottom-0 left-0 w-full px-2 py-4 border-t bg-white">
-            <div
-              className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
-              onClick={handleLogout}
-            >
-              <svg
-                className="w-5 h-5"
-                width="22"
-                height="22"
-                viewBox="0 0 22 22"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8.25 19.25H4.58333C4.17935 19.25 3.79185 19.0893 3.50429 18.8017C3.21673 18.5141 3.05556 18.1267 3.05556 17.7222V4.27778C3.05556 3.87326 3.21673 3.48587 3.50429 3.19831C3.79185 2.91075 4.17935 2.75 4.58333 2.75H8.25M15.5833 15.5833L19.25 11.9167M19.25 11.9167L15.5833 8.25M19.25 11.9167H8.25"
-                  stroke="#676879"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-xs font-semibold mt-1">Logout</span>
-            </div>
-
-            <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
-              <svg
-                className="w-5 h-5"
-                width="22"
-                height="22"
-                viewBox="0 0 22 22"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8.3312 8.2487C8.54671 7.63606 8.97209 7.11947 9.53203 6.7904C10.0919 6.46134 10.7502 6.34106 11.3903 6.45085C12.0304 6.56065 12.6109 6.89342 13.0292 7.39027C13.4474 7.8871 13.6764 8.51592 13.6754 9.16536C13.6754 10.9987 10.9254 11.9154 10.9254 11.9154M10.9987 15.582H11.0079M20.1654 10.9987C20.1654 16.0613 16.0613 20.1654 10.9987 20.1654C5.93609 20.1654 1.83203 16.0613 1.83203 10.9987C1.83203 5.93609 5.93609 1.83203 10.9987 1.83203C16.0613 1.83203 20.1654 5.93609 20.1654 10.9987Z"
-                  stroke="#676879"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span className="text-xs font-semibold mt-1">Help</span>
+              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
+                <svg
+                  className="w-5 h-5"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 22 22"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M8.3312 8.2487C8.54671 7.63606 8.97209 7.11947 9.53203 6.7904C10.0919 6.46134 10.7502 6.34106 11.3903 6.45085C12.0304 6.56065 12.6109 6.89342 13.0292 7.39027C13.4474 7.8871 13.6764 8.51592 13.6754 9.16536C13.6754 10.9987 10.9254 11.9154 10.9254 11.9154M10.9987 15.582H11.0079M20.1654 10.9987C20.1654 16.0613 16.0613 20.1654 10.9987 20.1654C5.93609 20.1654 1.83203 16.0613 1.83203 10.9987C1.83203 5.93609 5.93609 1.83203 10.9987 1.83203C16.0613 1.83203 20.1654 5.93609 20.1654 10.9987Z"
+                    stroke="#676879"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className="text-xs font-semibold mt-1">Help</span>
+              </div>
             </div>
           </div>
         </aside>
@@ -1308,7 +1269,7 @@ export default function Templates() {
               </div>
             </div>
           </div>
-          
+
           {/* Rename Dialog */}
           {renameDialogOpen && (
             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -1319,7 +1280,9 @@ export default function Templates() {
                   type="text"
                   className={cn(
                     "w-full p-2 border rounded mb-1",
-                    errorMessage ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                    errorMessage
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300",
                   )}
                   placeholder="Enter new template name"
                   value={newTemplateName}
@@ -1360,7 +1323,8 @@ export default function Templates() {
                   <button
                     className={cn(
                       "px-4 py-2 bg-blue-600 text-white rounded text-sm",
-                      (!newTemplateName.trim() || !!errorMessage) && "opacity-50 cursor-not-allowed"
+                      (!newTemplateName.trim() || !!errorMessage) &&
+                        "opacity-50 cursor-not-allowed",
                     )}
                     onClick={handleRenameSubmit}
                     disabled={!newTemplateName.trim() || !!errorMessage}
@@ -1371,7 +1335,6 @@ export default function Templates() {
               </div>
             </div>
           )}
-
 
           {/* Footer */}
           <footer className="border-t border-gray-200 bg-white p-4">

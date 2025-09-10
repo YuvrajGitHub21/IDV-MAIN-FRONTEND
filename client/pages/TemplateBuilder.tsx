@@ -836,10 +836,12 @@ export default function TemplateBuilder() {
   useEffect(() => {
     if (!templateId) {
       resetToDefaults();
+      try { sessionStorage.removeItem("arcon_return_to_builder"); } catch {}
       return;
     }
     try {
       localStorage.setItem("arcon_current_template_id", templateId);
+      sessionStorage.removeItem("arcon_return_to_builder");
     } catch {}
 
     const raw = (() => {

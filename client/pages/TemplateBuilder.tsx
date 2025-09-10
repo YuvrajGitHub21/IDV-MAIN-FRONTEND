@@ -943,21 +943,6 @@ export default function TemplateBuilder() {
     email: "Eg: johnwick@email.com",
   });
 
-  // doc verification state bag
-  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
-  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
-  const [documentHandling, setDocumentHandling] = useState("");
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([
-    "India",
-  ]);
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-
-  // biometric verification state bag
-  const [maxRetries, setMaxRetries] = useState("4");
-  const [askUserRetry, setAskUserRetry] = useState(false);
-  const [blockAfterRetries, setBlockAfterRetries] = useState(false);
-  const [dataRetention, setDataRetention] = useState("6 Months");
-
   // save state
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);

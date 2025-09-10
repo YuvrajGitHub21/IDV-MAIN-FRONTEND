@@ -79,7 +79,7 @@ export function NameTemplateDialog({
       <DialogContent
         className={cn(
           "max-w-[520px] w-full p-0 gap-0 bg-white rounded-lg border shadow-lg",
-          "font-roboto"
+          "font-roboto",
         )}
         onInteractOutside={(e) => e.preventDefault()}
       >
@@ -128,17 +128,22 @@ export function NameTemplateDialog({
                   "h-[38px] px-3 py-2 text-sm border rounded",
                   errorMessage ? "border-red-500" : "border-gray-300",
                   "focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-                  "placeholder:text-gray-500"
+                  "placeholder:text-gray-500",
                 )}
                 aria-invalid={errorMessage ? "true" : "false"}
-                aria-describedby={errorMessage ? "template-name-error" : undefined}
+                aria-describedby={
+                  errorMessage ? "template-name-error" : undefined
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSave();
                   if (e.key === "Escape") handleCancel();
                 }}
               />
               {errorMessage && (
-                <p id="template-name-error" className="text-xs text-red-500 mt-1">
+                <p
+                  id="template-name-error"
+                  className="text-xs text-red-500 mt-1"
+                >
                   {errorMessage}
                 </p>
               )}
@@ -153,7 +158,7 @@ export function NameTemplateDialog({
             onClick={handleCancel}
             className={cn(
               "h-8 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50",
-              "rounded border-0"
+              "rounded border-0",
             )}
           >
             Cancel
@@ -163,7 +168,7 @@ export function NameTemplateDialog({
             disabled={!templateName.trim() || !!errorMessage}
             className={cn(
               "h-8 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700",
-              "rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              "rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >
             Save & Continue

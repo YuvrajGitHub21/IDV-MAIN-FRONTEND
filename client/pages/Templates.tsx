@@ -156,9 +156,11 @@ export default function Templates() {
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
-  const [templateIdToRename, setTemplateIdToRename] = useState<string | null>(null);
+  const [templateIdToRename, setTemplateIdToRename] = useState<string | null>(
+    null,
+  );
   const [errorMessage, setErrorMessage] = useState("");
-  
+
   const handleRenameSubmit = async () => {
     const token = getToken();
     if (!token) {
@@ -175,16 +177,19 @@ export default function Templates() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/Template/${templateIdToRename}`, {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+      const res = await fetch(
+        `${API_BASE}/api/Template/${templateIdToRename}`,
+        {
+          method: "PUT",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          // only send fields that you want to update
+          body: JSON.stringify({ name }),
         },
-        // only send fields that you want to update
-        body: JSON.stringify({ name }),
-      });
+      );
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
@@ -202,8 +207,6 @@ export default function Templates() {
       alert("Failed to rename template");
     }
   };
-
-
 
   // Enhanced click outside functionality for mobile sidebar
   useEffect(() => {
@@ -259,7 +262,7 @@ export default function Templates() {
     // This function is called after the template is already created by NameTemplateDialog
     // We just need to refresh the templates list here, since NameTemplateDialog handles creation and navigation
     console.log("Template created with name:", templateName);
-    
+
     // Refresh the templates list to show the new template
     await fetchTemplates(buildCurrentFilters());
   };
@@ -272,7 +275,7 @@ export default function Templates() {
   const handlePreviewTemplate = async (templateId: string) => {
     try {
       console.log("Fetching template details for preview:", templateId);
-      
+
       const token = getToken();
       if (!token) {
         toast.error("Authentication required. Please login again.");
@@ -283,8 +286,8 @@ export default function Templates() {
       const response = await fetch(`${API_BASE}/api/template/${templateId}`, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/json",
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
         },
       });
 
@@ -294,26 +297,29 @@ export default function Templates() {
           return;
         }
         const errorData = await response.text().catch(() => "");
-        throw new Error(`Failed to fetch template: ${response.status} ${response.statusText}${errorData ? " - " + errorData : ""}`);
+        throw new Error(
+          `Failed to fetch template: ${response.status} ${response.statusText}${errorData ? " - " + errorData : ""}`,
+        );
       }
 
       const templateDetails: TemplateDto = await response.json();
       console.log("Template details fetched successfully:", templateDetails);
-      
+
       toast.success("Template details loaded successfully!");
-      
+
       // Navigate to preview page with template details
       navigate(`/preview/${templateId}`, {
         state: {
           templateDetails: templateDetails,
           templateName: templateDetails.Name,
-          templateId: templateId
-        }
+          templateId: templateId,
+        },
       });
-
     } catch (error: any) {
       console.error("Error fetching template details:", error);
-      toast.error(error.message || "Failed to load template details. Please try again.");
+      toast.error(
+        error.message || "Failed to load template details. Please try again.",
+      );
     }
   };
 
@@ -321,7 +327,7 @@ export default function Templates() {
   // (use the same base URL as your useTemplates hook)
   // const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
   const API_BASE = "http://10.10.2.133:8080";
-  
+
   const getToken = () =>
     typeof window !== "undefined" ? localStorage.getItem("access") : null;
 
@@ -1297,7 +1303,7 @@ export default function Templates() {
               </div>
             </div>
           </div>
-          
+
           {/* Rename Dialog */}
           {renameDialogOpen && (
             <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -1308,7 +1314,9 @@ export default function Templates() {
                   type="text"
                   className={cn(
                     "w-full p-2 border rounded mb-1",
-                    errorMessage ? "border-red-500 focus:ring-red-500 focus:border-red-500" : "border-gray-300"
+                    errorMessage
+                      ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300",
                   )}
                   placeholder="Enter new template name"
                   value={newTemplateName}
@@ -1349,7 +1357,8 @@ export default function Templates() {
                   <button
                     className={cn(
                       "px-4 py-2 bg-blue-600 text-white rounded text-sm",
-                      (!newTemplateName.trim() || !!errorMessage) && "opacity-50 cursor-not-allowed"
+                      (!newTemplateName.trim() || !!errorMessage) &&
+                        "opacity-50 cursor-not-allowed",
                     )}
                     onClick={handleRenameSubmit}
                     disabled={!newTemplateName.trim() || !!errorMessage}
@@ -1360,7 +1369,6 @@ export default function Templates() {
               </div>
             </div>
           )}
-
 
           {/* Footer */}
           <footer className="border-t border-gray-200 bg-white p-4">

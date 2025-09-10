@@ -1324,9 +1324,8 @@ export default function TemplateBuilder() {
           activeSections[nextIndex].name as VerificationStep["id"],
         );
       } else {
-        try {
-          persistSnapshot();
-        } catch {}
+        try { persistSnapshot(); } catch {}
+        try { sessionStorage.setItem("arcon_return_to_builder", "1"); } catch {}
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
             templateName,

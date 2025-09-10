@@ -192,7 +192,8 @@ export default function SendInviteDialog({
     if (!file) return;
 
     const name = file.name.toLowerCase();
-    const ok = name.endsWith(".csv") || name.endsWith(".xlsx") || name.endsWith(".dbf");
+    const ok =
+      name.endsWith(".csv") || name.endsWith(".xlsx") || name.endsWith(".dbf");
     if (!ok) {
       toast.error("Only CSV, XLSX, and DBF files are supported.");
       // reset input to allow re-choosing the same filename

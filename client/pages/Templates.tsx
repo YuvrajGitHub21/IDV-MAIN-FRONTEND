@@ -567,7 +567,7 @@ export default function Templates() {
         <aside
           ref={sidebarRef}
           className={cn(
-            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 overflow-hidden",
+            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11",
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",
@@ -581,13 +581,15 @@ export default function Templates() {
             />
           )}
 
-          <div className="relative flex flex-col h-full z-10 justify-between">
-            <nav className="px-0 space-y-1">
-              {/* Home */}
-              <div
-                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
-                onClick={home_page}
-              >
+          <div className="relative flex flex-col h-full z-10">
+            {/* Top Section */}
+            <div className="flex-shrink-0">
+              <nav className="px-0 space-y-0.5">
+                {/* Home */}
+                <div
+                  className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                  onClick={home_page}
+                >
                 <svg
                   className="w-5 h-5"
                   width="22"
@@ -604,12 +606,12 @@ export default function Templates() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-xs font-semibold mt-1">Home</span>
+                <span className="text-xs font-semibold mt-0.5">Home</span>
               </div>
 
               {/* Templates - Active */}
               <div className="relative">
-                <div className="flex flex-col items-center py-2 text-blue-600 bg-blue-50 cursor-pointer">
+                <div className="flex flex-col items-center py-1.5 text-blue-600 bg-blue-50 cursor-pointer">
                   <svg
                     className="w-5 h-5"
                     width="22"
@@ -629,7 +631,7 @@ export default function Templates() {
                       fill="#0073EA"
                     />
                   </svg>
-                  <span className="text-xs font-semibold mt-1 text-gray-800">
+                  <span className="text-xs font-semibold mt-0.5 text-gray-800">
                     Template
                   </span>
                 </div>
@@ -637,7 +639,7 @@ export default function Templates() {
               </div>
 
               {/* Verification */}
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
+              <div className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer">
                 <svg
                   className="w-5 h-5"
                   width="22"
@@ -654,12 +656,12 @@ export default function Templates() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-xs font-semibold mt-1">Verification</span>
+                <span className="text-xs font-semibold mt-0.5">Verification</span>
               </div>
 
               {/* Integration */}
               <div
-                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer"
                 onClick={goToNotFound}
               >
                 <svg
@@ -678,12 +680,12 @@ export default function Templates() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-xs font-semibold mt-1">Integration</span>
+                <span className="text-xs font-semibold mt-0.5">Integration</span>
               </div>
 
               {/* Analytics */}
               <div
-                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer"
                 onClick={goToNotFound}
               >
                 <svg
@@ -702,12 +704,12 @@ export default function Templates() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-xs font-semibold mt-1">Analytics</span>
+                <span className="text-xs font-semibold mt-0.5">Analytics</span>
               </div>
 
               {/* Roles */}
               <div
-                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer"
                 onClick={goToNotFound}
               >
                 <svg
@@ -726,12 +728,12 @@ export default function Templates() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-xs font-semibold mt-1">Roles</span>
+                <span className="text-xs font-semibold mt-0.5">Roles</span>
               </div>
 
               {/* Users */}
               <div
-                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer"
                 onClick={goToNotFound}
               >
                 <div className="w-5 h-5 relative">
@@ -775,12 +777,15 @@ export default function Templates() {
                     />
                   </svg>
                 </div>
-                <span className="text-xs font-semibold mt-1">Users</span>
+                <span className="text-xs font-semibold mt-0.5">Users</span>
               </div>
-            </nav>
-            <div className="px-2 py-4 border-t bg-white">
+
+              {/* 100px Gap */}
+              <div style={{ height: '100px' }}></div>
+
+              {/* Logout */}
               <div
-                className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer"
+                className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer"
                 onClick={handleLogout}
               >
                 <svg
@@ -799,10 +804,10 @@ export default function Templates() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-xs font-semibold mt-1">Logout</span>
+                <span className="text-xs font-semibold mt-0.5">Logout</span>
               </div>
 
-              <div className="flex flex-col items-center py-2 text-gray-600 hover:bg-gray-50 cursor-pointer">
+              <div className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer">
                 <svg
                   className="w-5 h-5"
                   width="22"
@@ -819,8 +824,9 @@ export default function Templates() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-xs font-semibold mt-1">Help</span>
+                <span className="text-xs font-semibold mt-0.5">Help</span>
               </div>
+              </nav>
             </div>
           </div>
         </aside>

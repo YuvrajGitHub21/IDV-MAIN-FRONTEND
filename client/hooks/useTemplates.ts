@@ -480,12 +480,32 @@ export async function createTemplateMin(
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `Failed to create template: ${res.status} ${res.statusText}${
-        text ? " — " + text.slice(0, 200) : ""
-      }`,
-    );
+    let raw = "";
+    try {
+      raw = await res.text();
+    } catch {}
+
+    let backendMsg = "";
+    try {
+      const json = raw ? JSON.parse(raw) : null;
+      const objErrors = json?.errors && typeof json.errors === "object"
+        ? Object.values(json.errors).flat().join(", ")
+        : "";
+      backendMsg =
+        json?.message ||
+        json?.Message ||
+        json?.error ||
+        json?.Error ||
+        (Array.isArray(json?.errors) ? json.errors.join(", ") : objErrors) ||
+        json?.title ||
+        json?.Title ||
+        json?.detail ||
+        json?.Detail ||
+        "";
+    } catch {}
+
+    const msg = (backendMsg || raw || `Request failed with ${res.status} ${res.statusText}`).toString().trim().slice(0, 300);
+    throw new Error(msg);
   }
 
   const doc = await res.json();

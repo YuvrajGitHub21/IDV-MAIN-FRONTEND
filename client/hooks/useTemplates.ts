@@ -123,7 +123,9 @@ const API_BASE = "http://10.10.2.133:8080";
 
 const getToken = () => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("access_token") || localStorage.getItem("access");
+    return (
+      localStorage.getItem("access_token") || localStorage.getItem("access")
+    );
   }
   return null;
 };
@@ -163,8 +165,9 @@ const mapTemplateDoc = (doc: any): TemplateItem => {
       : null;
 
   // Dates
-  const createdAtUtc =
-    doc?.createdAt ? new Date(doc.createdAt).toISOString() : objectIdToIso(id);
+  const createdAtUtc = doc?.createdAt
+    ? new Date(doc.createdAt).toISOString()
+    : objectIdToIso(id);
 
   const updatedAtUtc =
     doc?.updatedAt && !isNaN(new Date(doc.updatedAt).getTime())
@@ -185,7 +188,6 @@ const mapTemplateDoc = (doc: any): TemplateItem => {
     updatedAtUtc,
   };
 };
-
 
 // Normalize controller PageResult<Template>
 const normalizeListResponse = (
@@ -245,7 +247,8 @@ async function fetchPage(
   const params = new URLSearchParams();
 
   if (filters.search) params.set("search", filters.search);
-  if (filters.isActive !== undefined) params.set("isActive", String(filters.isActive));
+  if (filters.isActive !== undefined)
+    params.set("isActive", String(filters.isActive));
   if (filters.createdBy) params.set("createdBy", filters.createdBy);
   if (filters.createdFrom) params.set("createdFrom", filters.createdFrom);
   if (filters.createdTo) params.set("createdTo", filters.createdTo);
@@ -270,8 +273,6 @@ async function fetchPage(
 
   return res;
 }
-
-
 
 /**
  * Probe mode:
@@ -480,12 +481,40 @@ export async function createTemplateMin(
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(
-      `Failed to create template: ${res.status} ${res.statusText}${
-        text ? " — " + text.slice(0, 200) : ""
-      }`,
-    );
+    let raw = "";
+    try {
+      raw = await res.text();
+    } catch {}
+
+    let backendMsg = "";
+    try {
+      const json = raw ? JSON.parse(raw) : null;
+      const objErrors =
+        json?.errors && typeof json.errors === "object"
+          ? Object.values(json.errors).flat().join(", ")
+          : "";
+      backendMsg =
+        json?.message ||
+        json?.Message ||
+        json?.error ||
+        json?.Error ||
+        (Array.isArray(json?.errors) ? json.errors.join(", ") : objErrors) ||
+        json?.title ||
+        json?.Title ||
+        json?.detail ||
+        json?.Detail ||
+        "";
+    } catch {}
+
+    const msg = (
+      backendMsg ||
+      raw ||
+      `Request failed with ${res.status} ${res.statusText}`
+    )
+      .toString()
+      .trim()
+      .slice(0, 300);
+    throw new Error(msg);
   }
 
   const doc = await res.json();

@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 /* ===================== API config / helpers ===================== */
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
 const getToken = () => {
   if (typeof window !== "undefined") {
     return localStorage.getItem("access_token") || localStorage.getItem("access");
@@ -183,48 +183,6 @@ const DocumentVerificationSection: React.FC<{
     setSelectedDocuments,
   } = stateBag;
 
-  // Load persisted UI state
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("arcon_doc_verification_form");
-      if (raw) {
-        const p = JSON.parse(raw);
-        if (typeof p.allowUploadFromDevice === "boolean")
-          setAllowUploadFromDevice(p.allowUploadFromDevice);
-        if (typeof p.allowCaptureWebcam === "boolean")
-          setAllowCaptureWebcam(p.allowCaptureWebcam);
-        if (typeof p.documentHandling === "string")
-          setDocumentHandling(p.documentHandling);
-        if (Array.isArray(p.selectedCountries))
-          setSelectedCountries(p.selectedCountries);
-        if (Array.isArray(p.selectedDocuments))
-          setSelectedDocuments(p.selectedDocuments);
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Persist UI state
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "arcon_doc_verification_form",
-        JSON.stringify({
-          allowUploadFromDevice,
-          allowCaptureWebcam,
-          documentHandling,
-          selectedCountries,
-          selectedDocuments,
-        }),
-      );
-    } catch {}
-  }, [
-    allowUploadFromDevice,
-    allowCaptureWebcam,
-    documentHandling,
-    selectedCountries,
-    selectedDocuments,
-  ]);
 
   const toggleDocument = (docType: string) => {
     setSelectedDocuments((prev) =>
@@ -429,36 +387,6 @@ const BiometricVerificationSection: React.FC<{
     setDataRetention,
   } = stateBag;
 
-  // Load persisted UI state
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("arcon_biometric_verification_form");
-      if (raw) {
-        const p = JSON.parse(raw);
-        if (typeof p.maxRetries === "string") setMaxRetries(p.maxRetries);
-        if (typeof p.askUserRetry === "boolean") setAskUserRetry(p.askUserRetry);
-        if (typeof p.blockAfterRetries === "boolean")
-          setBlockAfterRetries(p.blockAfterRetries);
-        if (typeof p.dataRetention === "string") setDataRetention(p.dataRetention);
-      }
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Persist UI state
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "arcon_biometric_verification_form",
-        JSON.stringify({
-          maxRetries,
-          askUserRetry,
-          blockAfterRetries,
-          dataRetention,
-        }),
-      );
-    } catch {}
-  }, [maxRetries, askUserRetry, blockAfterRetries, dataRetention]);
 
   return (
     <div className="border border-gray-300 rounded">
@@ -1082,14 +1010,8 @@ export default function TemplateBuilder() {
     }
   };
 
-  // Persist chosen steps for back/forward nav
-  useEffect(() => {
-    const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
-    try {
-      localStorage.setItem("arcon_has_document_verification", JSON.stringify(hasDoc));
-      localStorage.setItem("arcon_verification_steps", JSON.stringify(verificationSteps));
-    } catch {}
-  }, [verificationSteps]);
+  // Persist chosen steps for back/forward nav (handled by per-template persistence)
+  useEffect(() => {}, [verificationSteps]);
 
   // After reordering, always focus the first section (keeps UI consistent)
   useEffect(() => {

@@ -743,6 +743,8 @@ export default function TemplateBuilder() {
     useState(false);
   const [biometricVerificationExpanded, setBiometricVerificationExpanded] =
     useState(false);
+  const [currentSectionId, setCurrentSectionId] =
+    useState<VerificationStep["id"]>("personal-info");
 
   // Per-template storage key
   const templateStorageKey = (id: string) => `arcon_tpl_state:${id}`;

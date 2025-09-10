@@ -15,6 +15,29 @@ import ConfirmDeleteDialog from "@/components/arcon/ConfirmDeleteDialog";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { toast } from "sonner";
 
+// TypeScript interfaces for Template DTOs
+interface TemplateCreateDto {
+  Name: string;
+  Description?: string | null;
+  TemplateRuleId: number;
+}
+
+interface TemplateDto {
+  Id: number;
+  Name: string;
+  Description?: string | null;
+  TemplateRuleId: number;
+  TemplateRuleInfo: string;
+  CreatedBy: number;
+  CreatedByName: string;
+  CreatedByEmail: string;
+  UpdatedBy?: number | null;
+  UpdatedByName?: string | null;
+  UpdatedByEmail?: string | null;
+  CreatedAt: string; // ISO date string
+  UpdatedAt?: string | null; // ISO date string
+}
+
 export default function Templates() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -232,12 +255,66 @@ export default function Templates() {
   };
 
   // Handle template actions
-  const handleCreateNewTemplate = (templateName: string) => {
-    console.log("Create new template with name:", templateName);
+  const handleCreateNewTemplate = async (templateName: string) => {
+    // This function is called after the template is already created by NameTemplateDialog
+    // We just need to refresh the templates list here, since NameTemplateDialog handles creation and navigation
+    console.log("Template created with name:", templateName);
+    
+    // Refresh the templates list to show the new template
+    await fetchTemplates(buildCurrentFilters());
   };
 
   const handleChooseTemplate = () => {
     console.log("Choose template");
+  };
+
+  // Handle preview template - fetch details first
+  const handlePreviewTemplate = async (templateId: string) => {
+    try {
+      console.log("Fetching template details for preview:", templateId);
+      
+      const token = getToken();
+      if (!token) {
+        toast.error("Authentication required. Please login again.");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE}/api/template/${templateId}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          toast.error("Template not found.");
+          return;
+        }
+        const errorData = await response.text().catch(() => "");
+        throw new Error(`Failed to fetch template: ${response.status} ${response.statusText}${errorData ? " - " + errorData : ""}`);
+      }
+
+      const templateDetails: TemplateDto = await response.json();
+      console.log("Template details fetched successfully:", templateDetails);
+      
+      toast.success("Template details loaded successfully!");
+      
+      // Navigate to preview page with template details
+      navigate(`/preview/${templateId}`, {
+        state: {
+          templateDetails: templateDetails,
+          templateName: templateDetails.Name,
+          templateId: templateId
+        }
+      });
+
+    } catch (error: any) {
+      console.error("Error fetching template details:", error);
+      toast.error(error.message || "Failed to load template details. Please try again.");
+    }
   };
 
   // ⬆️ near your other imports
@@ -312,12 +389,12 @@ export default function Templates() {
     }
   };
 
-  const handleTemplateAction = (action: string, templateId: string) => {
+  const handleTemplateAction = async (action: string, templateId: string) => {
     console.log(`Action: ${action} for template: ${templateId}`);
 
     switch (action) {
       case "preview":
-        navigate(`/preview/${templateId}`);
+        await handlePreviewTemplate(templateId);
         break;
       case "edit":
         navigate("/template-builder", { state: { templateId } });

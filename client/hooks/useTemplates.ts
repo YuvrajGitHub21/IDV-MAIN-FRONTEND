@@ -422,25 +422,18 @@ export const useTemplates = () => {
   };
 };
 
-/* ===================== Create (POST /api/templates/create-min) ===================== */
+/* ===================== Create (POST /api/template) ===================== */
 /**
- * Create a new template with just the name. The server sets:
- * - created_by (from the JWT)
- * - created_template_date
- * - last_updated
- * Returns the new id + name.
+ * Create a new template using the new backend TemplateController.
+ * Uses TemplateCreateDto structure with Name, Description, and TemplateRuleId.
+ * Returns the new template with proper casing (Id, Name).
  */
 export async function createTemplateMin(
   nameOfTemplate: string,
-  sectionsOrder: string[] = [
-    "Personal_info",
-    "Doc_verification",
-    "Biometric_verification",
-  ],
 ): Promise<{ id: string; name: string }> {
   const token = getToken();
 
-  const res = await fetch(`${API_BASE}/api/templates/create-min`, {
+  const res = await fetch(`${API_BASE}/api/template`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -448,8 +441,9 @@ export async function createTemplateMin(
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
-      nameOfTemplate,
-      sections_order: sectionsOrder,
+      Name: nameOfTemplate,
+      Description: null, // Optional field
+      TemplateRuleId: 1, // Default value, adjust as needed
     }),
   });
 
@@ -463,8 +457,8 @@ export async function createTemplateMin(
   }
 
   const doc = await res.json();
-  const id = String(doc?.id ?? doc?.Id ?? "");
-  const name = String(doc?.nameOfTemplate ?? nameOfTemplate ?? "Untitled");
+  const id = String(doc?.Id ?? doc?.id ?? "");
+  const name = String(doc?.Name ?? doc?.name ?? nameOfTemplate ?? "Untitled");
   return { id, name };
 }
 

@@ -624,6 +624,153 @@ export default function TemplateBuilder() {
   const [documentVerificationExpanded, setDocumentVerificationExpanded] = useState(false);
   const [biometricVerificationExpanded, setBiometricVerificationExpanded] = useState(false);
 
+  // Per-template storage key
+  const templateStorageKey = (id: string) => `arcon_tpl_state:${id}`;
+
+  // Reset builder to defaults (blank state for new templates)
+  const resetToDefaults = () => {
+    setVerificationSteps([
+      {
+        id: "personal-info",
+        title: "Personal Information",
+        description:
+          "Set up fields to collect basic user details like name, contact.",
+        isRequired: true,
+        isEnabled: true,
+      },
+    ]);
+
+    setOptionalFields([
+      { id: "date-of-birth", name: "Date Of Birth", placeholder: "10/07/1997", checked: false },
+      { id: "current-address", name: "Current Address", placeholder: "Enter your current address", checked: false },
+      { id: "permanent-address", name: "Permanent Address", placeholder: "Enter your permanent address", checked: false },
+      { id: "gender", name: "Gender", placeholder: "Select gender", checked: false },
+    ]);
+
+    setAddedFields([]);
+
+    setPersonalInfoExpanded(true);
+    setDocumentVerificationExpanded(false);
+    setBiometricVerificationExpanded(false);
+    setCurrentSectionId("personal-info");
+
+    setAllowUploadFromDevice(false);
+    setAllowCaptureWebcam(false);
+    setDocumentHandling("");
+    setSelectedCountries(["India"]);
+    setSelectedDocuments([]);
+
+    setMaxRetries("4");
+    setAskUserRetry(false);
+    setBlockAfterRetries(false);
+    setDataRetention("6 Months");
+  };
+
+  // Build a full snapshot of the current builder state
+  const buildSnapshot = () => ({
+    verificationSteps,
+    addedFields,
+    optionalFields,
+    personalInfoExpanded,
+    documentVerificationExpanded,
+    biometricVerificationExpanded,
+    currentSectionId,
+    doc: {
+      allowUploadFromDevice,
+      allowCaptureWebcam,
+      documentHandling,
+      selectedCountries,
+      selectedDocuments,
+    },
+    biometric: {
+      maxRetries,
+      askUserRetry,
+      blockAfterRetries,
+      dataRetention,
+    },
+  });
+
+  // Hydrate from storage when templateId changes
+  useEffect(() => {
+    if (!templateId) {
+      resetToDefaults();
+      return;
+    }
+    try {
+      localStorage.setItem("arcon_current_template_id", templateId);
+    } catch {}
+
+    const raw = (() => {
+      try {
+        return localStorage.getItem(templateStorageKey(templateId));
+      } catch {
+        return null;
+      }
+    })();
+
+    if (!raw) {
+      resetToDefaults();
+      return;
+    }
+
+    try {
+      const s = JSON.parse(raw);
+      if (Array.isArray(s.verificationSteps)) setVerificationSteps(s.verificationSteps);
+      if (Array.isArray(s.addedFields)) setAddedFields(s.addedFields);
+      if (Array.isArray(s.optionalFields)) setOptionalFields(s.optionalFields);
+      if (typeof s.personalInfoExpanded === "boolean") setPersonalInfoExpanded(s.personalInfoExpanded);
+      if (typeof s.documentVerificationExpanded === "boolean") setDocumentVerificationExpanded(s.documentVerificationExpanded);
+      if (typeof s.biometricVerificationExpanded === "boolean") setBiometricVerificationExpanded(s.biometricVerificationExpanded);
+      if (typeof s.currentSectionId === "string") setCurrentSectionId(s.currentSectionId);
+
+      const d = s.doc || {};
+      if (typeof d.allowUploadFromDevice === "boolean") setAllowUploadFromDevice(d.allowUploadFromDevice);
+      if (typeof d.allowCaptureWebcam === "boolean") setAllowCaptureWebcam(d.allowCaptureWebcam);
+      if (typeof d.documentHandling === "string") setDocumentHandling(d.documentHandling);
+      if (Array.isArray(d.selectedCountries)) setSelectedCountries(d.selectedCountries);
+      if (Array.isArray(d.selectedDocuments)) setSelectedDocuments(d.selectedDocuments);
+
+      const b = s.biometric || {};
+      if (typeof b.maxRetries === "string") setMaxRetries(b.maxRetries);
+      if (typeof b.askUserRetry === "boolean") setAskUserRetry(b.askUserRetry);
+      if (typeof b.blockAfterRetries === "boolean") setBlockAfterRetries(b.blockAfterRetries);
+      if (typeof b.dataRetention === "string") setDataRetention(b.dataRetention);
+    } catch {
+      resetToDefaults();
+    }
+  }, [templateId]);
+
+  // Persist snapshot whenever relevant state changes (scoped by templateId)
+  const persistSnapshot = () => {
+    if (!templateId) return;
+    try {
+      localStorage.setItem(templateStorageKey(templateId), JSON.stringify(buildSnapshot()));
+    } catch {}
+  };
+
+  useEffect(() => {
+    persistSnapshot();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    templateId,
+    verificationSteps,
+    addedFields,
+    optionalFields,
+    personalInfoExpanded,
+    documentVerificationExpanded,
+    biometricVerificationExpanded,
+    currentSectionId,
+    allowUploadFromDevice,
+    allowCaptureWebcam,
+    documentHandling,
+    selectedCountries,
+    selectedDocuments,
+    maxRetries,
+    askUserRetry,
+    blockAfterRetries,
+    dataRetention,
+  ]);
+
   // single source of truth for which section is active (by id)
   const orderedSectionIds: VerificationStep["id"][] = verificationSteps.map((s) => s.id);
   const [currentSectionId, setCurrentSectionId] = useState<VerificationStep["id"]>("personal-info");

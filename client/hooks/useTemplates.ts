@@ -215,30 +215,62 @@ const isSchemaMismatchError = (text: string) =>
 
 /* core fetch for a given page/pageSize */
 /* core fetch */
+// async function fetchPage(
+//   filters: Partial<TemplateFilters> & { page: number; pageSize: number },
+// ) {
+//   const params = new URLSearchParams();
+
+//   // If your API eventually supports search, keep this; otherwise it will be ignored harmlessly
+//   if (filters.search) params.set("search", filters.search);
+
+//   const qs = params.toString();
+//   const token = getToken();
+
+//   const res = await fetch(
+//     `${API_BASE}/api/Template${qs ? `?${qs}` : ""}`,
+//     {
+//       method: "GET",
+//       headers: {
+//         Accept: "application/json",
+//         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+//       },
+//     },
+//   );
+
+//   return res;
+// }
 async function fetchPage(
   filters: Partial<TemplateFilters> & { page: number; pageSize: number },
 ) {
   const params = new URLSearchParams();
 
-  // If your API eventually supports search, keep this; otherwise it will be ignored harmlessly
   if (filters.search) params.set("search", filters.search);
+  if (filters.isActive !== undefined) params.set("isActive", String(filters.isActive));
+  if (filters.createdBy) params.set("createdBy", filters.createdBy);
+  if (filters.createdFrom) params.set("createdFrom", filters.createdFrom);
+  if (filters.createdTo) params.set("createdTo", filters.createdTo);
+  if (filters.updatedFrom) params.set("updatedFrom", filters.updatedFrom);
+  if (filters.updatedTo) params.set("updatedTo", filters.updatedTo);
+  if (filters.sortBy) params.set("sortBy", filters.sortBy);
+  if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
+
+  params.set("page", String(filters.page));
+  params.set("pageSize", String(filters.pageSize));
 
   const qs = params.toString();
   const token = getToken();
 
-  const res = await fetch(
-    `${API_BASE}/api/Template${qs ? `?${qs}` : ""}`,
-    {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+  const res = await fetch(`${API_BASE}/api/Template${qs ? `?${qs}` : ""}`, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-  );
+  });
 
   return res;
 }
+
 
 
 /**

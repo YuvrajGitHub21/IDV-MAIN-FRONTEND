@@ -188,33 +188,41 @@ export default function SendInviteDialog({
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setUploadedFile(file);
-      // Simulate upload progress
-      setUploadProgress(0);
+    const file = event.target.files?.[0] || null;
+    if (!file) return;
 
-      // Clear any existing interval
-      if (uploadIntervalRef.current) {
-        clearInterval(uploadIntervalRef.current);
-        uploadIntervalRef.current = null;
-      }
-
-      const id = window.setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 100) {
-            if (uploadIntervalRef.current) {
-              clearInterval(uploadIntervalRef.current);
-              uploadIntervalRef.current = null;
-            }
-            return 100;
-          }
-          return prev + 20;
-        });
-      }, 200);
-
-      uploadIntervalRef.current = id;
+    const name = file.name.toLowerCase();
+    const ok =
+      name.endsWith(".csv") || name.endsWith(".xlsx") || name.endsWith(".dbf");
+    if (!ok) {
+      toast.error("Only CSV, XLSX, and DBF files are supported.");
+      // reset input to allow re-choosing the same filename
+      event.currentTarget.value = "";
+      return;
     }
+
+    setUploadedFile(file);
+    setUploadProgress(0);
+
+    if (uploadIntervalRef.current) {
+      clearInterval(uploadIntervalRef.current);
+      uploadIntervalRef.current = null;
+    }
+
+    const id = window.setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 100) {
+          if (uploadIntervalRef.current) {
+            clearInterval(uploadIntervalRef.current);
+            uploadIntervalRef.current = null;
+          }
+          return 100;
+        }
+        return prev + 20;
+      });
+    }, 200);
+
+    uploadIntervalRef.current = id;
   };
 
   const handleSendInvite = () => {
@@ -475,7 +483,7 @@ export default function SendInviteDialog({
                       <input
                         type="file"
                         className="hidden"
-                        accept=".xls,.xlsx,.csv"
+                        accept=".csv,.xlsx,.dbf"
                         onChange={handleFileUpload}
                       />
                     </label>
@@ -484,7 +492,7 @@ export default function SendInviteDialog({
               </div>
 
               <div className="flex justify-between text-xs text-[#505258] mb-4">
-                <span>Supported Formats: JPG, JPEG, PNG, SVG, .XLS</span>
+                <span>Supported Formats: CSV, XLSX, DBF</span>
                 <span>Maximum Size: 25MB</span>
               </div>
 

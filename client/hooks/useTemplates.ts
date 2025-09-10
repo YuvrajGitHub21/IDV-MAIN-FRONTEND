@@ -118,7 +118,7 @@ const mockUsers: Record<string, string> = {
 };
 
 /* ===================== Config ===================== */
-// const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+// const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5027";
 const API_BASE = "http://10.10.2.133:8080";
 
 const getToken = () => {
@@ -241,38 +241,20 @@ const isSchemaMismatchError = (text: string) =>
 
 //   return res;
 // }
-async function fetchPage(
-  filters: Partial<TemplateFilters> & { page: number; pageSize: number },
-) {
-  const params = new URLSearchParams();
-
-  if (filters.search) params.set("search", filters.search);
-  if (filters.isActive !== undefined)
-    params.set("isActive", String(filters.isActive));
-  if (filters.createdBy) params.set("createdBy", filters.createdBy);
-  if (filters.createdFrom) params.set("createdFrom", filters.createdFrom);
-  if (filters.createdTo) params.set("createdTo", filters.createdTo);
-  if (filters.updatedFrom) params.set("updatedFrom", filters.updatedFrom);
-  if (filters.updatedTo) params.set("updatedTo", filters.updatedTo);
-  if (filters.sortBy) params.set("sortBy", filters.sortBy);
-  if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
-
-  params.set("page", String(filters.page));
-  params.set("pageSize", String(filters.pageSize));
-
-  const qs = params.toString();
+async function fetchPage() {
   const token = getToken();
-
-  const res = await fetch(`${API_BASE}/api/Template${qs ? `?${qs}` : ""}`, {
+  const res = await fetch(`${API_BASE}/api/Template`, {
     method: "GET",
     headers: {
       Accept: "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
-
   return res;
 }
+
+
+
 
 /**
  * Probe mode:
@@ -288,7 +270,7 @@ async function probeCollectGoodItems(
   let total = 0;
 
   for (let p = 1; p <= maxProbes && items.length < desiredCount; p++) {
-    const res = await fetchPage({ search: base.search, page: p, pageSize: 1 });
+    const res = await fetchPage();
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       if (res.status >= 500 && isSchemaMismatchError(text)) {
@@ -378,82 +360,183 @@ function getFallbackData(filters: TemplateFilters = {}) {
 }
 
 /* ===================== useTemplates ===================== */
+// export const useTemplates = () => {
+//   const [templates, setTemplates] = useState<TemplateItem[]>([]);
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState<string | null>(null);
+//   const [totalItems, setTotalItems] = useState(0);
+
+//   const fetchTemplates = useCallback(async (filters: TemplateFilters = {}) => {
+//     setLoading(true);
+//     setError(null);
+
+//     const fallback = (reason?: string) => {
+//       if (reason) setError(reason);
+//       const fb = getFallbackData(filters);
+//       setTemplates(fb.items);
+//       setTotalItems(fb.total);
+//     };
+
+//     try {
+//       const page = filters.page ?? 1;
+//       const pageSize = filters.pageSize ?? 12;
+
+//       const res = await fetchPage({
+//         ...filters,
+//         page,
+//         pageSize,
+//       });
+
+//       if (!res.ok) {
+//         const text = await res.text().catch(() => "");
+
+//         // Try probe mode if this is the known schema mismatch coming from Mongo driver
+//         if (res.status >= 500 && isSchemaMismatchError(text)) {
+//           const salvaged = await probeCollectGoodItems(
+//             { search: filters.search },
+//             pageSize,
+//           );
+//           if (salvaged) {
+//             setTemplates(salvaged.items);
+//             setTotalItems(salvaged.total);
+//             setError(
+//               "Some records couldn’t be loaded due to a server data mismatch. Showing available items.",
+//             );
+//             return;
+//           }
+//         }
+
+//         return fallback(
+//           `API Error: ${res.status} ${res.statusText}${
+//             text ? ` — ${text.slice(0, 200)}` : ""
+//           }. Showing offline data`,
+//         );
+//       }
+
+//       const json = await res.json();
+//       const { items, total } = normalizeListResponse(json);
+//       setTemplates(items);
+//       setTotalItems(total);
+//     } catch (e: any) {
+//       console.error("Error fetching templates:", e);
+//       fallback(
+//         `${e?.message || "Failed to fetch templates"}. Showing offline data`,
+//       );
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   return {
+//     templates,
+//     loading,
+//     error,
+//     totalItems,
+//     fetchTemplates,
+//     refetch: fetchTemplates,
+//   };
+// };
+
+
 export const useTemplates = () => {
+  const [allTemplates, setAllTemplates] = useState<TemplateItem[]>([]);
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState(0);
 
-  const fetchTemplates = useCallback(async (filters: TemplateFilters = {}) => {
+  const fetchTemplates = useCallback(async () => {
     setLoading(true);
     setError(null);
-
-    const fallback = (reason?: string) => {
-      if (reason) setError(reason);
-      const fb = getFallbackData(filters);
-      setTemplates(fb.items);
-      setTotalItems(fb.total);
-    };
-
     try {
-      const page = filters.page ?? 1;
-      const pageSize = filters.pageSize ?? 12;
-
-      const res = await fetchPage({
-        ...filters,
-        page,
-        pageSize,
-      });
-
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-
-        // Try probe mode if this is the known schema mismatch coming from Mongo driver
-        if (res.status >= 500 && isSchemaMismatchError(text)) {
-          const salvaged = await probeCollectGoodItems(
-            { search: filters.search },
-            pageSize,
-          );
-          if (salvaged) {
-            setTemplates(salvaged.items);
-            setTotalItems(salvaged.total);
-            setError(
-              "Some records couldn’t be loaded due to a server data mismatch. Showing available items.",
-            );
-            return;
-          }
-        }
-
-        return fallback(
-          `API Error: ${res.status} ${res.statusText}${
-            text ? ` — ${text.slice(0, 200)}` : ""
-          }. Showing offline data`,
-        );
-      }
-
+      const res = await fetchPage();
+      if (!res.ok) throw new Error(`API Error: ${res.status}`);
       const json = await res.json();
-      const { items, total } = normalizeListResponse(json);
-      setTemplates(items);
-      setTotalItems(total);
+      const { items } = normalizeListResponse(json);
+      setAllTemplates(items);   // store full dataset
+      setTotalItems(items.length);
     } catch (e: any) {
-      console.error("Error fetching templates:", e);
-      fallback(
-        `${e?.message || "Failed to fetch templates"}. Showing offline data`,
-      );
+      setError(e.message);
+      setAllTemplates([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // Apply filters client-side
+  const applyFilters = useCallback((filters: TemplateFilters) => {
+    let filtered = [...allTemplates];
+
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      filtered = filtered.filter(
+        (t) =>
+          (t.name ?? "").toLowerCase().includes(q) ||
+          (t.description ?? "").toLowerCase().includes(q)
+      );
+    }
+
+    if (filters.isActive !== undefined) {
+      filtered = filtered.filter((t) => t.isActive === filters.isActive);
+    }
+
+    if (filters.createdBy) {
+      filtered = filtered.filter((t) => t.createdBy === filters.createdBy);
+    }
+
+    // Date filters
+    if (filters.createdFrom) {
+      filtered = filtered.filter(
+        (t) => new Date(t.createdAtUtc) >= new Date(filters.createdFrom!)
+      );
+    }
+    if (filters.createdTo) {
+      filtered = filtered.filter(
+        (t) => new Date(t.createdAtUtc) <= new Date(filters.createdTo!)
+      );
+    }
+    if (filters.updatedFrom) {
+      filtered = filtered.filter(
+        (t) => new Date(t.updatedAtUtc ?? t.createdAtUtc) >= new Date(filters.updatedFrom!)
+      );
+    }
+    if (filters.updatedTo) {
+      filtered = filtered.filter(
+        (t) => new Date(t.updatedAtUtc ?? t.createdAtUtc) <= new Date(filters.updatedTo!)
+      );
+    }
+
+    // Sorting
+    if (filters.sortBy) {
+      const key = filters.sortBy === "createdAt" ? "createdAtUtc" : "updatedAtUtc";
+      filtered.sort((a, b) => {
+        const av = a[key] ? new Date(a[key] as string).getTime() : 0;
+        const bv = b[key] ? new Date(b[key] as string).getTime() : 0;
+        return filters.sortOrder === "asc" ? av - bv : bv - av;
+      });
+    }
+
+    // Pagination
+    const page = filters.page ?? 1;
+    const pageSize = filters.pageSize ?? 12;
+    const start = (page - 1) * pageSize;
+    const paginated = filtered.slice(start, start + pageSize);
+
+    setTemplates(paginated);
+    setTotalItems(filtered.length);
+  }, [allTemplates]);
+
   return {
     templates,
+    allTemplates,
     loading,
     error,
     totalItems,
     fetchTemplates,
-    refetch: fetchTemplates,
+    applyFilters,
   };
 };
+
 
 /* ===================== Create (POST /api/template) ===================== */
 /**

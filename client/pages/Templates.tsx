@@ -70,15 +70,19 @@ export default function Templates() {
     undefined,
   );
   const navigate = useNavigate();
+  // const { templates, totalItems, fetchTemplates, applyFilters } = useTemplates();
+  const { templates, totalItems, fetchTemplates, applyFilters, loading, error } = useTemplates();
+
+
 
   // Use custom hooks for API integration
-  const {
-    templates,
-    loading: templatesLoading,
-    error: templatesError,
-    totalItems,
-    fetchTemplates,
-  } = useTemplates();
+  // const {
+  //   templates,
+  //   loading: templatesLoading,
+  //   error: templatesError,
+  //   totalItems,
+  //   fetchTemplates,
+  // } = useTemplates();
   const { users, fetchMultipleUsers } = useUsers();
 
   // helper: detect Mongo-like ObjectId strings
@@ -104,32 +108,6 @@ export default function Templates() {
       : createdBy;
   };
 
-  useEffect(() => {
-    const filters: any = { search: searchQuery, page: currentPage, pageSize };
-    if (filterIsActive !== undefined) filters.isActive = filterIsActive;
-    if (filterCreatedBy) filters.createdBy = filterCreatedBy;
-    if (filterSortBy) filters.sortBy = filterSortBy;
-    if (filterSortOrder) filters.sortOrder = filterSortOrder;
-    if (filterCreatedFrom) filters.createdFrom = filterCreatedFrom;
-    if (filterCreatedTo) filters.createdTo = filterCreatedTo;
-    if (filterUpdatedFrom) filters.updatedFrom = filterUpdatedFrom;
-    if (filterUpdatedTo) filters.updatedTo = filterUpdatedTo;
-    fetchTemplates(filters);
-  }, [
-    searchQuery,
-    currentPage,
-    pageSize,
-    filterIsActive,
-    filterCreatedBy,
-    filterSortBy,
-    filterSortOrder,
-    filterCreatedFrom,
-    filterCreatedTo,
-    filterUpdatedFrom,
-    filterUpdatedTo,
-    fetchTemplates,
-  ]);
-
   // Fetch user data for all creator values that look like ObjectIds
   useEffect(() => {
     if (templates.length > 0) {
@@ -153,6 +131,31 @@ export default function Templates() {
       setCurrentPage(totalPages);
     }
   }, [totalItems, pageSize, currentPage]);
+  
+
+
+  useEffect(() => {
+    fetchTemplates(); // once on mount
+  }, [fetchTemplates]);
+
+  useEffect(() => {
+    applyFilters(buildCurrentFilters()); // whenever filters change
+  }, [
+    searchQuery,
+    currentPage,
+    pageSize,
+    filterIsActive,
+    filterCreatedBy,
+    filterSortBy,
+    filterSortOrder,
+    filterCreatedFrom,
+    filterCreatedTo,
+    filterUpdatedFrom,
+    filterUpdatedTo,
+    applyFilters,
+  ]);
+
+   
 
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState("");
@@ -199,7 +202,11 @@ export default function Templates() {
       }
 
       // Some backends return 204 No Content — that's fine. Just refetch.
-      await fetchTemplates(buildCurrentFilters());
+      // await fetchTemplates(buildCurrentFilters());
+      // ✅ First refetch all, then reapply filters
+      await fetchTemplates();
+      applyFilters(buildCurrentFilters());
+
       setRenameDialogOpen(false);
       toast.success("Template renamed successfully");
     } catch (err) {
@@ -264,7 +271,11 @@ export default function Templates() {
     console.log("Template created with name:", templateName);
 
     // Refresh the templates list to show the new template
-    await fetchTemplates(buildCurrentFilters());
+    // await fetchTemplates(buildCurrentFilters());
+    // ✅ First refetch all, then reapply filters
+    await fetchTemplates();
+    applyFilters(buildCurrentFilters());
+
   };
 
   const handleChooseTemplate = () => {
@@ -325,7 +336,7 @@ export default function Templates() {
 
   // ⬆️ near your other imports
   // (use the same base URL as your useTemplates hook)
-  // const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5074";
+  // const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:5027" ;
   const API_BASE = "http://10.10.2.133:8080";
 
   const getToken = () =>
@@ -386,7 +397,11 @@ export default function Templates() {
       } else console.log("deleted template");
 
       // refresh list with current filters
-      await fetchTemplates(buildCurrentFilters());
+      // await fetchTemplates(buildCurrentFilters());
+      // ✅ First refetch all, then reapply filters
+      await fetchTemplates();
+      applyFilters(buildCurrentFilters());
+
     } catch (e: any) {
       console.error(e);
       alert(e?.message || "Failed to delete template");
@@ -921,7 +936,7 @@ export default function Templates() {
           {/* Table Container */}
           <div className="p-4">
             {/* Error State */}
-            {templatesError && (
+            {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
                 <div className="flex">
                   <div className="flex-shrink-0">
@@ -941,13 +956,12 @@ export default function Templates() {
                     <h3 className="text-sm font-medium text-red-800">
                       Error loading templates
                     </h3>
-                    <div className="mt-2 text-sm text-red-700">
-                      {templatesError}
-                    </div>
+                    <div className="mt-2 text-sm text-red-700">{error}</div>
                   </div>
                 </div>
               </div>
             )}
+
 
             <div className="bg-white border border-gray-200 rounded overflow-hidden">
               {/* Desktop Table */}
@@ -977,27 +991,24 @@ export default function Templates() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {templatesLoading ? (
-                      <tr>
-                        <td colSpan={7} className="px-6 py-4 text-center">
-                          <div className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                            <span className="ml-2 text-sm text-gray-600">
-                              Loading templates...
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : templates.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={7}
-                          className="px-6 py-4 text-center text-sm text-gray-500"
-                        >
-                          No templates found
-                        </td>
-                      </tr>
-                    ) : (
+                    {loading ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                          <span className="ml-2 text-sm text-gray-600">
+                            Loading templates...
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : templates.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                        No templates found
+                      </td>
+                    </tr>
+                  ) : (
                       templates.map((template) => (
                         <tr key={template.id} className="hover:bg-gray-50">
                           <td className="px-2 py-2 text-sm text-gray-900">
@@ -1053,14 +1064,14 @@ export default function Templates() {
                           </td>
                         </tr>
                       ))
-                    )}
+                  )}
                   </tbody>
                 </table>
               </div>
 
               {/* Mobile Cards */}
               <div className="lg:hidden space-y-3 p-3">
-                {templatesLoading ? (
+                {loading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                     <span className="ml-2 text-sm text-gray-600">

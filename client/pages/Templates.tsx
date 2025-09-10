@@ -215,6 +215,57 @@ export default function Templates() {
     }
   };
 
+  const handleCloneTemplate = async (templateId: string) => {
+    const token = getToken();
+    if (!token) {
+      toast.error("Authentication required. Please login again.");
+      return;
+    }
+
+    // Find the template to clone by ID (this would typically be fetched or passed as a parameter)
+    const templateToClone = templates.find((template) => template.id === templateId);
+    
+    if (!templateToClone) {
+      toast.error("Template not found.");
+      return;
+    }
+
+    // Create a cloned template with a new name, description, and templateRuleId
+    const clonedTemplate = {
+      name: `${templateToClone.name} (Copy)`, // New name for the cloned template
+      description: `${templateToClone.description}` || "New", // Use the original description or default to "New"
+      templateRuleId: `${templateToClone.templateRuleId}`|| 1, // Use the same template rule ID (ensure it's valid)
+    };
+
+    try {
+      const response = await fetch(`${API_BASE}/api/Template`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(clonedTemplate),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('Clone Error:', text);
+        throw new Error(`Failed to clone template: ${text}`);
+      }
+
+      // Refresh templates after cloning
+      await fetchTemplates();
+      applyFilters(buildCurrentFilters());
+
+      toast.success("Template cloned successfully!");
+    } catch (error) {
+      console.error('Error cloning template:', error);
+      toast.error(error.message || "Failed to clone template.");
+    }
+  };
+
+
+
   // Enhanced click outside functionality for mobile sidebar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -435,6 +486,10 @@ export default function Templates() {
         // Open the rename dialog
         setTemplateIdToRename(templateId);
         setRenameDialogOpen(true);
+        break;
+      case "clone":
+        // Handle the clone action
+        await handleCloneTemplate(templateId);
         break;
       default:
         console.log(`Action ${action} not yet implemented`);

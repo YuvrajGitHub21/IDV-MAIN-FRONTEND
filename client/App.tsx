@@ -23,6 +23,7 @@ import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
 // 1st change
+// chhota change
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

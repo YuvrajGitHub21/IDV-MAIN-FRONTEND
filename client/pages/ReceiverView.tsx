@@ -27,7 +27,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const ENABLE_BACKEND_RECEIVER = false;
 
 interface FormData {
   firstName: string;
@@ -70,7 +71,9 @@ export default function ReceiverView() {
   const [dbTemplate, setDbTemplate] = useState<any>(null);
   const [loadingTpl, setLoadingTpl] = useState(false);
 
+  // Optionally fetch from backend; disabled by default
   useEffect(() => {
+    if (!ENABLE_BACKEND_RECEIVER) return;
     if (!templateId) return;
     const run = async () => {
       setLoadingTpl(true);
@@ -88,10 +91,61 @@ export default function ReceiverView() {
     run();
   }, [templateId]);
 
+  // Load per-template snapshot from localStorage for previewing without backend
+  const [snapshot, setSnapshot] = useState<any>(null);
+  useEffect(() => {
+    if (!templateId) return;
+    try {
+      const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
+      if (raw) setSnapshot(JSON.parse(raw));
+    } catch {}
+  }, [templateId]);
+
   // Get template configuration from location state or build from dbTemplate or use defaults
   const templateConfig: TemplateConfig = React.useMemo(() => {
     if (location.state?.templateConfig) {
       return location.state.templateConfig;
+    }
+
+    // Build from local snapshot (no backend)
+    if (snapshot) {
+      const steps = Array.isArray(snapshot.verificationSteps)
+        ? snapshot.verificationSteps
+        : [];
+      const hasDoc = steps.some((s: any) => s.id === "document-verification" && (s.isEnabled ?? true));
+      const hasBio = steps.some((s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true));
+
+      const opt: any[] = Array.isArray(snapshot.optionalFields)
+        ? snapshot.optionalFields
+        : [];
+      const dob = !!opt.find((f: any) => f.id === "date-of-birth" && f.checked);
+
+      const doc = snapshot.doc || {};
+      const supportedDocuments: string[] = Array.isArray(doc.selectedDocuments)
+        ? doc.selectedDocuments
+        : [];
+
+      return {
+        templateName: snapshot.templateName || "New Template",
+        personalInfo: {
+          enabled: true,
+          fields: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            dateOfBirth: dob,
+          },
+        },
+        documentVerification: {
+          enabled: hasDoc,
+          allowUploadFromDevice: !!doc.allowUploadFromDevice,
+          allowCaptureWebcam: !!doc.allowCaptureWebcam,
+          supportedDocuments,
+        },
+        biometricVerification: {
+          enabled: hasBio,
+        },
+      };
     }
 
     if (dbTemplate) {
@@ -194,7 +248,7 @@ export default function ReceiverView() {
         enabled: true,
       },
     };
-  }, [location.state, dbTemplate]);
+  }, [location.state, dbTemplate, snapshot]);
 
   function extractSupportedDocuments(docVerification: any): string[] {
     const countries = Array.isArray(docVerification.Countries_array)

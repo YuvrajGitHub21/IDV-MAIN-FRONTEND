@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Button } from "@/components/ui/button";
@@ -616,30 +616,11 @@ const BiometricVerificationSection: React.FC<{
 export default function TemplateBuilder() {
   const navigate = useNavigate();
   const location = useLocation() as any;
-  const { templateId: urlTemplateId } = useParams();
   const templateName = location?.state?.templateName || "New Template";
-<<<<<<< HEAD
   const templateId: string =
-    urlTemplateId ||
     location?.state?.templateId ||
     localStorage.getItem("arcon_current_template_id") ||
     "";
-=======
-  const [templateId] = useState<string>(() => {
-    const incoming = location?.state?.templateId as string | undefined;
-    const existing =
-      incoming ||
-      localStorage.getItem("arcon_current_template_id") ||
-      undefined;
-    const id =
-      existing ||
-      `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    try {
-      localStorage.setItem("arcon_current_template_id", id);
-    } catch {}
-    return id;
-  });
->>>>>>> cd9385be0bc68398639a936e600d998e7e78fe30
 
   // left-rail steps
   const [verificationSteps, setVerificationSteps] = useState<
@@ -861,7 +842,6 @@ export default function TemplateBuilder() {
 
   // Build a full snapshot of the current builder state
   const buildSnapshot = () => ({
-    templateName,
     verificationSteps,
     addedFields,
     optionalFields,
@@ -958,8 +938,53 @@ export default function TemplateBuilder() {
   };
 
   useEffect(() => {
-    // Persist per-template snapshot only (no global keys)
+    // Persist per-template snapshot when applicable
     persistSnapshot();
+
+    // Always persist global keys so Preview can read from localStorage without backend
+    try {
+      const hasDoc = verificationSteps.some(
+        (s) => s.id === "document-verification",
+      );
+      const hasBio = verificationSteps.some(
+        (s) => s.id === "biometric-verification",
+      );
+      localStorage.setItem(
+        "arcon_has_document_verification",
+        JSON.stringify(hasDoc),
+      );
+      localStorage.setItem(
+        "arcon_has_biometric_verification",
+        JSON.stringify(hasBio),
+      );
+
+      localStorage.setItem(
+        "arcon_doc_verification_form",
+        JSON.stringify({
+          allowUploadFromDevice,
+          allowCaptureWebcam,
+          documentHandling,
+          selectedCountries,
+          selectedDocuments,
+        }),
+      );
+
+      localStorage.setItem(
+        "arcon_biometric_verification_form",
+        JSON.stringify({
+          maxRetries,
+          askUserRetry,
+          blockAfterRetries,
+          dataRetention,
+        }),
+      );
+
+      // Also keep a simple list of chosen steps
+      localStorage.setItem(
+        "arcon_verification_steps",
+        JSON.stringify(verificationSteps),
+      );
+    } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     templateId,
@@ -1360,17 +1385,14 @@ export default function TemplateBuilder() {
           activeSections[nextIndex].name as VerificationStep["id"],
         );
       } else {
-        let snapshot: any = null;
         try {
           persistSnapshot();
-          snapshot = buildSnapshot();
         } catch {}
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
             templateName,
             verificationSteps,
             addedFields,
-            snapshot,
             templateData: {
               personalInfo: true,
               documentVerification: verificationSteps.some(

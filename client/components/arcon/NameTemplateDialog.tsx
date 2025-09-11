@@ -52,8 +52,8 @@ export function NameTemplateDialog({
       setErrorMessage("");
       onOpenChange(false);
 
-      navigate(`/template-builder/${created.id}`, {
-        state: { templateName: created.name },
+      navigate("/template-builder", {
+        state: { templateId: created.id, templateName: created.name },
       });
     } catch (err: any) {
       const msg = (err?.message || "Failed to create template").toString();

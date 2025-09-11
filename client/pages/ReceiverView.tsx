@@ -27,7 +27,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const ENABLE_BACKEND_RECEIVER = false;
 
 interface FormData {
   firstName: string;
@@ -71,6 +72,7 @@ export default function ReceiverView() {
   const [loadingTpl, setLoadingTpl] = useState(false);
 
   useEffect(() => {
+    if (!ENABLE_BACKEND_RECEIVER) return;
     if (!templateId) return;
     const run = async () => {
       setLoadingTpl(true);
@@ -94,7 +96,7 @@ export default function ReceiverView() {
       return location.state.templateConfig;
     }
 
-    if (dbTemplate) {
+    if (ENABLE_BACKEND_RECEIVER && dbTemplate) {
       const sectionStatus = dbTemplate.Section_status || {};
       const personalInfo = dbTemplate.Personal_info || {};
       const docVerification = dbTemplate.Doc_verification || {};
@@ -127,31 +129,26 @@ export default function ReceiverView() {
       };
     }
 
-    // Fallback to location state
-    if (location.state?.templateData) {
+    // Build from localStorage (no backend)
+    try {
+      const hasDoc = JSON.parse(localStorage.getItem("arcon_has_document_verification") || "false");
+      const hasBio = JSON.parse(localStorage.getItem("arcon_has_biometric_verification") || "false");
+      const docRaw = localStorage.getItem("arcon_doc_verification_form");
+      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
+      const docCfg = docRaw ? JSON.parse(docRaw) : {};
+      const bioCfg = bioRaw ? JSON.parse(bioRaw) : {};
+
       return {
-        templateName:
-          location.state.templateData.templateName || "New Template",
+        templateName: location.state?.templateData?.templateName || "New Template",
         personalInfo: {
           enabled: true,
-          fields: {
-            firstName: true,
-            lastName: true,
-            email: true,
-            dateOfBirth:
-              location.state.templateData.addedFields?.some((f: any) =>
-                f.id.includes("date"),
-              ) || false,
-          },
+          fields: { firstName: true, lastName: true, email: true, dateOfBirth: false },
         },
         documentVerification: {
-          enabled:
-            location.state.templateData.verificationSteps?.some(
-              (s: any) => s.id === "document-verification",
-            ) || false,
-          allowUploadFromDevice: true,
-          allowCaptureWebcam: true,
-          supportedDocuments: [
+          enabled: Boolean(hasDoc),
+          allowUploadFromDevice: Boolean(docCfg.allowUploadFromDevice),
+          allowCaptureWebcam: Boolean(docCfg.allowCaptureWebcam),
+          supportedDocuments: Array.isArray(docCfg.selectedDocuments) ? docCfg.selectedDocuments : [
             "Passport",
             "Aadhar Card",
             "Drivers License",
@@ -159,40 +156,25 @@ export default function ReceiverView() {
           ],
         },
         biometricVerification: {
-          enabled:
-            location.state.templateData.verificationSteps?.some(
-              (s: any) => s.id === "biometric-verification",
-            ) || false,
+          enabled: Boolean(hasBio),
         },
       };
-    }
+    } catch {}
 
     // Default config
     return {
       templateName: "New Template",
       personalInfo: {
         enabled: true,
-        fields: {
-          firstName: true,
-          lastName: true,
-          email: true,
-          dateOfBirth: true,
-        },
+        fields: { firstName: true, lastName: true, email: true, dateOfBirth: false },
       },
       documentVerification: {
-        enabled: true,
-        allowUploadFromDevice: true,
-        allowCaptureWebcam: true,
-        supportedDocuments: [
-          "Passport",
-          "Aadhar Card",
-          "Drivers License",
-          "Pan Card",
-        ],
+        enabled: false,
+        allowUploadFromDevice: false,
+        allowCaptureWebcam: false,
+        supportedDocuments: [],
       },
-      biometricVerification: {
-        enabled: true,
-      },
+      biometricVerification: { enabled: false },
     };
   }, [location.state, dbTemplate]);
 
@@ -383,12 +365,34 @@ export default function ReceiverView() {
   const buildSections = () => {
     const sections = [];
 
-    // Get sections order from database or use default
-    const sectionsOrder = dbTemplate?.sections_order || [
-      "Personal_info",
-      "Doc_verification",
-      "Biometric_verification",
-    ];
+    // Get sections order from backend, or derive from localStorage builder steps, else default
+    let sectionsOrder = dbTemplate?.sections_order;
+    if (!sectionsOrder) {
+      try {
+        const raw = localStorage.getItem("arcon_verification_steps");
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(parsed) && parsed.length) {
+          sectionsOrder = parsed
+            .map((s: any) =>
+              s.id === "personal-info"
+                ? "Personal_info"
+                : s.id === "document-verification"
+                ? "Doc_verification"
+                : s.id === "biometric-verification"
+                ? "Biometric_verification"
+                : null,
+            )
+            .filter(Boolean);
+        }
+      } catch {}
+    }
+    if (!sectionsOrder || !sectionsOrder.length) {
+      sectionsOrder = [
+        "Personal_info",
+        "Doc_verification",
+        "Biometric_verification",
+      ];
+    }
 
     const sectionMap = {
       Personal_info: {

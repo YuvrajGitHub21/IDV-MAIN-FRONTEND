@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import ChooseTemplate from "./pages/ChooseTemplate";
 import Debug from "./pages/Debug";
+import TemplateDebug from "./pages/TemplateDebug";
 
 const queryClient = new QueryClient();
 // 1st change
@@ -38,22 +39,19 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Templates />} />
               <Route path="/template-builder" element={<TemplateBuilder />} />
-              <Route path="/TemplateBuilder" element={<TemplateBuilder />} />
+              <Route path="/template-builder/:templateId" element={<TemplateBuilder />} />
 
               <Route path="/preview" element={<Preview />} />
-              <Route path="/Preview" element={<Preview />} />
               <Route path="/preview/:templateId" element={<Preview />} />
 
               <Route path="/receiver-view" element={<ReceiverView />} />
-              <Route path="/ReceiverView" element={<ReceiverView />} />
-              <Route
-                path="/receiver-view/:templateId"
-                element={<ReceiverView />}
-              />
+              <Route path="/receiver-view/:templateId" element={<ReceiverView />} />
 
               <Route path="/home" element={<Home />} />
               <Route path="/choose-template" element={<ChooseTemplate />} />
               <Route path="/debug" element={<Debug />} />
+              <Route path="/template-debug" element={<TemplateDebug mode="admin" />} />
+              <Route path="/template-debug/receiver" element={<TemplateDebug mode="receiver" />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

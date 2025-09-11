@@ -26,6 +26,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
+import TemplateFallback from "./TemplateFallback";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
 
@@ -1011,6 +1012,23 @@ export default function ReceiverView() {
       <div className="min-h-screen bg-white font-roboto flex items-center justify-center">
         <div className="text-sm text-gray-600">Loading template...</div>
       </div>
+    );
+  }
+
+  // Check if we have template configuration data
+  const hasLocationState = !!location.state?.templateConfig;
+  const hasDbTemplate = !!dbTemplate;
+  
+  // If no template configuration is available, show fallback
+  if (!hasLocationState && !hasDbTemplate) {
+    return (
+      <TemplateFallback 
+        mode="receiver"
+        templateData={{
+          templateName: templateConfig.templateName,
+          templateId: templateId,
+        }}
+      />
     );
   }
 

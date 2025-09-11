@@ -469,7 +469,7 @@ export default function Templates() {
         await handlePreviewTemplate(templateId);
         break;
       case "edit":
-        navigate("/template-builder", { state: { templateId } });
+        navigate(`/template-builder/${templateId}`);
         break;
       case "sendInvite":
         // open send invite dialog

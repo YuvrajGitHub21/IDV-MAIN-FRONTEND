@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
+import TemplateFallback from "./TemplateFallback";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 const ENABLE_BACKEND_PREVIEW = false;
@@ -574,7 +575,7 @@ export default function Preview() {
   };
 
   const handleBack = () => {
-    navigate("/template-builder");
+    navigate(templateId ? `/template-builder/${templateId}` : "/template-builder");
   };
 
   const handleSaveAndSendInvite = async () => {
@@ -627,7 +628,7 @@ export default function Preview() {
   // ...existing code...
 
   const handlePrevious = () => {
-    navigate("/template-builder", {
+    navigate(templateId ? `/template-builder/${templateId}` : "/template-builder", {
       state: {
         templateName: templateData.templateName,
         verificationSteps: templateData.verificationSteps,
@@ -654,6 +655,29 @@ export default function Preview() {
   if (tplError) {
     // Still render the page so your UI remains intact; just show a banner
     console.warn(tplError);
+  }
+
+  // Check if we have sufficient data to render the preview
+  const hasNavigationState = !!location.state;
+  const hasLocalStorageSteps = lsSteps.length > 0;
+  const hasLocalStorageConfig = docVerificationConfig || biometricConfig;
+  
+  // If no navigation state and no localStorage data, show fallback
+  if (!hasNavigationState && !hasLocalStorageSteps && !hasLocalStorageConfig) {
+    return (
+      <TemplateFallback 
+        mode="admin"
+        templateData={{
+          templateName: templateData.templateName,
+          verificationSteps: templateData.verificationSteps?.map((step) => ({
+            id: step.id,
+            name: step.title,
+            enabled: step.isEnabled ?? true,
+          })),
+          templateId: templateId,
+        }}
+      />
+    );
   }
 
   return (

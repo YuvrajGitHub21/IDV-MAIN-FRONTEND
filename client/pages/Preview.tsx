@@ -79,32 +79,20 @@ export default function Preview() {
     run();
   }, [templateId]);
 
-  // Load actual configuration data from localStorage (kept)
-  const [docVerificationConfig, setDocVerificationConfig] = useState<any>(null);
-  const [biometricConfig, setBiometricConfig] = useState<any>(null);
+  // Use per-template snapshot or passed snapshot from builder
+  const [snapshot, setSnapshot] = useState<any>(location.state?.snapshot || null);
+  const [docVerificationConfig, setDocVerificationConfig] = useState<any>(snapshot?.doc || null);
+  const [biometricConfig, setBiometricConfig] = useState<any>(snapshot?.biometric || null);
 
-  useEffect(() => {
-    try {
-      const docRaw = localStorage.getItem("arcon_doc_verification_form");
-      if (docRaw) setDocVerificationConfig(JSON.parse(docRaw));
-    } catch {}
-    try {
-      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
-      if (bioRaw) setBiometricConfig(JSON.parse(bioRaw));
-    } catch {}
-  }, []);
-
-  // Also support per-template snapshot saved by TemplateBuilder
   useEffect(() => {
     if (!templateId) return;
     try {
       const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
       if (!raw) return;
       const s = JSON.parse(raw);
-      if (s && typeof s === "object") {
-        if (s.doc) setDocVerificationConfig(s.doc);
-        if (s.biometric) setBiometricConfig(s.biometric);
-      }
+      setSnapshot(s);
+      setDocVerificationConfig(s?.doc || null);
+      setBiometricConfig(s?.biometric || null);
     } catch {}
   }, [templateId]);
 

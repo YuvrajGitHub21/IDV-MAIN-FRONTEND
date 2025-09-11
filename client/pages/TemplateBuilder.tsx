@@ -938,7 +938,43 @@ export default function TemplateBuilder() {
   };
 
   useEffect(() => {
+    // Persist per-template snapshot when applicable
     persistSnapshot();
+
+    // Always persist global keys so Preview can read from localStorage without backend
+    try {
+      const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
+      const hasBio = verificationSteps.some((s) => s.id === "biometric-verification");
+      localStorage.setItem("arcon_has_document_verification", JSON.stringify(hasDoc));
+      localStorage.setItem("arcon_has_biometric_verification", JSON.stringify(hasBio));
+
+      localStorage.setItem(
+        "arcon_doc_verification_form",
+        JSON.stringify({
+          allowUploadFromDevice,
+          allowCaptureWebcam,
+          documentHandling,
+          selectedCountries,
+          selectedDocuments,
+        }),
+      );
+
+      localStorage.setItem(
+        "arcon_biometric_verification_form",
+        JSON.stringify({
+          maxRetries,
+          askUserRetry,
+          blockAfterRetries,
+          dataRetention,
+        }),
+      );
+
+      // Also keep a simple list of chosen steps
+      localStorage.setItem(
+        "arcon_verification_steps",
+        JSON.stringify(verificationSteps),
+      );
+    } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     templateId,

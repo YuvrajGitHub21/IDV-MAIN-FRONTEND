@@ -27,7 +27,7 @@ export function NameTemplateDialog({
   onSave,
   onCancel,
 }: NameTemplateDialogProps) {
-  const MAX_LEN = 40;
+  const MAX_LEN = 30;
 
   const [templateName, setTemplateName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -39,7 +39,7 @@ export function NameTemplateDialog({
 
     // Length constraint check (server-guard too)
     if (name.length > MAX_LEN) {
-      setErrorMessage("Max length is 40 characters.");
+      setErrorMessage("Max length is 30 characters.");
       return;
     }
 
@@ -113,13 +113,10 @@ export function NameTemplateDialog({
               <Input
                 id="template-name"
                 value={templateName}
-                maxLength={MAX_LEN}
                 onChange={(e) => {
-                  const name = e.target.value;
-                  setTemplateName(name);
-                  if (name.trim().length > MAX_LEN) {
-                    setErrorMessage("Max length is 40 characters.");
-                  } else {
+                  setTemplateName(e.target.value);
+                  // Clear error message when user starts typing
+                  if (errorMessage) {
                     setErrorMessage("");
                   }
                 }}
@@ -165,7 +162,7 @@ export function NameTemplateDialog({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!templateName.trim() || !!errorMessage}
+            disabled={!templateName.trim()}
             className={cn(
               "h-8 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700",
               "rounded border border-blue-600 disabled:opacity-50 disabled:cursor-not-allowed",

@@ -26,12 +26,16 @@ export default function SignUp() {
 
     if (!formData.firstName.trim()) {
       newErrors.firstName = "First name is required";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.firstName.trim())) {
+      newErrors.firstName = "First name can only contain alphabets and spaces";
     } else if (formData.firstName.length > 100) {
       newErrors.firstName = "First name must be 100 characters or less";
     }
 
     if (!formData.lastName.trim()) {
       newErrors.lastName = "Last name is required";
+    } else if (!/^[A-Za-z\s]+$/.test(formData.lastName.trim())) {
+      newErrors.lastName = "Last name can only contain alphabets and spaces";
     } else if (formData.lastName.length > 100) {
       newErrors.lastName = "Last name must be 100 characters or less";
     }
@@ -116,8 +120,10 @@ export default function SignUp() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    // Allow users to enter whatever they want - no real-time filtering
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    // Validation messages will only show after clicking "Sign Up"
   };
 
   return (

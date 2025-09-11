@@ -384,37 +384,16 @@ export default function Preview() {
       ),
     });
 
-    const steps =
-      Array.isArray(templateData.verificationSteps) &&
-      templateData.verificationSteps.length
-        ? templateData.verificationSteps
-        : lsSteps;
+    const steps = Array.isArray(templateData.verificationSteps)
+      ? templateData.verificationSteps
+      : [];
 
-    const docFromState = Array.isArray(steps)
-      ? steps.some(
-          (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
-        )
-      : false;
-    const bioFromState = Array.isArray(steps)
-      ? steps.some(
-          (s: any) =>
-            s.id === "biometric-verification" && (s.isEnabled ?? true),
-        )
-      : false;
-
-    let docFlag = false;
-    let bioFlag = false;
-    try {
-      const rawDoc = localStorage.getItem("arcon_has_document_verification");
-      if (rawDoc) docFlag = Boolean(JSON.parse(rawDoc));
-    } catch {}
-    try {
-      const rawBio = localStorage.getItem("arcon_has_biometric_verification");
-      if (rawBio) bioFlag = Boolean(JSON.parse(rawBio));
-    } catch {}
-
-    const docEnabled = docFromState || docFlag || !!docVerificationConfig;
-    const bioEnabled = bioFromState || bioFlag || !!biometricConfig;
+    const docEnabled = steps.some(
+      (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
+    );
+    const bioEnabled = steps.some(
+      (s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true),
+    );
 
     const defaultDoc = {
       allowUploadFromDevice: false,

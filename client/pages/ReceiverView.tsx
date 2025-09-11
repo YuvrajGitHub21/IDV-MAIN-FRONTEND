@@ -112,8 +112,12 @@ export default function ReceiverView() {
       const steps = Array.isArray(snapshot.verificationSteps)
         ? snapshot.verificationSteps
         : [];
-      const hasDoc = steps.some((s: any) => s.id === "document-verification" && (s.isEnabled ?? true));
-      const hasBio = steps.some((s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true));
+      const hasDoc = steps.some(
+        (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
+      );
+      const hasBio = steps.some(
+        (s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true),
+      );
 
       const opt: any[] = Array.isArray(snapshot.optionalFields)
         ? snapshot.optionalFields

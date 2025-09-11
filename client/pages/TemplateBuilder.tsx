@@ -619,8 +619,13 @@ export default function TemplateBuilder() {
   const templateName = location?.state?.templateName || "New Template";
   const [templateId] = useState<string>(() => {
     const incoming = location?.state?.templateId as string | undefined;
-    const existing = incoming || localStorage.getItem("arcon_current_template_id") || undefined;
-    const id = existing || `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const existing =
+      incoming ||
+      localStorage.getItem("arcon_current_template_id") ||
+      undefined;
+    const id =
+      existing ||
+      `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     try {
       localStorage.setItem("arcon_current_template_id", id);
     } catch {}

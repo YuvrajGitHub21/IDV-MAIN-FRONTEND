@@ -80,9 +80,15 @@ export default function Preview() {
   }, [templateId]);
 
   // Use per-template snapshot or passed snapshot from builder
-  const [snapshot, setSnapshot] = useState<any>(location.state?.snapshot || null);
-  const [docVerificationConfig, setDocVerificationConfig] = useState<any>(snapshot?.doc || null);
-  const [biometricConfig, setBiometricConfig] = useState<any>(snapshot?.biometric || null);
+  const [snapshot, setSnapshot] = useState<any>(
+    location.state?.snapshot || null,
+  );
+  const [docVerificationConfig, setDocVerificationConfig] = useState<any>(
+    snapshot?.doc || null,
+  );
+  const [biometricConfig, setBiometricConfig] = useState<any>(
+    snapshot?.biometric || null,
+  );
 
   useEffect(() => {
     if (!templateId) return;
@@ -102,7 +108,9 @@ export default function Preview() {
     verificationSteps: Array.isArray(snapshot?.verificationSteps)
       ? snapshot.verificationSteps
       : [],
-    addedFields: Array.isArray(snapshot?.addedFields) ? snapshot.addedFields : [],
+    addedFields: Array.isArray(snapshot?.addedFields)
+      ? snapshot.addedFields
+      : [],
     templateData: {
       personalInfo: true,
       documentVerification: false,

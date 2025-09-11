@@ -1340,14 +1340,17 @@ export default function TemplateBuilder() {
           activeSections[nextIndex].name as VerificationStep["id"],
         );
       } else {
+        let snapshot: any = null;
         try {
           persistSnapshot();
+          snapshot = buildSnapshot();
         } catch {}
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
             templateName,
             verificationSteps,
             addedFields,
+            snapshot,
             templateData: {
               personalInfo: true,
               documentVerification: verificationSteps.some(

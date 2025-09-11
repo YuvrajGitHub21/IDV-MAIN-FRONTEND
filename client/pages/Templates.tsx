@@ -794,10 +794,14 @@ export default function Templates() {
                 </div>
                 <span className="text-xs font-semibold mt-0.5">Users</span>
               </div>
+              </nav>
+            </div>
 
-              {/* 100px Gap */}
-              <div style={{ height: '100px' }}></div>
+            {/* 135px Gap */}
+            <div style={{ height: '135px' }}></div>
 
+            {/* Bottom Section (Logout & Help) */}
+            <div className="flex-shrink-0 px-2">
               {/* Logout */}
               <div
                 className="flex flex-col items-center py-1.5 text-gray-600 hover:bg-gray-50 cursor-pointer"
@@ -841,7 +845,6 @@ export default function Templates() {
                 </svg>
                 <span className="text-xs font-semibold mt-0.5">Help</span>
               </div>
-              </nav>
             </div>
           </div>
         </aside>

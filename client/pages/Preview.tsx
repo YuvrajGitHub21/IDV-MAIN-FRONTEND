@@ -80,56 +80,42 @@ export default function Preview() {
     run();
   }, [templateId]);
 
-  // Load actual configuration data from localStorage (kept)
-  const [docVerificationConfig, setDocVerificationConfig] = useState<any>(null);
-  const [biometricConfig, setBiometricConfig] = useState<any>(null);
+  // Use per-template snapshot or passed snapshot from builder
+  const [snapshot, setSnapshot] = useState<any>(
+    location.state?.snapshot || null,
+  );
+  const [docVerificationConfig, setDocVerificationConfig] = useState<any>(
+    snapshot?.doc || null,
+  );
+  const [biometricConfig, setBiometricConfig] = useState<any>(
+    snapshot?.biometric || null,
+  );
 
-  useEffect(() => {
-    try {
-      const docRaw = localStorage.getItem("arcon_doc_verification_form");
-      if (docRaw) setDocVerificationConfig(JSON.parse(docRaw));
-    } catch {}
-    try {
-      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
-      if (bioRaw) setBiometricConfig(JSON.parse(bioRaw));
-    } catch {}
-  }, []);
-
-  // Also support per-template snapshot saved by TemplateBuilder
   useEffect(() => {
     if (!templateId) return;
     try {
       const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
       if (!raw) return;
       const s = JSON.parse(raw);
-      if (s && typeof s === "object") {
-        if (s.doc) setDocVerificationConfig(s.doc);
-        if (s.biometric) setBiometricConfig(s.biometric);
-      }
+      setSnapshot(s);
+      setDocVerificationConfig(s?.doc || null);
+      setBiometricConfig(s?.biometric || null);
     } catch {}
   }, [templateId]);
 
-  // Load steps from localStorage for preview when no navigation state
-  const [lsSteps, setLsSteps] = useState<VerificationStep[]>([]);
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("arcon_verification_steps");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setLsSteps(parsed);
-      }
-    } catch {}
-  }, []);
-
-  // Get template data from navigation state, else build from LS
+  // Get template data from navigation state or snapshot; no global fallbacks
   const templateData: TemplateData = location.state || {
     templateName: "New Template",
-    verificationSteps: lsSteps,
-    addedFields: [],
+    verificationSteps: Array.isArray(snapshot?.verificationSteps)
+      ? snapshot.verificationSteps
+      : [],
+    addedFields: Array.isArray(snapshot?.addedFields)
+      ? snapshot.addedFields
+      : [],
     templateData: {
       personalInfo: true,
-      documentVerification: true,
-      biometricVerification: true,
+      documentVerification: false,
+      biometricVerification: false,
     },
   };
 
@@ -407,37 +393,16 @@ export default function Preview() {
       ),
     });
 
-    const steps =
-      Array.isArray(templateData.verificationSteps) &&
-      templateData.verificationSteps.length
-        ? templateData.verificationSteps
-        : lsSteps;
+    const steps = Array.isArray(templateData.verificationSteps)
+      ? templateData.verificationSteps
+      : [];
 
-    const docFromState = Array.isArray(steps)
-      ? steps.some(
-          (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
-        )
-      : false;
-    const bioFromState = Array.isArray(steps)
-      ? steps.some(
-          (s: any) =>
-            s.id === "biometric-verification" && (s.isEnabled ?? true),
-        )
-      : false;
-
-    let docFlag = false;
-    let bioFlag = false;
-    try {
-      const rawDoc = localStorage.getItem("arcon_has_document_verification");
-      if (rawDoc) docFlag = Boolean(JSON.parse(rawDoc));
-    } catch {}
-    try {
-      const rawBio = localStorage.getItem("arcon_has_biometric_verification");
-      if (rawBio) bioFlag = Boolean(JSON.parse(rawBio));
-    } catch {}
-
-    const docEnabled = docFromState || docFlag || !!docVerificationConfig;
-    const bioEnabled = bioFromState || bioFlag || !!biometricConfig;
+    const docEnabled = steps.some(
+      (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
+    );
+    const bioEnabled = steps.some(
+      (s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true),
+    );
 
     const defaultDoc = {
       allowUploadFromDevice: false,

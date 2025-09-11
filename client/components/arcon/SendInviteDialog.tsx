@@ -25,6 +25,20 @@ interface Employee {
   selected: boolean;
 }
 
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
+const getToken = () =>
+  (typeof window !== "undefined" && localStorage.getItem("access")) || null;
+
+type BackendUser = {
+  id: number | string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  roleId?: number | string;
+  roleName?: string;
+};
+
+
 interface SendInviteDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -113,14 +127,54 @@ export default function SendInviteDialog({
 
     async function loadInvitees() {
       try {
-        const res = await fetch("/api/invitees", { signal: controller.signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data: { employees: Employee[] } = await res.json();
-        if (isMounted && Array.isArray(data.employees)) {
-          setEmployees(data.employees);
+        const token = getToken();
+        if (!token) {
+          // If your route requires auth, show an error or silently keep sample data
+          console.warn("No auth token; using sample invitees.");
+          return;
         }
-      } catch (_err) {
-        // Keep static fallback if API fails
+
+        const res = await fetch(`${API_BASE}/api/Users`, {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          signal: controller.signal,
+        });
+
+        if (res.status === 401) {
+          console.error("401 Unauthorized — token missing/expired.");
+          return;
+        }
+        if (res.status === 403) {
+          console.error("403 Forbidden — insufficient permissions.");
+          return;
+        }
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(`HTTP ${res.status} ${res.statusText} ${text}`);
+        }
+
+        const json = await res.json();
+
+        // Accept common shapes: array, {data: [...]}, or {items: [...]}
+        const rawList: BackendUser[] =
+          Array.isArray(json) ? json :
+          Array.isArray(json?.data) ? json.data :
+          Array.isArray(json?.items) ? json.items : [];
+
+        // Keep only roleId === 1 (coerce to number for safety)
+        const onlyRole1 = rawList.filter(u => Number(u.roleId) === 2);
+
+        const mapped = onlyRole1.map(mapUserToEmployee);
+
+        if (isMounted && mapped.length) {
+          setEmployees(mapped);
+        }
+      } catch (err) {
+        console.warn("Failed to load /api/Users:", err);
+        // keep SAMPLE_EMPLOYEES fallback
       }
     }
 
@@ -130,13 +184,16 @@ export default function SendInviteDialog({
       controller.abort();
     };
   }, [isOpen]);
+
+
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const uploadIntervalRef = useRef<number | null>(null);
-  const lastToastIdRef = useRef<string | null>(null);
+  const lastToastIdRef = useRef<number | null>(null);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   // Ensure we clear any running interval when component unmounts
@@ -170,6 +227,37 @@ export default function SendInviteDialog({
   });
 
   const selectedCount = employees.filter((emp) => emp.selected).length;
+  
+  const initialsOf = (f?: string, l?: string) =>
+    ((f?.[0] || "") + (l?.[0] || "")).toUpperCase() || "??";
+
+  const hashCode = (s: string) => {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  };
+  const pickColor = (seed: string) => {
+    const palette = ["#F4DEE4", "#D6ECF5", "#E0DAEE", "#FFE6DE", "#DAE5E6", "#F4EBE8"];
+    return palette[hashCode(seed) % palette.length];
+  };
+
+  const mapUserToEmployee = (u: BackendUser): Employee => {
+    const id = String(u.id ?? u.email);
+    const name =
+      (u.firstName || u.lastName)
+        ? `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim()
+        : u.email;
+
+    return {
+      id,
+      name,
+      email: u.email,
+      initials: initialsOf(u.firstName, u.lastName),
+      avatarColor: pickColor(id),
+      department: "Marketing",         // <— default department here
+      selected: false,
+    };
+  };
 
   const handleSelectEmployee = (id: string) => {
     setEmployees((prev) =>
@@ -228,10 +316,10 @@ export default function SendInviteDialog({
   const handleSendInvite = () => {
     // Show success toast with custom design
     const toastId = toast.custom(
-      (t) => {
+      (id) => {
         return (
           <div
-            data-toast-id={t.id}
+            data-toast-id={id}
             className="flex w-[540px] p-6 justify-center items-center gap-4 rounded-lg bg-white shadow-[0_20px_24px_-4px_rgba(16,24,40,0.08),0_8px_8px_-4px_rgba(16,24,40,0.03)]"
           >
             <div className="flex w-12 h-12 p-3 justify-center items-center flex-shrink-0 rounded-[28px] border-[8px] border-[#ECFDF3] bg-[#D1FADF]">
@@ -245,7 +333,7 @@ export default function SendInviteDialog({
               </div>
             </div>
             <button
-              onClick={() => toast.dismiss(t.id)}
+              onClick={() => toast.dismiss(id)}
               className="flex w-8 h-8 justify-center items-center gap-[10px] flex-shrink-0 rounded-[50px] bg-white"
             >
               <X className="w-5 h-5 text-[#676879]" />
@@ -260,19 +348,17 @@ export default function SendInviteDialog({
     );
 
     // store id so outside click handler can dismiss immediately
-    lastToastIdRef.current = toastId;
 
-    // Dismiss the toast when clicking/touching anywhere outside it
+    // keep it for outside-click dismiss
+    lastToastIdRef.current = typeof toastId === "number" ? toastId : Number(toastId);
+
+    // outside-click dismiss
     const onDocInteract = (e: Event) => {
       const id = lastToastIdRef.current;
       if (!id) return;
       const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const inside =
-        target.closest && target.closest(`[data-toast-id="${id}"]`);
-      if (!inside) {
-        toast.dismiss(id);
-      }
+      const inside = target?.closest?.(`[data-toast-id="${String(id)}"]`);
+      if (!inside) toast.dismiss(id);
     };
 
     document.addEventListener("mousedown", onDocInteract);

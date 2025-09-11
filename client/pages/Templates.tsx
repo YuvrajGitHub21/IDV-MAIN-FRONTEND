@@ -637,7 +637,7 @@ export default function Templates() {
         <aside
           ref={sidebarRef}
           className={cn(
-            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11",
+            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 lg:h-[calc(100vh-44px)]",
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",
@@ -905,9 +905,9 @@ export default function Templates() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-h-0 overflow-auto">
-          {/* Sub Header */}
-          <div className="border-b border-gray-200 bg-white">
+        <main className="flex-1 min-h-0 flex flex-col h-[calc(100vh-44px)]">
+          {/* Sub Header - Sticky */}
+          <div className="sticky top-0 z-30 border-b border-gray-200 bg-white flex-shrink-0">
             <div className="flex items-center justify-between px-4 py-2">
               <h1 className="text-xl font-bold text-gray-800">Templates</h1>
               <div className="flex items-center gap-3">
@@ -991,8 +991,10 @@ export default function Templates() {
             </div>
           </div>
 
-          {/* Table Container */}
-          <div className="p-4">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-auto">
+            {/* Table Container */}
+            <div className="p-4">
             {/* Error State */}
             {error && (
               <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
@@ -1399,6 +1401,7 @@ export default function Templates() {
               </div>
             </div>
           )}
+          </div>
 
           {/* Footer */}
           <footer className="border-t border-gray-200 bg-white p-4">

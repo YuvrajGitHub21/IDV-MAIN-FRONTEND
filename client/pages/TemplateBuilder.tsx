@@ -617,17 +617,20 @@ export default function TemplateBuilder() {
   const navigate = useNavigate();
   const location = useLocation() as any;
   const templateName = location?.state?.templateName || "New Template";
-  const templateId: string = (() => {
-    const idFromState = location?.state?.templateId;
-    if (idFromState) return idFromState;
+  const [templateId] = useState<string>(() => {
+    const incoming = location?.state?.templateId as string | undefined;
+    const existing =
+      incoming ||
+      localStorage.getItem("arcon_current_template_id") ||
+      undefined;
+    const id =
+      existing ||
+      `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     try {
-      if (sessionStorage.getItem("arcon_return_to_builder") === "1") {
-        const last = localStorage.getItem("arcon_current_template_id");
-        return last || "";
-      }
+      localStorage.setItem("arcon_current_template_id", id);
     } catch {}
-    return "";
-  })();
+    return id;
+  });
 
   // left-rail steps
   const [verificationSteps, setVerificationSteps] = useState<
@@ -661,21 +664,6 @@ export default function TemplateBuilder() {
     },
   ]);
 
-  // doc verification state bag
-  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
-  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
-  const [documentHandling, setDocumentHandling] = useState("");
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([
-    "India",
-  ]);
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
-
-  // biometric verification state bag
-  const [maxRetries, setMaxRetries] = useState("4");
-  const [askUserRetry, setAskUserRetry] = useState(false);
-  const [blockAfterRetries, setBlockAfterRetries] = useState(false);
-  const [dataRetention, setDataRetention] = useState("6 Months");
-
   // Load any persisted ordering/fields
   useEffect(() => {
     try {
@@ -703,7 +691,29 @@ export default function TemplateBuilder() {
           setAddedFields(incoming.addedFields);
         return;
       }
-      // rely on per-template hydration; no global fallback
+      const raw = localStorage.getItem("arcon_verification_steps");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const hasPI = parsed.some((s: any) => s?.id === "personal-info");
+          const normalized = hasPI
+            ? parsed
+            : [
+                {
+                  id: "personal-info",
+                  title: "Personal Information",
+                  description:
+                    "Set up fields to collect basic user details like name, contact.",
+                  isRequired: true,
+                  isEnabled: true,
+                },
+                ...parsed,
+              ];
+          setVerificationSteps(
+            normalized.filter((s: any) => s && typeof s.id === "string"),
+          );
+        }
+      }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -743,26 +753,43 @@ export default function TemplateBuilder() {
     useState(false);
   const [biometricVerificationExpanded, setBiometricVerificationExpanded] =
     useState(false);
+
+  // single source of truth for which section is active (by id)
   const [currentSectionId, setCurrentSectionId] =
     useState<VerificationStep["id"]>("personal-info");
 
+  // system fields (readonly UI)
+  const [systemFieldAlerts, setSystemFieldAlerts] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [systemFieldValues] = useState({
+    firstName: "Eg: John",
+    lastName: "Eg: Wick",
+    email: "Eg: johnwick@email.com",
+  });
+
+  // doc verification state bag
+  const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
+  const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
+  const [documentHandling, setDocumentHandling] = useState("");
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([
+    "India",
+  ]);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+
+  // biometric verification state bag
+  const [maxRetries, setMaxRetries] = useState("4");
+  const [askUserRetry, setAskUserRetry] = useState(false);
+  const [blockAfterRetries, setBlockAfterRetries] = useState(false);
+  const [dataRetention, setDataRetention] = useState("6 Months");
+
+  // save state
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+
   // Per-template storage key
   const templateStorageKey = (id: string) => `arcon_tpl_state:${id}`;
-  const DRAFT_ID_KEY = "arcon_current_draft_id";
-  const buildKey = (id: string) => `arcon_tpl_state:${id}`;
-  const getActiveStorageKey = () => {
-    if (templateId) return templateStorageKey(templateId);
-    try {
-      let draftId = sessionStorage.getItem(DRAFT_ID_KEY);
-      if (!draftId) {
-        draftId = `draft-${Date.now()}`;
-        sessionStorage.setItem(DRAFT_ID_KEY, draftId);
-      }
-      return buildKey(draftId);
-    } catch {
-      return buildKey("draft");
-    }
-  };
 
   // Reset builder to defaults (blank state for new templates)
   const resetToDefaults = () => {
@@ -825,6 +852,7 @@ export default function TemplateBuilder() {
 
   // Build a full snapshot of the current builder state
   const buildSnapshot = () => ({
+    templateName,
     verificationSteps,
     addedFields,
     optionalFields,
@@ -847,97 +875,29 @@ export default function TemplateBuilder() {
     },
   });
 
-  // Hydrate from storage when templateId changes or on mount (handle drafts too)
+  // Hydrate from storage when templateId changes
   useEffect(() => {
-    const returning = (() => {
+    if (!templateId) {
+      resetToDefaults();
+      return;
+    }
+    try {
+      localStorage.setItem("arcon_current_template_id", templateId);
+    } catch {}
+
+    const raw = (() => {
       try {
-        return sessionStorage.getItem("arcon_return_to_builder") === "1";
+        return localStorage.getItem(templateStorageKey(templateId));
       } catch {
-        return false;
+        return null;
       }
     })();
 
-    if (!templateId) {
-      if (!returning) {
-        // New template session: start fresh and create a new draft id
-        try {
-          const prevDraft = sessionStorage.getItem(DRAFT_ID_KEY);
-          if (prevDraft) localStorage.removeItem(buildKey(prevDraft));
-          sessionStorage.setItem(DRAFT_ID_KEY, `draft-${Date.now()}`);
-          sessionStorage.removeItem("arcon_return_to_builder");
-        } catch {}
-        resetToDefaults();
-        return;
-      }
-      // Returning to an unsaved draft
-      let raw: string | null = null;
-      try {
-        let draftId = sessionStorage.getItem(DRAFT_ID_KEY);
-        if (!draftId) {
-          draftId = `draft-${Date.now()}`;
-          sessionStorage.setItem(DRAFT_ID_KEY, draftId);
-        }
-        raw = localStorage.getItem(buildKey(draftId));
-        sessionStorage.removeItem("arcon_return_to_builder");
-      } catch {}
-      if (!raw) {
-        resetToDefaults();
-        return;
-      }
-      try {
-        const s = JSON.parse(raw);
-        if (Array.isArray(s.verificationSteps))
-          setVerificationSteps(s.verificationSteps);
-        if (Array.isArray(s.addedFields)) setAddedFields(s.addedFields);
-        if (Array.isArray(s.optionalFields))
-          setOptionalFields(s.optionalFields);
-        if (typeof s.personalInfoExpanded === "boolean")
-          setPersonalInfoExpanded(s.personalInfoExpanded);
-        if (typeof s.documentVerificationExpanded === "boolean")
-          setDocumentVerificationExpanded(s.documentVerificationExpanded);
-        if (typeof s.biometricVerificationExpanded === "boolean")
-          setBiometricVerificationExpanded(s.biometricVerificationExpanded);
-        if (typeof s.currentSectionId === "string")
-          setCurrentSectionId(s.currentSectionId);
-        const d = s.doc || {};
-        if (typeof d.allowUploadFromDevice === "boolean")
-          setAllowUploadFromDevice(d.allowUploadFromDevice);
-        if (typeof d.allowCaptureWebcam === "boolean")
-          setAllowCaptureWebcam(d.allowCaptureWebcam);
-        if (typeof d.documentHandling === "string")
-          setDocumentHandling(d.documentHandling);
-        if (Array.isArray(d.selectedCountries))
-          setSelectedCountries(d.selectedCountries);
-        if (Array.isArray(d.selectedDocuments))
-          setSelectedDocuments(d.selectedDocuments);
-        const b = s.biometric || {};
-        if (typeof b.maxRetries === "string") setMaxRetries(b.maxRetries);
-        if (typeof b.askUserRetry === "boolean")
-          setAskUserRetry(b.askUserRetry);
-        if (typeof b.blockAfterRetries === "boolean")
-          setBlockAfterRetries(b.blockAfterRetries);
-        if (typeof b.dataRetention === "string")
-          setDataRetention(b.dataRetention);
-      } catch {
-        resetToDefaults();
-      }
-      return;
-    }
-
-    // With a real templateId
-    try {
-      localStorage.setItem("arcon_current_template_id", templateId);
-      sessionStorage.removeItem("arcon_return_to_builder");
-    } catch {}
-
-    let raw: string | null = null;
-    try {
-      raw = localStorage.getItem(templateStorageKey(templateId));
-    } catch {}
     if (!raw) {
       resetToDefaults();
       return;
     }
+
     try {
       const s = JSON.parse(raw);
       if (Array.isArray(s.verificationSteps))
@@ -952,6 +912,7 @@ export default function TemplateBuilder() {
         setBiometricVerificationExpanded(s.biometricVerificationExpanded);
       if (typeof s.currentSectionId === "string")
         setCurrentSectionId(s.currentSectionId);
+
       const d = s.doc || {};
       if (typeof d.allowUploadFromDevice === "boolean")
         setAllowUploadFromDevice(d.allowUploadFromDevice);
@@ -963,6 +924,7 @@ export default function TemplateBuilder() {
         setSelectedCountries(d.selectedCountries);
       if (Array.isArray(d.selectedDocuments))
         setSelectedDocuments(d.selectedDocuments);
+
       const b = s.biometric || {};
       if (typeof b.maxRetries === "string") setMaxRetries(b.maxRetries);
       if (typeof b.askUserRetry === "boolean") setAskUserRetry(b.askUserRetry);
@@ -975,15 +937,19 @@ export default function TemplateBuilder() {
     }
   }, [templateId]);
 
-  // Persist snapshot whenever relevant state changes (supports drafts)
+  // Persist snapshot whenever relevant state changes (scoped by templateId)
   const persistSnapshot = () => {
+    if (!templateId) return;
     try {
-      const key = getActiveStorageKey();
-      localStorage.setItem(key, JSON.stringify(buildSnapshot()));
+      localStorage.setItem(
+        templateStorageKey(templateId),
+        JSON.stringify(buildSnapshot()),
+      );
     } catch {}
   };
 
   useEffect(() => {
+    // Persist per-template snapshot only (no global keys)
     persistSnapshot();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -1010,21 +976,6 @@ export default function TemplateBuilder() {
   const orderedSectionIds: VerificationStep["id"][] = verificationSteps.map(
     (s) => s.id,
   );
-
-  // system fields (readonly UI)
-  const [systemFieldAlerts, setSystemFieldAlerts] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [systemFieldValues] = useState({
-    firstName: "Eg: John",
-    lastName: "Eg: Wick",
-    email: "Eg: johnwick@email.com",
-  });
-
-  // save state
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
 
   /* ============ hydrate personal Added_fields from backend (optional) ============ */
   useEffect(() => {
@@ -1400,17 +1351,17 @@ export default function TemplateBuilder() {
           activeSections[nextIndex].name as VerificationStep["id"],
         );
       } else {
+        let snapshot: any = null;
         try {
           persistSnapshot();
-        } catch {}
-        try {
-          sessionStorage.setItem("arcon_return_to_builder", "1");
+          snapshot = buildSnapshot();
         } catch {}
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
             templateName,
             verificationSteps,
             addedFields,
+            snapshot,
             templateData: {
               personalInfo: true,
               documentVerification: verificationSteps.some(

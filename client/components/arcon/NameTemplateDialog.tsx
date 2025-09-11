@@ -122,9 +122,8 @@ export function NameTemplateDialog({
                 }}
                 placeholder="Enter Template Name"
                 className={cn(
-                  "h-[38px] px-3 py-2 text-sm border rounded",
-                  errorMessage ? "border-red-500" : "border-gray-300",
-                  "focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
+                  "h-[38px]",
+                  errorMessage ? "border-red-500 focus-visible:ring-red-500" : "",
                   "placeholder:text-gray-500",
                 )}
                 aria-invalid={errorMessage ? "true" : "false"}

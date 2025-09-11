@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
+const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const ENABLE_BACKEND_PREVIEW = false;
 
 interface VerificationStep {
   id: string;
@@ -54,7 +55,8 @@ export default function Preview() {
   const [tplError, setTplError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!templateId) return; // if previewing unsaved builder state, use location.state fallback
+    if (!ENABLE_BACKEND_PREVIEW) return;
+    if (!templateId) return;
     const run = async () => {
       setLoadingTpl(true);
       setTplError(null);
@@ -92,14 +94,40 @@ export default function Preview() {
     } catch {}
   }, []);
 
-  // Get template data from location state (fallback)
+  // Also support per-template snapshot saved by TemplateBuilder
+  useEffect(() => {
+    if (!templateId) return;
+    try {
+      const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (s && typeof s === "object") {
+        if (s.doc) setDocVerificationConfig(s.doc);
+        if (s.biometric) setBiometricConfig(s.biometric);
+      }
+    } catch {}
+  }, [templateId]);
+
+  // Load steps from localStorage for preview when no navigation state
+  const [lsSteps, setLsSteps] = useState<VerificationStep[]>([]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("arcon_verification_steps");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setLsSteps(parsed);
+      }
+    } catch {}
+  }, []);
+
+  // Get template data from navigation state, else build from LS
   const templateData: TemplateData = location.state || {
     templateName: "New Template",
-    verificationSteps: [],
+    verificationSteps: lsSteps,
     addedFields: [],
     templateData: {
       personalInfo: true,
-      documentVerification: true ,
+      documentVerification: true,
       biometricVerification: true,
     },
   };
@@ -280,7 +308,7 @@ export default function Preview() {
   const sectionStatus = dbTemplate?.Section_status || null;
 
   // ---------- API-ready data structure (kept from your code) ----------
-  const  apiPayload = useMemo(() => {
+  const apiPayload = useMemo(() => {
     const orderedSections: any[] = [];
 
     // Personal Information (kept as in your builder flow)
@@ -361,7 +389,7 @@ export default function Preview() {
       return buildSectionsFromDbTemplate(dbTemplate);
     }
 
-    // ---- Fallback to builder state (unchanged visual structure) ----
+    // ---- Fallback to builder state ----
     const sections: SectionConfig[] = [];
 
     sections.push({
@@ -378,29 +406,80 @@ export default function Preview() {
       ),
     });
 
-    templateData.verificationSteps.forEach((step) => {
-      if (step.id === "document-verification" && step.isEnabled) {
-        sections.push({
-          id: "document-verification",
-          title: "Document Verification",
-          description:
-            "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
-          enabled: step.isEnabled,
-          component: (
-            <DocumentVerificationSection config={docVerificationConfig} />
-          ),
-        });
-      } else if (step.id === "biometric-verification" && step.isEnabled) {
-        sections.push({
-          id: "biometric-verification",
-          title: "Biometric Verification",
-          description:
-            "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
-          enabled: step.isEnabled,
-          component: <BiometricVerificationSection config={biometricConfig} />,
-        });
-      }
-    });
+    const steps =
+      Array.isArray(templateData.verificationSteps) &&
+      templateData.verificationSteps.length
+        ? templateData.verificationSteps
+        : lsSteps;
+
+    const docFromState = Array.isArray(steps)
+      ? steps.some(
+          (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
+        )
+      : false;
+    const bioFromState = Array.isArray(steps)
+      ? steps.some(
+          (s: any) =>
+            s.id === "biometric-verification" && (s.isEnabled ?? true),
+        )
+      : false;
+
+    let docFlag = false;
+    let bioFlag = false;
+    try {
+      const rawDoc = localStorage.getItem("arcon_has_document_verification");
+      if (rawDoc) docFlag = Boolean(JSON.parse(rawDoc));
+    } catch {}
+    try {
+      const rawBio = localStorage.getItem("arcon_has_biometric_verification");
+      if (rawBio) bioFlag = Boolean(JSON.parse(rawBio));
+    } catch {}
+
+    const docEnabled = docFromState || docFlag || !!docVerificationConfig;
+    const bioEnabled = bioFromState || bioFlag || !!biometricConfig;
+
+    const defaultDoc = {
+      allowUploadFromDevice: false,
+      allowCaptureWebcam: false,
+      documentHandling: undefined,
+      selectedDocuments: [],
+    };
+    const defaultBio = {
+      maxRetries: undefined,
+      askUserRetry: false,
+      blockAfterRetries: false,
+      dataRetention: "",
+    };
+
+    if (docEnabled) {
+      sections.push({
+        id: "document-verification",
+        title: "Document Verification",
+        description:
+          "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
+        enabled: true,
+        component: (
+          <DocumentVerificationSection
+            config={docVerificationConfig ?? defaultDoc}
+          />
+        ),
+      });
+    }
+
+    if (bioEnabled) {
+      sections.push({
+        id: "biometric-verification",
+        title: "Biometric Verification",
+        description:
+          "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
+        enabled: true,
+        component: (
+          <BiometricVerificationSection
+            config={biometricConfig ?? defaultBio}
+          />
+        ),
+      });
+    }
 
     return sections;
   };
@@ -503,9 +582,9 @@ export default function Preview() {
     setShowSendInviteDialog(true);
   };
 
- // ...existing code...
+  // ...existing code...
   const handleSave = async () => {
-    console.log("This is the HandleSave Function ")
+    console.log("This is the HandleSave Function ");
     //console.log("API Payload for Save:", apiPayload);
     console.log("templateId:", templateId);
     const bodyData = { Template_status: true };
@@ -514,14 +593,17 @@ export default function Preview() {
     // Send PUT request to update template status
     if (templateId) {
       try {
-        const res = await fetch(`${API_BASE}/api/templates/${templateId}/status`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            accept: "*/*",
+        const res = await fetch(
+          `${API_BASE}/api/templates/${templateId}/status`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              accept: "*/*",
+            },
+            body: JSON.stringify(bodyData),
           },
-          body: JSON.stringify(bodyData),
-        });
+        );
         const responseText = await res.text();
         console.log("Response status:", res.status);
         console.log("Response text:", responseText);
@@ -542,7 +624,7 @@ export default function Preview() {
     // Navigate to templates page
     navigate("/dashboard");
   };
-// ...existing code...
+  // ...existing code...
 
   const handlePrevious = () => {
     navigate("/template-builder", {

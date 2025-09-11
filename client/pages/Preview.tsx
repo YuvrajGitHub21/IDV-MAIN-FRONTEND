@@ -361,7 +361,8 @@ export default function Preview() {
       return buildSectionsFromDbTemplate(dbTemplate);
     }
 
-    // ---- Fallback to builder state (unchanged visual structure) ----
+    // ---- Fallback to builder state ----
+    // Use state from navigation when available; otherwise, infer from localStorage flags/configs
     const sections: SectionConfig[] = [];
 
     sections.push({
@@ -378,29 +379,54 @@ export default function Preview() {
       ),
     });
 
-    templateData.verificationSteps.forEach((step) => {
-      if (step.id === "document-verification" && step.isEnabled) {
-        sections.push({
-          id: "document-verification",
-          title: "Document Verification",
-          description:
-            "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
-          enabled: step.isEnabled,
-          component: (
-            <DocumentVerificationSection config={docVerificationConfig} />
-          ),
-        });
-      } else if (step.id === "biometric-verification" && step.isEnabled) {
-        sections.push({
-          id: "biometric-verification",
-          title: "Biometric Verification",
-          description:
-            "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
-          enabled: step.isEnabled,
-          component: <BiometricVerificationSection config={biometricConfig} />,
-        });
-      }
-    });
+    const docFromState = Array.isArray(templateData.verificationSteps)
+      ? templateData.verificationSteps.some(
+          (s) => s.id === "document-verification" && s.isEnabled,
+        )
+      : false;
+    const bioFromState = Array.isArray(templateData.verificationSteps)
+      ? templateData.verificationSteps.some(
+          (s) => s.id === "biometric-verification" && s.isEnabled,
+        )
+      : false;
+
+    let docFlag = false;
+    let bioFlag = false;
+    try {
+      const rawDoc = localStorage.getItem("arcon_has_document_verification");
+      if (rawDoc) docFlag = Boolean(JSON.parse(rawDoc));
+    } catch {}
+    try {
+      const rawBio = localStorage.getItem("arcon_has_biometric_verification");
+      if (rawBio) bioFlag = Boolean(JSON.parse(rawBio));
+    } catch {}
+
+    const docEnabled = docFromState || docFlag || !!docVerificationConfig;
+    const bioEnabled = bioFromState || bioFlag || !!biometricConfig;
+
+    if (docEnabled) {
+      sections.push({
+        id: "document-verification",
+        title: "Document Verification",
+        description:
+          "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
+        enabled: true,
+        component: (
+          <DocumentVerificationSection config={docVerificationConfig} />
+        ),
+      });
+    }
+
+    if (bioEnabled) {
+      sections.push({
+        id: "biometric-verification",
+        title: "Biometric Verification",
+        description:
+          "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
+        enabled: true,
+        component: <BiometricVerificationSection config={biometricConfig} />,
+      });
+    }
 
     return sections;
   };

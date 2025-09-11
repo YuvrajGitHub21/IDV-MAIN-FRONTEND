@@ -390,7 +390,6 @@ export default function Preview() {
     }
 
     // ---- Fallback to builder state ----
-    // Use state from navigation when available; otherwise, infer from localStorage flags/configs
     const sections: SectionConfig[] = [];
 
     sections.push({
@@ -407,15 +406,15 @@ export default function Preview() {
       ),
     });
 
-    const docFromState = Array.isArray(templateData.verificationSteps)
-      ? templateData.verificationSteps.some(
-          (s) => s.id === "document-verification" && s.isEnabled,
-        )
+    const steps = Array.isArray(templateData.verificationSteps) && templateData.verificationSteps.length
+      ? templateData.verificationSteps
+      : lsSteps;
+
+    const docFromState = Array.isArray(steps)
+      ? steps.some((s: any) => s.id === "document-verification" && (s.isEnabled ?? true))
       : false;
-    const bioFromState = Array.isArray(templateData.verificationSteps)
-      ? templateData.verificationSteps.some(
-          (s) => s.id === "biometric-verification" && s.isEnabled,
-        )
+    const bioFromState = Array.isArray(steps)
+      ? steps.some((s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true))
       : false;
 
     let docFlag = false;
@@ -432,6 +431,19 @@ export default function Preview() {
     const docEnabled = docFromState || docFlag || !!docVerificationConfig;
     const bioEnabled = bioFromState || bioFlag || !!biometricConfig;
 
+    const defaultDoc = {
+      allowUploadFromDevice: false,
+      allowCaptureWebcam: false,
+      documentHandling: undefined,
+      selectedDocuments: [],
+    };
+    const defaultBio = {
+      maxRetries: undefined,
+      askUserRetry: false,
+      blockAfterRetries: false,
+      dataRetention: "",
+    };
+
     if (docEnabled) {
       sections.push({
         id: "document-verification",
@@ -440,7 +452,7 @@ export default function Preview() {
           "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
         enabled: true,
         component: (
-          <DocumentVerificationSection config={docVerificationConfig} />
+          <DocumentVerificationSection config={docVerificationConfig ?? defaultDoc} />
         ),
       });
     }
@@ -452,7 +464,7 @@ export default function Preview() {
         description:
           "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
         enabled: true,
-        component: <BiometricVerificationSection config={biometricConfig} />,
+        component: <BiometricVerificationSection config={biometricConfig ?? defaultBio} />,
       });
     }
 

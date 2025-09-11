@@ -234,7 +234,7 @@ export default function Templates() {
     const clonedTemplate = {
       name: `${templateToClone.name} (Copy)`, // New name for the cloned template
       description: `${templateToClone.description}` || "New", // Use the original description or default to "New"
-      templateRuleId: `${templateToClone.templateRuleId}`|| 1, // Use the same template rule ID (ensure it's valid)
+      templateRuleId: templateToClone.templateRuleId|| 1, // Use the same template rule ID (ensure it's valid)
     };
 
     try {
@@ -345,7 +345,7 @@ export default function Templates() {
         return;
       }
 
-      const response = await fetch(`${API_BASE}/api/template/${templateId}`, {
+      const response = await fetch(`${API_BASE}/api/Template/${templateId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

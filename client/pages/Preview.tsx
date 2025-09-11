@@ -92,6 +92,20 @@ export default function Preview() {
     } catch {}
   }, []);
 
+  // Also support per-template snapshot saved by TemplateBuilder
+  useEffect(() => {
+    if (!templateId) return;
+    try {
+      const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (s && typeof s === "object") {
+        if (s.doc) setDocVerificationConfig(s.doc);
+        if (s.biometric) setBiometricConfig(s.biometric);
+      }
+    } catch {}
+  }, [templateId]);
+
   // Get template data from location state (fallback)
   const templateData: TemplateData = location.state || {
     templateName: "New Template",

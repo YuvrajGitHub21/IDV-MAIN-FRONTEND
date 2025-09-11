@@ -617,15 +617,15 @@ export default function TemplateBuilder() {
   const navigate = useNavigate();
   const location = useLocation() as any;
   const templateName = location?.state?.templateName || "New Template";
-  const templateId: string = (() => {
+  const [templateId] = useState<string>(() => {
     const incoming = location?.state?.templateId as string | undefined;
-    if (incoming) return incoming;
-    const fresh = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const existing = incoming || localStorage.getItem("arcon_current_template_id") || undefined;
+    const id = existing || `temp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     try {
-      localStorage.setItem("arcon_current_template_id", fresh);
+      localStorage.setItem("arcon_current_template_id", id);
     } catch {}
-    return fresh;
-  })();
+    return id;
+  });
 
   // left-rail steps
   const [verificationSteps, setVerificationSteps] = useState<

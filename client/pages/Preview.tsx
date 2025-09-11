@@ -55,7 +55,8 @@ export default function Preview() {
   const [tplError, setTplError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!templateId) return; // if previewing unsaved builder state, use location.state fallback
+    if (!ENABLE_BACKEND_PREVIEW) return;
+    if (!templateId) return;
     const run = async () => {
       setLoadingTpl(true);
       setTplError(null);

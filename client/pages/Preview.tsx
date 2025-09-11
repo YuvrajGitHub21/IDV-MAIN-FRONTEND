@@ -378,21 +378,78 @@ export default function Preview() {
     // ---- Fallback to builder state ----
     const sections: SectionConfig[] = [];
 
-    sections.push({
-      id: "personal-info",
-      title: "Personal Information",
-      description:
-        "Please provide your basic personal information to begin the identity verification process.",
-      enabled: true,
-      component: (
-        <PersonalInformationSection
-          addedFields={templateData.addedFields}
-          showBase={{ firstName: true, lastName: true, email: true }}
-        />
-      ),
-    });
+    // Get sections order from snapshot verificationSteps, or derive from localStorage, else default
+    let sectionsOrder: string[] = [];
+    
+    // First try to get order from the snapshot
+    if (snapshot && Array.isArray(snapshot.verificationSteps)) {
+      sectionsOrder = snapshot.verificationSteps
+        .map((s: any) =>
+          s.id === "personal-info"
+            ? "Personal_info"
+            : s.id === "document-verification"
+              ? "Doc_verification"
+              : s.id === "biometric-verification"
+                ? "Biometric_verification"
+                : null,
+        )
+        .filter(Boolean);
+    }
+    
+    // Fallback to templateData.verificationSteps if snapshot not available
+    if ((!sectionsOrder || !sectionsOrder.length) && Array.isArray(templateData.verificationSteps)) {
+      sectionsOrder = templateData.verificationSteps
+        .map((s: any) =>
+          s.id === "personal-info"
+            ? "Personal_info"
+            : s.id === "document-verification"
+              ? "Doc_verification"
+              : s.id === "biometric-verification"
+                ? "Biometric_verification"
+                : null,
+        )
+        .filter(Boolean);
+    }
+    
+    // Final fallback to localStorage arcon_verification_steps
+    if (!sectionsOrder || !sectionsOrder.length) {
+      try {
+        const raw = localStorage.getItem("arcon_verification_steps");
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(parsed) && parsed.length) {
+          sectionsOrder = parsed
+            .map((s: any) =>
+              s.id === "personal-info"
+                ? "Personal_info"
+                : s.id === "document-verification"
+                  ? "Doc_verification"
+                  : s.id === "biometric-verification"
+                    ? "Biometric_verification"
+                    : null,
+            )
+            .filter(Boolean);
+        }
+      } catch {}
+    }
+    
+    // Absolute fallback to default order
+    if (!sectionsOrder || !sectionsOrder.length) {
+      sectionsOrder = [
+        "Personal_info",
+        "Doc_verification",
+        "Biometric_verification",
+      ];
+    }
 
-    const steps = Array.isArray(templateData.verificationSteps)
+    // Ensure Personal_info is always included at the beginning if not present
+    if (!sectionsOrder.includes("Personal_info")) {
+      sectionsOrder.unshift("Personal_info");
+    }
+
+    // Use snapshot verificationSteps to determine what's enabled, fallback to templateData
+    const steps = Array.isArray(snapshot?.verificationSteps) 
+      ? snapshot.verificationSteps 
+      : Array.isArray(templateData.verificationSteps)
       ? templateData.verificationSteps
       : [];
 
@@ -416,35 +473,54 @@ export default function Preview() {
       dataRetention: "",
     };
 
-    if (docEnabled) {
-      sections.push({
+    // Create section map
+    const sectionMap = {
+      Personal_info: {
+        id: "personal-info",
+        title: "Personal Information",
+        description:
+          "Please provide your basic personal information to begin the identity verification process.",
+        enabled: true,
+        component: (
+          <PersonalInformationSection
+            addedFields={templateData.addedFields}
+            showBase={{ firstName: true, lastName: true, email: true }}
+          />
+        ),
+      },
+      Doc_verification: {
         id: "document-verification",
         title: "Document Verification",
         description:
           "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
-        enabled: true,
+        enabled: docEnabled,
         component: (
           <DocumentVerificationSection
             config={docVerificationConfig ?? defaultDoc}
           />
         ),
-      });
-    }
-
-    if (bioEnabled) {
-      sections.push({
+      },
+      Biometric_verification: {
         id: "biometric-verification",
         title: "Biometric Verification",
         description:
           "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
-        enabled: true,
+        enabled: bioEnabled,
         component: (
           <BiometricVerificationSection
             config={biometricConfig ?? defaultBio}
           />
         ),
-      });
-    }
+      },
+    };
+
+    // Add sections in the specified order, only if enabled
+    sectionsOrder.forEach((sectionKey: string) => {
+      const section = sectionMap[sectionKey as keyof typeof sectionMap];
+      if (section && section.enabled) {
+        sections.push(section);
+      }
+    });
 
     return sections;
   };
@@ -501,38 +577,48 @@ export default function Preview() {
       };
     } else {
       // Convert builder state to receiver view config
+      // Use snapshot data if available, otherwise fall back to templateData
+      const sourceData = snapshot || templateData;
+      const steps = Array.isArray(sourceData.verificationSteps)
+        ? sourceData.verificationSteps
+        : [];
+      const addedFields = Array.isArray(sourceData.addedFields)
+        ? sourceData.addedFields
+        : templateData.addedFields || [];
+      const optionalFields = Array.isArray(sourceData.optionalFields)
+        ? sourceData.optionalFields
+        : [];
+      
+      const docConfig = sourceData.doc || {};
+      const hasDoc = steps.some(
+        (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
+      );
+      const hasBio = steps.some(
+        (s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true),
+      );
+      const dob = !!optionalFields.find((f: any) => f.id === "date-of-birth" && f.checked);
+      
       return {
-        templateName: templateData.templateName,
+        templateName: sourceData.templateName || templateData.templateName,
         personalInfo: {
           enabled: true,
           fields: {
             firstName: true,
             lastName: true,
             email: true,
-            dateOfBirth:
-              templateData.addedFields?.some((f) => f.id.includes("date")) ||
-              false,
+            dateOfBirth: dob || addedFields.some((f) => f.id.includes("date")),
           },
         },
         documentVerification: {
-          enabled:
-            templateData.verificationSteps?.some(
-              (s) => s.id === "document-verification",
-            ) || false,
-          allowUploadFromDevice: true,
-          allowCaptureWebcam: true,
-          supportedDocuments: [
-            "Passport",
-            "Aadhar Card",
-            "Drivers License",
-            "Pan Card",
-          ],
+          enabled: hasDoc,
+          allowUploadFromDevice: !!docConfig.allowUploadFromDevice,
+          allowCaptureWebcam: !!docConfig.allowCaptureWebcam,
+          supportedDocuments: Array.isArray(docConfig.selectedDocuments)
+            ? docConfig.selectedDocuments
+            : ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
         },
         biometricVerification: {
-          enabled:
-            templateData.verificationSteps?.some(
-              (s) => s.id === "biometric-verification",
-            ) || false,
+          enabled: hasBio,
         },
       };
     }
@@ -603,10 +689,21 @@ export default function Preview() {
 
   // Navigate to receiver view
   const handleReceiverViewClick = () => {
-    const templateConfig = buildTemplateConfigForReceiverView();
-    navigate(templateId ? `/receiver-view/${templateId}` : "/receiver-view", {
-      state: { templateConfig, templateData },
-    });
+    try {
+      const templateConfig = buildTemplateConfigForReceiverView();
+      navigate(templateId ? `/receiver-view/${templateId}` : "/receiver-view", {
+        state: { 
+          templateConfig, 
+          templateData, 
+          snapshot,
+          originalState: location.state 
+        },
+      });
+    } catch (error) {
+      console.error("Error navigating to receiver view:", error);
+      // Fallback navigation without state
+      navigate(templateId ? `/receiver-view/${templateId}` : "/receiver-view");
+    }
   };
 
   if (loadingTpl) {

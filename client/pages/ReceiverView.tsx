@@ -433,9 +433,27 @@ export default function ReceiverView() {
   const buildSections = () => {
     const sections = [];
 
-    // Get sections order from backend, or derive from localStorage builder steps, else default
+    // Get sections order from backend, or derive from per-template snapshot, or localStorage builder steps, else default
     let sectionsOrder = dbTemplate?.sections_order;
     if (!sectionsOrder) {
+      // First try to get order from the per-template snapshot
+      if (snapshot && Array.isArray(snapshot.verificationSteps)) {
+        sectionsOrder = snapshot.verificationSteps
+          .map((s: any) =>
+            s.id === "personal-info"
+              ? "Personal_info"
+              : s.id === "document-verification"
+                ? "Doc_verification"
+                : s.id === "biometric-verification"
+                  ? "Biometric_verification"
+                  : null,
+          )
+          .filter(Boolean);
+      }
+    }
+    
+    // Fallback to global localStorage arcon_verification_steps
+    if (!sectionsOrder || !sectionsOrder.length) {
       try {
         const raw = localStorage.getItem("arcon_verification_steps");
         const parsed = raw ? JSON.parse(raw) : [];
@@ -454,12 +472,19 @@ export default function ReceiverView() {
         }
       } catch {}
     }
+    
+    // Absolute fallback to default order
     if (!sectionsOrder || !sectionsOrder.length) {
       sectionsOrder = [
         "Personal_info",
         "Doc_verification",
         "Biometric_verification",
       ];
+    }
+
+    // Ensure Personal_info is always included at the beginning if not present
+    if (!sectionsOrder.includes("Personal_info")) {
+      sectionsOrder.unshift("Personal_info");
     }
 
     const sectionMap = {
@@ -1233,12 +1258,46 @@ export default function ReceiverView() {
                 {/* Admin View Tab - Inactive */}
                 <div
                   className="w-[308px] px-[26px] py-3 flex items-center gap-2.5 rounded opacity-50 cursor-pointer hover:bg-blue-50"
-                  onClick={() =>
-                    navigate(
-                      templateId ? `/preview/${templateId}` : "/preview",
-                      { state: location.state },
-                    )
-                  }
+                  onClick={() => {
+                    try {
+                      console.log("Navigating to admin view...", {
+                        templateId,
+                        currentLocationState: location.state,
+                        snapshot: snapshot,
+                        templateConfig: templateConfig
+                      });
+                      
+                      // Use original state if available, otherwise build from current data
+                      let previewState = location.state?.originalState;
+                      
+                      if (!previewState) {
+                        // Build proper state for Preview.tsx from current template data
+                        previewState = {
+                          templateName: templateConfig.templateName || "New Template",
+                          verificationSteps: snapshot?.verificationSteps || [],
+                          addedFields: snapshot?.addedFields || [],
+                          templateData: {
+                            personalInfo: templateConfig.personalInfo?.enabled ?? true,
+                            documentVerification: templateConfig.documentVerification?.enabled ?? false,
+                            biometricVerification: templateConfig.biometricVerification?.enabled ?? false,
+                          },
+                          snapshot: snapshot,
+                        };
+                        console.log("Built preview state:", previewState);
+                      } else {
+                        console.log("Using original state:", previewState);
+                      }
+                      
+                      navigate(
+                        templateId ? `/preview/${templateId}` : "/preview",
+                        { state: previewState },
+                      );
+                    } catch (error) {
+                      console.error("Error navigating to admin view:", error);
+                      // Fallback navigation without state
+                      navigate(templateId ? `/preview/${templateId}` : "/preview");
+                    }
+                  }}
                 >
                   <div className="flex-1 flex flex-col gap-2">
                     <h3 className="w-[248px] text-sm font-bold text-[#292F4C] leading-[13px] font-roboto">

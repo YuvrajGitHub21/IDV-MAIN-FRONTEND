@@ -38,9 +38,14 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<Templates />} />
               <Route path="/template-builder" element={<TemplateBuilder />} />
+              <Route path="/TemplateBuilder" element={<TemplateBuilder />} />
+
               <Route path="/preview" element={<Preview />} />
+              <Route path="/Preview" element={<Preview />} />
               <Route path="/preview/:templateId" element={<Preview />} />
+
               <Route path="/receiver-view" element={<ReceiverView />} />
+              <Route path="/ReceiverView" element={<ReceiverView />} />
               <Route
                 path="/receiver-view/:templateId"
                 element={<ReceiverView />}

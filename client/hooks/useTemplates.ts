@@ -6,6 +6,7 @@ export interface TemplateItem {
   name: string;
   description: string | null;
   createdBy: string;
+  templateRuleId : number | null;
   templateRules: string | null;
   isActive: boolean;
   createdAtUtc: string;
@@ -56,6 +57,7 @@ const rawMockTemplates: TemplateItem[] = [
     name: "Template Name",
     description: "Template description",
     createdBy: "user1",
+    templateRuleId: 1,
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-07-14T00:00:00Z",
@@ -65,6 +67,7 @@ const rawMockTemplates: TemplateItem[] = [
     name: "New Template",
     description: "New template description",
     createdBy: "user2",
+    templateRuleId: 1,
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-06-22T00:00:00Z",
@@ -74,6 +77,7 @@ const rawMockTemplates: TemplateItem[] = [
     name: "Template_Newname",
     description: "Template description",
     createdBy: "user3",
+    templateRuleId: 1,
     templateRules: "Rules",
     isActive: false,
     createdAtUtc: "2024-06-18T00:00:00Z",
@@ -83,6 +87,7 @@ const rawMockTemplates: TemplateItem[] = [
     name: "Template Name 8",
     description: "Template description",
     createdBy: "user4",
+    templateRuleId: 1,
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-05-04T00:00:00Z",
@@ -92,6 +97,7 @@ const rawMockTemplates: TemplateItem[] = [
     name: "Template Name 2",
     description: "Template description",
     createdBy: "user5",
+    templateRuleId: 1,
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-07-14T00:00:00Z",
@@ -101,6 +107,7 @@ const rawMockTemplates: TemplateItem[] = [
     name: "Template_New1name",
     description: "Template description",
     createdBy: "user2",
+    templateRuleId: 1,
     templateRules: "Rules",
     isActive: true,
     createdAtUtc: "2024-07-14T00:00:00Z",
@@ -158,7 +165,11 @@ const mapTemplateDoc = (doc: any): TemplateItem => {
       ? String(doc.description)
       : null;
 
+  // Use templateRuleId here (which is numeric)
+  const templateRuleId: number | null =
+    doc?.templateRuleId !== undefined ? doc.templateRuleId : null;
   // Template rules text if present
+
   const templateRules: string | null =
     doc?.templateRuleInfo !== undefined && doc?.templateRuleInfo !== null
       ? String(doc.templateRuleInfo)
@@ -182,6 +193,7 @@ const mapTemplateDoc = (doc: any): TemplateItem => {
     name,
     description,
     createdBy,
+    templateRuleId,
     templateRules,
     isActive,
     createdAtUtc,

@@ -257,10 +257,10 @@ export default function Templates() {
       await fetchTemplates();
       applyFilters(buildCurrentFilters());
 
-      toast.success("Template cloned successfully!");
+      toast.success(`Template ${templateToClone.name} cloned successfully!`);
     } catch (error) {
       console.error('Error cloning template:', error);
-      toast.error(error.message || "Failed to clone template.");
+      toast.error(error.message || `Failed to clone template ${templateToClone.name}.`);
     }
   };
 

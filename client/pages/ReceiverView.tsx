@@ -131,29 +131,36 @@ export default function ReceiverView() {
 
     // Build from localStorage (no backend)
     try {
-      const hasDoc = JSON.parse(localStorage.getItem("arcon_has_document_verification") || "false");
-      const hasBio = JSON.parse(localStorage.getItem("arcon_has_biometric_verification") || "false");
+      const hasDoc = JSON.parse(
+        localStorage.getItem("arcon_has_document_verification") || "false",
+      );
+      const hasBio = JSON.parse(
+        localStorage.getItem("arcon_has_biometric_verification") || "false",
+      );
       const docRaw = localStorage.getItem("arcon_doc_verification_form");
       const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
       const docCfg = docRaw ? JSON.parse(docRaw) : {};
       const bioCfg = bioRaw ? JSON.parse(bioRaw) : {};
 
       return {
-        templateName: location.state?.templateData?.templateName || "New Template",
+        templateName:
+          location.state?.templateData?.templateName || "New Template",
         personalInfo: {
           enabled: true,
-          fields: { firstName: true, lastName: true, email: true, dateOfBirth: false },
+          fields: {
+            firstName: true,
+            lastName: true,
+            email: true,
+            dateOfBirth: false,
+          },
         },
         documentVerification: {
           enabled: Boolean(hasDoc),
           allowUploadFromDevice: Boolean(docCfg.allowUploadFromDevice),
           allowCaptureWebcam: Boolean(docCfg.allowCaptureWebcam),
-          supportedDocuments: Array.isArray(docCfg.selectedDocuments) ? docCfg.selectedDocuments : [
-            "Passport",
-            "Aadhar Card",
-            "Drivers License",
-            "Pan Card",
-          ],
+          supportedDocuments: Array.isArray(docCfg.selectedDocuments)
+            ? docCfg.selectedDocuments
+            : ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
         },
         biometricVerification: {
           enabled: Boolean(hasBio),
@@ -166,7 +173,12 @@ export default function ReceiverView() {
       templateName: "New Template",
       personalInfo: {
         enabled: true,
-        fields: { firstName: true, lastName: true, email: true, dateOfBirth: false },
+        fields: {
+          firstName: true,
+          lastName: true,
+          email: true,
+          dateOfBirth: false,
+        },
       },
       documentVerification: {
         enabled: false,
@@ -377,10 +389,10 @@ export default function ReceiverView() {
               s.id === "personal-info"
                 ? "Personal_info"
                 : s.id === "document-verification"
-                ? "Doc_verification"
-                : s.id === "biometric-verification"
-                ? "Biometric_verification"
-                : null,
+                  ? "Doc_verification"
+                  : s.id === "biometric-verification"
+                    ? "Biometric_verification"
+                    : null,
             )
             .filter(Boolean);
         }

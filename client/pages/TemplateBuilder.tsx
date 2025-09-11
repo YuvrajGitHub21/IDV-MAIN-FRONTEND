@@ -847,6 +847,7 @@ export default function TemplateBuilder() {
 
   // Build a full snapshot of the current builder state
   const buildSnapshot = () => ({
+    templateName,
     verificationSteps,
     addedFields,
     optionalFields,

@@ -96,27 +96,17 @@ export default function Preview() {
     } catch {}
   }, [templateId]);
 
-  // Load steps from localStorage for preview when no navigation state
-  const [lsSteps, setLsSteps] = useState<VerificationStep[]>([]);
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("arcon_verification_steps");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) setLsSteps(parsed);
-      }
-    } catch {}
-  }, []);
-
-  // Get template data from navigation state, else build from LS
+  // Get template data from navigation state or snapshot; no global fallbacks
   const templateData: TemplateData = location.state || {
     templateName: "New Template",
-    verificationSteps: lsSteps,
-    addedFields: [],
+    verificationSteps: Array.isArray(snapshot?.verificationSteps)
+      ? snapshot.verificationSteps
+      : [],
+    addedFields: Array.isArray(snapshot?.addedFields) ? snapshot.addedFields : [],
     templateData: {
       personalInfo: true,
-      documentVerification: true,
-      biometricVerification: true,
+      documentVerification: false,
+      biometricVerification: false,
     },
   };
 

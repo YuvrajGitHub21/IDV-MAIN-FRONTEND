@@ -943,10 +943,20 @@ export default function TemplateBuilder() {
 
     // Always persist global keys so Preview can read from localStorage without backend
     try {
-      const hasDoc = verificationSteps.some((s) => s.id === "document-verification");
-      const hasBio = verificationSteps.some((s) => s.id === "biometric-verification");
-      localStorage.setItem("arcon_has_document_verification", JSON.stringify(hasDoc));
-      localStorage.setItem("arcon_has_biometric_verification", JSON.stringify(hasBio));
+      const hasDoc = verificationSteps.some(
+        (s) => s.id === "document-verification",
+      );
+      const hasBio = verificationSteps.some(
+        (s) => s.id === "biometric-verification",
+      );
+      localStorage.setItem(
+        "arcon_has_document_verification",
+        JSON.stringify(hasDoc),
+      );
+      localStorage.setItem(
+        "arcon_has_biometric_verification",
+        JSON.stringify(hasBio),
+      );
 
       localStorage.setItem(
         "arcon_doc_verification_form",

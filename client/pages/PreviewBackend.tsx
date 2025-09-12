@@ -81,10 +81,25 @@ export default function PreviewBackend() {
     apiTemplate?.nameOfTemplate ||
     "Template";
 
-  // Build sections from activeVersion
+  // Select the version to preview: prefer the FIRST version if present, else fall back to activeVersion
+  function pickVersion(apiData: any): any {
+    if (!apiData) return {};
+    const list =
+      (apiData as any)?.versions ||
+      (apiData as any)?.Versions ||
+      (apiData as any)?.templateVersions ||
+      (apiData as any)?.TemplateVersions ||
+      null;
+    if (Array.isArray(list) && list.length) return list[0];
+    return (
+      (apiData as any).activeVersion || (apiData as any).ActiveVersion || {}
+    );
+  }
+
+  // Build sections from the selected version
   function buildSectionsFromApiTemplate(apiData: any): SectionConfig[] {
     if (!apiData) return [];
-    const version = apiData.activeVersion || {};
+    const version = pickVersion(apiData);
     const sections = Array.isArray(version.sections) ? version.sections : [];
 
     const ordered = [...sections].sort(
@@ -93,7 +108,8 @@ export default function PreviewBackend() {
 
     const out: SectionConfig[] = [];
     for (const sec of ordered) {
-      if (sec?.isActive === false) continue;
+      // Only render sections explicitly marked active
+      if (sec?.isActive !== true) continue;
       const mapping =
         Array.isArray(sec?.fieldMappings) && sec.fieldMappings.length
           ? sec.fieldMappings[0]
@@ -102,7 +118,7 @@ export default function PreviewBackend() {
       const type = String(sec?.sectionType || "");
 
       if (type === "personalInformation") {
-        const s = structure.personalInfo || {};
+        const s = structure.personalInfo || structure.personal || {};
         const added: AddedField[] = [];
         if (s?.dateOfBirth)
           added.push({
@@ -147,7 +163,19 @@ export default function PreviewBackend() {
           ),
         });
       } else if (type === "documents") {
-        const d = structure.documentVerification || {};
+        const d = structure.documentVerification || structure.documents || {};
+        // derive selected documents from either an array or an object of booleans
+        let selectedDocuments: string[] = [];
+        if (Array.isArray(d.selectedDocuments))
+          selectedDocuments = d.selectedDocuments;
+        else if (
+          d.selectedDocuments &&
+          typeof d.selectedDocuments === "object"
+        ) {
+          selectedDocuments = Object.entries(d.selectedDocuments)
+            .filter(([, v]) => Boolean(v))
+            .map(([k]) => k as string);
+        }
         const config = {
           allowUploadFromDevice: !!d.allowUploadFromDevice,
           allowCaptureWebcam: !!d.allowCaptureWebcam,
@@ -156,9 +184,7 @@ export default function PreviewBackend() {
             : d.documentHandlingAllowRetries
               ? "retry"
               : undefined,
-          selectedDocuments: Array.isArray(d.selectedDocuments)
-            ? d.selectedDocuments
-            : [],
+          selectedDocuments,
         };
         out.push({
           id: "document-verification",
@@ -169,7 +195,7 @@ export default function PreviewBackend() {
           component: <DocumentVerificationSection config={config} />,
         });
       } else if (type === "biometrics") {
-        const b = structure.biometricVerification || {};
+        const b = structure.biometricVerification || structure.biometrics || {};
         const config = {
           maxRetries:
             typeof b.maxRetries === "number" ? b.maxRetries : undefined,
@@ -196,7 +222,7 @@ export default function PreviewBackend() {
   );
 
   const buildTemplateConfigForReceiverView = () => {
-    const version = apiTemplate?.activeVersion || {};
+    const version = pickVersion(apiTemplate);
     const sections = Array.isArray(version.sections) ? version.sections : [];
 
     let personalFields: any = {};
@@ -204,17 +230,18 @@ export default function PreviewBackend() {
     let bioCfg: any = {};
 
     for (const s of sections) {
+      if (s?.isActive !== true) continue;
       const mapping =
         Array.isArray(s?.fieldMappings) && s.fieldMappings.length
           ? s.fieldMappings[0]
           : null;
       const structure = mapping?.structure || {};
       if (s.sectionType === "personalInformation") {
-        personalFields = structure.personalInfo || {};
+        personalFields = structure.personalInfo || structure.personal || {};
       } else if (s.sectionType === "documents") {
-        docCfg = structure.documentVerification || {};
+        docCfg = structure.documentVerification || structure.documents || {};
       } else if (s.sectionType === "biometrics") {
-        bioCfg = structure.biometricVerification || {};
+        bioCfg = structure.biometricVerification || structure.biometrics || {};
       }
     }
 
@@ -244,6 +271,18 @@ export default function PreviewBackend() {
         placeholder: "Select gender",
       });
 
+    let docs: string[] = [];
+    if (Array.isArray(docCfg.selectedDocuments))
+      docs = docCfg.selectedDocuments;
+    else if (
+      docCfg.selectedDocuments &&
+      typeof docCfg.selectedDocuments === "object"
+    ) {
+      docs = Object.entries(docCfg.selectedDocuments)
+        .filter(([, v]) => Boolean(v))
+        .map(([k]) => k as string);
+    }
+
     return {
       templateName: displayName,
       personalInfo: {
@@ -258,17 +297,15 @@ export default function PreviewBackend() {
       },
       documentVerification: {
         enabled: sections.some(
-          (s: any) => s.sectionType === "documents" && s.isActive !== false,
+          (s: any) => s.sectionType === "documents" && s.isActive === true,
         ),
         allowUploadFromDevice: !!docCfg.allowUploadFromDevice,
         allowCaptureWebcam: !!docCfg.allowCaptureWebcam,
-        supportedDocuments: Array.isArray(docCfg.selectedDocuments)
-          ? docCfg.selectedDocuments
-          : [],
+        supportedDocuments: docs,
       },
       biometricVerification: {
         enabled: sections.some(
-          (s: any) => s.sectionType === "biometrics" && s.isActive !== false,
+          (s: any) => s.sectionType === "biometrics" && s.isActive === true,
         ),
       },
     };

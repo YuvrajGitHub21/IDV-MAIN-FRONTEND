@@ -47,6 +47,8 @@ const App = () => (
               <Route path="/Preview" element={<Preview />} />
               <Route path="/preview/:templateId" element={<Preview />} />
 
+              <Route path="/preview-backend/:id" element={<PreviewBackend />} />
+
               <Route path="/receiver-view" element={<ReceiverView />} />
               <Route path="/ReceiverView" element={<ReceiverView />} />
               <Route

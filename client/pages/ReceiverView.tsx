@@ -178,7 +178,6 @@ export default function ReceiverView() {
       };
     }
 
-    console.log('Template config final result:', templateConfig);
 
     if (ENABLE_BACKEND_RECEIVER && dbTemplate) {
       const sectionStatus = dbTemplate.Section_status || {};
@@ -293,7 +292,7 @@ export default function ReceiverView() {
         enabled: true,
       },
     };
-  }, [location.state, dbTemplate]);
+  }, [location.state, dbTemplate, snapshot]);
 
   console.log('Final template config:', templateConfig);
 

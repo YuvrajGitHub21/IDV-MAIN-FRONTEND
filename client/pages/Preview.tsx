@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
+import { getAccessToken } from "@/lib/auth";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  import.meta.env.VITE_API_URL ||
+  "http://10.10.2.133:8080";
 const ENABLE_BACKEND_PREVIEW = false;
 
 interface VerificationStep {
@@ -78,7 +82,9 @@ export default function Preview() {
   const [dbTemplate, setDbTemplate] = useState<any>(null);
   const [loadingTpl, setLoadingTpl] = useState(false);
   const [tplError, setTplError] = useState<string | null>(null);
+  const [apiTemplate, setApiTemplate] = useState<any>(null);
 
+  // Legacy/Mongo preview fetch (guarded by flag)
   useEffect(() => {
     if (!ENABLE_BACKEND_PREVIEW) return;
     if (!templateId) return;
@@ -102,6 +108,41 @@ export default function Preview() {
       }
     };
     run();
+  }, [templateId]);
+
+  // New .NET API preview fetch: /api/Template/{id}
+  useEffect(() => {
+    if (!templateId) return;
+    const controller = new AbortController();
+    const run = async () => {
+      try {
+        setLoadingTpl(true);
+        setTplError(null);
+        const token = getAccessToken();
+        const res = await fetch(`${API_BASE}/api/Template/${templateId}`, {
+          headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(
+            `Failed to fetch template: ${res.status} ${res.statusText}${text ? ` — ${text}` : ""}`,
+          );
+        }
+        const json = await res.json();
+        setApiTemplate(json);
+      } catch (e: any) {
+        if (e?.name === "AbortError") return;
+        setTplError(e?.message || "Failed to load template");
+      } finally {
+        setLoadingTpl(false);
+      }
+    };
+    run();
+    return () => controller.abort();
   }, [templateId]);
 
   // Load actual configuration data from localStorage (kept)
@@ -184,6 +225,116 @@ export default function Preview() {
 
   const isValidKey = (k: string): k is SectionKey =>
     (DEFAULT_SECTION_ORDER as readonly string[]).includes(k);
+
+  // Build sections from the .NET Template API response
+  function buildSectionsFromApiTemplate(apiData: any): SectionConfig[] {
+    if (!apiData) return [];
+    const sections = apiData?.activeVersion?.sections || [];
+    if (!Array.isArray(sections)) return [];
+
+    // sort by orderIndex
+    const ordered = [...sections].sort(
+      (a: any, b: any) => (a?.orderIndex ?? 0) - (b?.orderIndex ?? 0),
+    );
+
+    const out: SectionConfig[] = [];
+    for (const sec of ordered) {
+      if (sec?.isActive === false) continue;
+      const type = String(sec?.sectionType || "");
+      const mapping =
+        Array.isArray(sec?.fieldMappings) && sec.fieldMappings.length
+          ? sec.fieldMappings[0]
+          : null;
+      const structure = mapping?.structure || {};
+
+      if (type === "personalInformation") {
+        const s = structure.personalInfo || {};
+        const added: AddedField[] = [];
+        if (s?.dateOfBirth)
+          added.push({
+            id: "dob",
+            name: "Date of Birth",
+            placeholder: "DD/MM/YYYY",
+          });
+        if (s?.currentAddress)
+          added.push({
+            id: "currentAddress",
+            name: "Current Address",
+            placeholder: "Enter your current address",
+          });
+        if (s?.permanentAddress)
+          added.push({
+            id: "permanentAddress",
+            name: "Permanent Address",
+            placeholder: "Enter your permanent address",
+          });
+        if (s?.gender)
+          added.push({
+            id: "gender",
+            name: "Gender",
+            placeholder: "Select gender",
+          });
+        const showBase = {
+          firstName: !!s?.firstName,
+          lastName: !!s?.lastName,
+          email: !!s?.email,
+        };
+        out.push({
+          id: "personal-info",
+          title: "Personal Information",
+          description:
+            "Please provide your basic personal information to begin the identity verification process.",
+          enabled: true,
+          component: (
+            <PersonalInformationSection
+              addedFields={added}
+              showBase={showBase}
+            />
+          ),
+        });
+      } else if (type === "documents") {
+        const d = structure.documentVerification || {};
+        const config = {
+          allowUploadFromDevice: !!d.allowUploadFromDevice,
+          allowCaptureWebcam: !!d.allowCaptureWebcam,
+          documentHandling: d.documentHandlingRejectImmediately
+            ? "reject"
+            : d.documentHandlingAllowRetries
+              ? "retry"
+              : undefined,
+          selectedDocuments: Array.isArray(d.selectedDocuments)
+            ? d.selectedDocuments
+            : [],
+        };
+        out.push({
+          id: "document-verification",
+          title: "Document Verification",
+          description:
+            "Choose a valid government-issued ID (like a passport, driver's license, or national ID) and upload a clear photo of it.",
+          enabled: true,
+          component: <DocumentVerificationSection config={config} />,
+        });
+      } else if (type === "biometrics") {
+        const b = structure.biometricVerification || {};
+        const config = {
+          maxRetries:
+            typeof b.maxRetries === "number" ? b.maxRetries : undefined,
+          askUserRetry: !!b.askUserRetry,
+          blockAfterRetries: !!b.blockAfterRetries,
+          dataRetention: b.dataRetention || "",
+        };
+        out.push({
+          id: "biometric-verification",
+          title: "Biometric Verification",
+          description:
+            "Take a live selfie to confirm you are the person in the ID document. Make sure you're in a well-lit area and your face is clearly visible.",
+          enabled: true,
+          component: <BiometricVerificationSection config={config} />,
+        });
+      }
+    }
+    return out;
+  }
 
   // Build the three sections from the Mongo doc, in the exact order specified
   function buildSectionsFromDbTemplate(tpl: any): SectionConfig[] {
@@ -425,6 +576,9 @@ export default function Preview() {
   // ---------- Build sections to render (DB first, fallback to builder state) ----------
   // Create section components (DB first with sections_order, else builder fallback)
   const createSectionComponents = (): SectionConfig[] => {
+    if (apiTemplate) {
+      return buildSectionsFromApiTemplate(apiTemplate);
+    }
     if (dbTemplate) {
       return buildSectionsFromDbTemplate(dbTemplate);
     }

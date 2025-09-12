@@ -1,17 +1,17 @@
 import { useState, useCallback } from "react";
 
 /* ===================== Types (UI) ===================== */
-export interface TemplateItem {
-  id: string;
-  name: string;
-  description: string | null;
-  createdBy: string;
-  templateRuleId : number | null;
-  templateRules: string | null;
-  isActive: boolean;
-  createdAtUtc: string;
-  updatedAtUtc?: string;
-}
+// export interface TemplateItem {
+//   id: string;
+//   name: string;
+//   description: string | null;
+//   createdBy: string;
+//   templateRuleId : number | null;
+//   templateRules: string | null;
+//   isActive: boolean;
+//   createdAtUtc: string;
+//   updatedAtUtc?: string;
+// }
 
 export interface TemplatesResponse {
   page?: number;
@@ -48,6 +48,29 @@ export interface TemplateFilters {
   createdTo?: string;
   updatedFrom?: string;
   updatedTo?: string;
+}
+export interface InviteeItem {
+  id: string;
+  name: string;
+  email: string;
+  status?: string | null;
+}
+
+export interface TemplateItem {
+  id: string;
+  name: string;
+  description: string | null;
+  createdBy: string;
+  templateRuleId: number | null;
+  templateRules: string | null;
+
+  // NEW
+  activeVersionId?: number | null;
+  invitees?: InviteeItem[];
+  isActive: boolean;     // true => Completed, false => In Progress
+
+  createdAtUtc: string;
+  updatedAtUtc?: string;
 }
 
 /* ===================== Fallback data (unchanged) ===================== */
@@ -151,55 +174,73 @@ const objectIdToIso = (id?: string): string => {
 
 // Map backend Template -> UI TemplateItem (matches updated .NET model)
 // Map backend Template -> UI TemplateItem (matches current /api/Template schema)
-const mapTemplateDoc = (doc: any): TemplateItem => {
-  const id = String(doc?.id ?? doc?.Id ?? "");
-  const name = String(doc?.name ?? "Untitled");
+  const mapTemplateDoc = (doc: any): TemplateItem => {
+    const id = String(doc?.id ?? doc?.Id ?? "");
+    const name = String(doc?.name ?? doc?.Name ?? "Untitled");
 
-  // Prefer the display name; fall back to numeric createdBy or a placeholder
-  const createdBy: string =
-    (doc?.createdByName && String(doc.createdByName)) ??
-    (doc?.createdBy !== undefined ? String(doc.createdBy) : "Unknown User");
+    const createdBy: string =
+      (doc?.createdByName && String(doc.createdByName)) ??
+      (doc?.CreatedByName && String(doc.CreatedByName)) ??
+      (doc?.createdBy !== undefined ? String(doc.createdBy) : "Unknown User");
 
-  const description: string | null =
-    doc?.description !== undefined && doc?.description !== null
-      ? String(doc.description)
-      : null;
+    const description: string | null =
+      doc?.description !== undefined && doc?.description !== null
+        ? String(doc.description)
+        : doc?.Description ?? null;
 
-  // Use templateRuleId here (which is numeric)
-  const templateRuleId: number | null =
-    doc?.templateRuleId !== undefined ? doc.templateRuleId : null;
-  // Template rules text if present
+    const templateRuleId: number | null =
+      doc?.templateRuleId ?? doc?.TemplateRuleId ?? null;
 
-  const templateRules: string | null =
-    doc?.templateRuleInfo !== undefined && doc?.templateRuleInfo !== null
-      ? String(doc.templateRuleInfo)
-      : null;
+    const templateRules: string | null =
+      doc?.templateRuleInfo ?? doc?.TemplateRuleInfo ?? null;
 
-  // Dates
-  const createdAtUtc = doc?.createdAt
-    ? new Date(doc.createdAt).toISOString()
-    : objectIdToIso(id);
+    // dates
+    const createdAtUtc = doc?.createdAt
+      ? new Date(doc.createdAt).toISOString()
+      : objectIdToIso(id);
 
-  const updatedAtUtc =
-    doc?.updatedAt && !isNaN(new Date(doc.updatedAt).getTime())
-      ? new Date(doc.updatedAt).toISOString()
-      : undefined;
+    const updatedAtUtc =
+      doc?.updatedAt && !isNaN(new Date(doc.updatedAt).getTime())
+        ? new Date(doc.updatedAt).toISOString()
+        : undefined;
 
-  // Your API doesn't expose an "active/completed" flag; keep a stable default
-  const isActive = true;
+    // ---- pull status + invitees from activeVersion ----
+    const av = doc?.activeVersion ?? doc?.ActiveVersion ?? null;
 
-  return {
-    id,
-    name,
-    description,
-    createdBy,
-    templateRuleId,
-    templateRules,
-    isActive,
-    createdAtUtc,
-    updatedAtUtc,
+    const activeVersionId: number | null =
+      av?.versionId ?? av?.VersionId ?? null;
+
+    // boolean isActive comes straight from activeVersion in your payload
+    const isActive: boolean = Boolean(av?.isActive ?? av?.IsActive ?? false);
+
+    // prefer activeVersion.invitees; fallback to root invitees if any
+    const rawInvitees =
+      (Array.isArray(av?.invitees) ? av.invitees : null) ??
+      (Array.isArray(doc?.invitees) ? doc.invitees : null) ??
+      [];
+
+    const invitees: InviteeItem[] = rawInvitees.map((i: any) => ({
+      id: String(i?.id ?? i?.Id ?? i?.email ?? Math.random().toString(36).slice(2)),
+      name: String(i?.name ?? i?.Name ?? i?.email ?? "Invitee"),
+      email: String(i?.email ?? i?.Email ?? ""),
+      status: i?.status ?? i?.Status ?? null,
+    }));
+
+    return {
+      id,
+      name,
+      description,
+      createdBy,
+      templateRuleId,
+      templateRules,
+      activeVersionId,
+      invitees,
+      isActive,              // <- dashboard will show Completed/In Progress from this
+      createdAtUtc,
+      updatedAtUtc,
+    };
   };
-};
+
 
 // Normalize controller PageResult<Template>
 const normalizeListResponse = (

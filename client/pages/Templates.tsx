@@ -9,7 +9,7 @@ import {
 } from "@/hooks/useTemplates";
 import { AddNewTemplateDropdown } from "@/components/arcon/AddNewTemplateDropdown";
 import { TemplateActionsDropdown } from "@/components/arcon/TemplateActionsDropdown";
-import { InviteesAvatarGroup } from "@/components/arcon/InviteesAvatarGroup";
+import InviteesAvatarGroup from "@/components/arcon/InviteesAvatarGroup";
 import TemplateFilterDropdown from "@/components/arcon/TemplateFilterDropdown";
 import ConfirmDeleteDialog from "@/components/arcon/ConfirmDeleteDialog";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
@@ -1106,7 +1106,8 @@ export default function Templates() {
                             {template.name}
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
-                            <InviteesAvatarGroup />
+                            {/* <InviteesAvatarGroup /> */}
+                            <InviteesAvatarGroup invitees={template.invitees ?? []} maxVisible={2} />
                           </td>
                           <td className="px-2 py-2 text-sm text-gray-900">
                             {formatDate(template.createdAtUtc)}
@@ -1191,7 +1192,8 @@ export default function Templates() {
                             {formatDate(template.createdAtUtc)}
                           </p>
                           <div className="mt-2 flex items-center gap-3">
-                            <InviteesAvatarGroup />
+                            {/* <InviteesAvatarGroup /> */}
+                            <InviteesAvatarGroup invitees={template.invitees ?? []} maxVisible={2} />
                             {getStatusBadge(template.isActive)}
                           </div>
                         </div>

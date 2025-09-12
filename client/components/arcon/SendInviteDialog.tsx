@@ -129,10 +129,6 @@ export default function SendInviteDialog({
 
           const vid =
             j?.activeVersion?.versionId ??
-            j?.ActiveVersion?.versionId ??
-            j?.ActiveVersion?.VersionId ??
-            j?.currentVersion ??
-            j?.CurrentVersion ??
             null;
 
           if (!cancelled) setVersionId(vid != null ? Number(vid) : null);

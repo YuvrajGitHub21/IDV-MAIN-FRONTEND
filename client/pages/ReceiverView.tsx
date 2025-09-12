@@ -74,13 +74,27 @@ export default function ReceiverView() {
   const location = useLocation();
   const { templateId } = useParams();
 
+  // Load template snapshot from localStorage
+  const [snapshot, setSnapshot] = useState<any>(null);
+
+  useEffect(() => {
+    if (!templateId) return;
+    try {
+      const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setSnapshot(parsed);
+      }
+    } catch (e) {
+      console.error('Failed to load template snapshot:', e);
+    }
+  }, [templateId]);
+
   // Load template from database or state
   const [dbTemplate, setDbTemplate] = useState<any>(null);
   const [loadingTpl, setLoadingTpl] = useState(false);
 
-  // Optionally fetch from backend; disabled by default
   useEffect(() => {
-    if (!ENABLE_BACKEND_RECEIVER) return;
     if (!templateId) return;
     const run = async () => {
       setLoadingTpl(true);
@@ -96,16 +110,6 @@ export default function ReceiverView() {
       }
     };
     run();
-  }, [templateId]);
-
-  // Load per-template snapshot from localStorage for previewing without backend
-  const [snapshot, setSnapshot] = useState<any>(null);
-  useEffect(() => {
-    if (!templateId) return;
-    try {
-      const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
-      if (raw) setSnapshot(JSON.parse(raw));
-    } catch {}
   }, [templateId]);
 
   // Get template configuration from location state or build from dbTemplate or use defaults
@@ -262,19 +266,26 @@ export default function ReceiverView() {
           firstName: true,
           lastName: true,
           email: true,
-          dateOfBirth: false,
+          dateOfBirth: true,
         },
         additionalFields: [],
       },
       documentVerification: {
-        enabled: false,
-        allowUploadFromDevice: false,
-        allowCaptureWebcam: false,
-        supportedDocuments: [],
+        enabled: true,
+        allowUploadFromDevice: true,
+        allowCaptureWebcam: true,
+        supportedDocuments: [
+          "Passport",
+          "Aadhar Card",
+          "Drivers License",
+          "Pan Card",
+        ],
       },
-      biometricVerification: { enabled: false },
+      biometricVerification: {
+        enabled: true,
+      },
     };
-  }, [location.state, dbTemplate, snapshot]);
+  }, [location.state, dbTemplate]);
 
   function extractSupportedDocuments(docVerification: any): string[] {
     const countries = Array.isArray(docVerification.Countries_array)

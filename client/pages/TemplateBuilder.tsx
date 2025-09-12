@@ -879,67 +879,102 @@ export default function TemplateBuilder() {
     },
   });
 
-  // Hydrate from storage when templateId changes
-  useEffect(() => {
-    if (!templateId) {
-      resetToDefaults();
-      return;
-    }
+  // Apply a snapshot object to local state (used when returning from Preview or loading LS)
+  const applySnapshot = (s: any) => {
     try {
-      localStorage.setItem("arcon_current_template_id", templateId);
-    } catch {}
-
-    const raw = (() => {
-      try {
-        return localStorage.getItem(templateStorageKey(templateId));
-      } catch {
-        return null;
-      }
-    })();
-
-    if (!raw) {
-      resetToDefaults();
-      return;
-    }
-
-    try {
-      const s = JSON.parse(raw);
-      if (Array.isArray(s.verificationSteps))
-        setVerificationSteps(s.verificationSteps);
+      if (!s || typeof s !== "object") return;
+      if (Array.isArray(s.verificationSteps)) setVerificationSteps(s.verificationSteps);
       if (Array.isArray(s.addedFields)) setAddedFields(s.addedFields);
       if (Array.isArray(s.optionalFields)) setOptionalFields(s.optionalFields);
-      if (typeof s.personalInfoExpanded === "boolean")
-        setPersonalInfoExpanded(s.personalInfoExpanded);
-      if (typeof s.documentVerificationExpanded === "boolean")
-        setDocumentVerificationExpanded(s.documentVerificationExpanded);
-      if (typeof s.biometricVerificationExpanded === "boolean")
-        setBiometricVerificationExpanded(s.biometricVerificationExpanded);
-      if (typeof s.currentSectionId === "string")
-        setCurrentSectionId(s.currentSectionId);
+      if (typeof s.personalInfoExpanded === "boolean") setPersonalInfoExpanded(s.personalInfoExpanded);
+      if (typeof s.documentVerificationExpanded === "boolean") setDocumentVerificationExpanded(s.documentVerificationExpanded);
+      if (typeof s.biometricVerificationExpanded === "boolean") setBiometricVerificationExpanded(s.biometricVerificationExpanded);
+      if (typeof s.currentSectionId === "string") setCurrentSectionId(s.currentSectionId);
 
       const d = s.doc || {};
-      if (typeof d.allowUploadFromDevice === "boolean")
-        setAllowUploadFromDevice(d.allowUploadFromDevice);
-      if (typeof d.allowCaptureWebcam === "boolean")
-        setAllowCaptureWebcam(d.allowCaptureWebcam);
-      if (typeof d.documentHandling === "string")
-        setDocumentHandling(d.documentHandling);
-      if (Array.isArray(d.selectedCountries))
-        setSelectedCountries(d.selectedCountries);
-      if (Array.isArray(d.selectedDocuments))
-        setSelectedDocuments(d.selectedDocuments);
+      if (typeof d.allowUploadFromDevice === "boolean") setAllowUploadFromDevice(d.allowUploadFromDevice);
+      if (typeof d.allowCaptureWebcam === "boolean") setAllowCaptureWebcam(d.allowCaptureWebcam);
+      if (typeof d.documentHandling === "string") setDocumentHandling(d.documentHandling);
+      if (Array.isArray(d.selectedCountries)) setSelectedCountries(d.selectedCountries);
+      if (Array.isArray(d.selectedDocuments)) setSelectedDocuments(d.selectedDocuments);
 
       const b = s.biometric || {};
       if (typeof b.maxRetries === "string") setMaxRetries(b.maxRetries);
       if (typeof b.askUserRetry === "boolean") setAskUserRetry(b.askUserRetry);
-      if (typeof b.blockAfterRetries === "boolean")
-        setBlockAfterRetries(b.blockAfterRetries);
-      if (typeof b.dataRetention === "string")
-        setDataRetention(b.dataRetention);
-    } catch {
-      resetToDefaults();
+      if (typeof b.blockAfterRetries === "boolean") setBlockAfterRetries(b.blockAfterRetries);
+      if (typeof b.dataRetention === "string") setDataRetention(b.dataRetention);
+    } catch {}
+  };
+
+  // Hydrate from snapshot/localStorage when templateId or navigation state changes
+  useEffect(() => {
+    // 1) Prefer snapshot passed via navigation (from Preview)
+    const incoming = (location as any)?.state?.snapshot;
+    if (incoming && typeof incoming === "object") {
+      applySnapshot(incoming);
+      return;
     }
-  }, [templateId]);
+
+    // 2) If we have a templateId, try per-template snapshot
+    if (templateId) {
+      try {
+        localStorage.setItem("arcon_current_template_id", templateId);
+      } catch {}
+
+      try {
+        const raw = localStorage.getItem(templateStorageKey(templateId));
+        if (raw) {
+          const s = JSON.parse(raw);
+          applySnapshot(s);
+          return;
+        }
+      } catch {}
+    }
+
+    // 3) Fallback to global keys to preserve current builder state even for new templates
+    try {
+      const stepsRaw = localStorage.getItem("arcon_verification_steps");
+      const docRaw = localStorage.getItem("arcon_doc_verification_form");
+      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
+
+      const s: any = {};
+      if (stepsRaw) {
+        const steps = JSON.parse(stepsRaw);
+        if (Array.isArray(steps)) s.verificationSteps = steps;
+      }
+      if (docRaw) s.doc = JSON.parse(docRaw);
+      if (bioRaw) s.biometric = JSON.parse(bioRaw);
+
+      if (s.verificationSteps || s.doc || s.biometric) {
+        applySnapshot({
+          verificationSteps: s.verificationSteps || verificationSteps,
+          addedFields,
+          optionalFields,
+          personalInfoExpanded,
+          documentVerificationExpanded,
+          biometricVerificationExpanded,
+          currentSectionId,
+          doc: s.doc || {
+            allowUploadFromDevice,
+            allowCaptureWebcam,
+            documentHandling,
+            selectedCountries,
+            selectedDocuments,
+          },
+          biometric: s.biometric || {
+            maxRetries,
+            askUserRetry,
+            blockAfterRetries,
+            dataRetention,
+          },
+        });
+        return;
+      }
+    } catch {}
+
+    // 4) Nothing found -> defaults
+    resetToDefaults();
+  }, [templateId, (location as any)?.state?.snapshot]);
 
   // Persist snapshot whenever relevant state changes (scoped by templateId)
   const persistSnapshot = () => {

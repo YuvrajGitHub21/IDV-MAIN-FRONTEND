@@ -7,7 +7,10 @@ import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
 import { getAccessToken } from "@/lib/auth";
 
-const API_BASE = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  import.meta.env.VITE_API_URL ||
+  "http://10.10.2.133:8080";
 const ENABLE_BACKEND_PREVIEW = false;
 
 interface VerificationStep {
@@ -230,22 +233,47 @@ export default function Preview() {
     if (!Array.isArray(sections)) return [];
 
     // sort by orderIndex
-    const ordered = [...sections].sort((a: any, b: any) => (a?.orderIndex ?? 0) - (b?.orderIndex ?? 0));
+    const ordered = [...sections].sort(
+      (a: any, b: any) => (a?.orderIndex ?? 0) - (b?.orderIndex ?? 0),
+    );
 
     const out: SectionConfig[] = [];
     for (const sec of ordered) {
       if (sec?.isActive === false) continue;
       const type = String(sec?.sectionType || "");
-      const mapping = Array.isArray(sec?.fieldMappings) && sec.fieldMappings.length ? sec.fieldMappings[0] : null;
+      const mapping =
+        Array.isArray(sec?.fieldMappings) && sec.fieldMappings.length
+          ? sec.fieldMappings[0]
+          : null;
       const structure = mapping?.structure || {};
 
       if (type === "personalInformation") {
         const s = structure.personalInfo || {};
         const added: AddedField[] = [];
-        if (s?.dateOfBirth) added.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
-        if (s?.currentAddress) added.push({ id: "currentAddress", name: "Current Address", placeholder: "Enter your current address" });
-        if (s?.permanentAddress) added.push({ id: "permanentAddress", name: "Permanent Address", placeholder: "Enter your permanent address" });
-        if (s?.gender) added.push({ id: "gender", name: "Gender", placeholder: "Select gender" });
+        if (s?.dateOfBirth)
+          added.push({
+            id: "dob",
+            name: "Date of Birth",
+            placeholder: "DD/MM/YYYY",
+          });
+        if (s?.currentAddress)
+          added.push({
+            id: "currentAddress",
+            name: "Current Address",
+            placeholder: "Enter your current address",
+          });
+        if (s?.permanentAddress)
+          added.push({
+            id: "permanentAddress",
+            name: "Permanent Address",
+            placeholder: "Enter your permanent address",
+          });
+        if (s?.gender)
+          added.push({
+            id: "gender",
+            name: "Gender",
+            placeholder: "Select gender",
+          });
         const showBase = {
           firstName: !!s?.firstName,
           lastName: !!s?.lastName,
@@ -258,7 +286,10 @@ export default function Preview() {
             "Please provide your basic personal information to begin the identity verification process.",
           enabled: true,
           component: (
-            <PersonalInformationSection addedFields={added} showBase={showBase} />
+            <PersonalInformationSection
+              addedFields={added}
+              showBase={showBase}
+            />
           ),
         });
       } else if (type === "documents") {
@@ -286,7 +317,8 @@ export default function Preview() {
       } else if (type === "biometrics") {
         const b = structure.biometricVerification || {};
         const config = {
-          maxRetries: typeof b.maxRetries === "number" ? b.maxRetries : undefined,
+          maxRetries:
+            typeof b.maxRetries === "number" ? b.maxRetries : undefined,
           askUserRetry: !!b.askUserRetry,
           blockAfterRetries: !!b.blockAfterRetries,
           dataRetention: b.dataRetention || "",

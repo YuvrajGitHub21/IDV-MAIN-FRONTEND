@@ -780,9 +780,11 @@ export default function Preview() {
   const handlePrevious = () => {
     navigate("/template-builder", {
       state: {
+        templateId: templateId || localStorage.getItem("arcon_current_template_id") || "",
         templateName: templateData.templateName,
         verificationSteps: templateData.verificationSteps,
         addedFields: templateData.addedFields,
+        snapshot: snapshot || null,
       },
     });
   };

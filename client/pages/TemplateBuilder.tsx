@@ -532,7 +532,11 @@ const BiometricVerificationSection: React.FC<{
                   <Checkbox
                     id="ask-retry"
                     checked={askUserRetry}
-                    onCheckedChange={(v) => setAskUserRetry(v === true)}
+                    onCheckedChange={(v) => {
+                      const checked = v === true;
+                      setAskUserRetry(checked);
+                      if (checked) setBlockAfterRetries(false);
+                    }}
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
@@ -554,7 +558,11 @@ const BiometricVerificationSection: React.FC<{
                   <Checkbox
                     id="block-attempts"
                     checked={blockAfterRetries}
-                    onCheckedChange={(v) => setBlockAfterRetries(v === true)}
+                    onCheckedChange={(v) => {
+                      const checked = v === true;
+                      setBlockAfterRetries(checked);
+                      if (checked) setAskUserRetry(false);
+                    }}
                     className="mt-0.5 w-4 h-4"
                   />
                   <div className="flex-1 min-w-0">
@@ -772,6 +780,13 @@ export default function TemplateBuilder() {
   const [askUserRetry, setAskUserRetry] = useState(false);
   const [blockAfterRetries, setBlockAfterRetries] = useState(false);
   const [dataRetention, setDataRetention] = useState("6 Months");
+
+  // Ensure liveness options remain mutually exclusive even after hydration
+  useEffect(() => {
+    if (askUserRetry && blockAfterRetries) {
+      setBlockAfterRetries(false);
+    }
+  }, [askUserRetry, blockAfterRetries]);
 
   // save state
   const [saving, setSaving] = useState(false);

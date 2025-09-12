@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 /* ===================== API config / helpers ===================== */
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
 const getToken = () => {
   if (typeof window !== "undefined") {
     return (
@@ -73,6 +73,28 @@ const apiPut = async (path: string, body: any) => {
   return res.status === 204 ? null : res.json();
 };
 
+const apiPatch = async (path: string, body: any) => {
+  const token = getToken();
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "*/*",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(
+      `PATCH ${path} failed: ${res.status} ${res.statusText}${
+        text ? " — " + text.slice(0, 300) : ""
+      }`,
+    );
+  }
+  return res.status === 204 ? null : res.json();
+};
+
 /* ===================== UI types ===================== */
 interface VerificationStep {
   id: "personal-info" | "document-verification" | "biometric-verification";
@@ -98,6 +120,75 @@ interface DraggableVerificationStepProps {
   index: number;
   moveStep: (dragIndex: number, hoverIndex: number) => void;
   onRemove: (stepId: VerificationStep["id"]) => void;
+}
+
+/* ===================== Template Data types ===================== */
+interface TemplateFieldMapping {
+  id: number;
+  templateSectionId: number;
+  structure: any;
+  captureAllowed: boolean;
+  uploadAllowed: boolean;
+}
+
+interface TemplateSection {
+  id: number;
+  templateVersionId: number;
+  name: string;
+  description?: string;
+  orderIndex: number;
+  sectionType: "personalInformation" | "documents" | "biometrics";
+  isActive: boolean;
+  createdBy: number;
+  createdByName: string;
+  createdByEmail: string;
+  updatedBy?: number;
+  updatedByName?: string;
+  updatedByEmail?: string;
+  createdAt: string;
+  updatedAt?: string;
+  fieldMappings: TemplateFieldMapping[];
+}
+
+interface TemplateActiveVersion {
+  versionId: number;
+  templateId: number;
+  versionNumber: number;
+  isActive: boolean;
+  enforceRekyc: boolean;
+  rekycDeadline?: string;
+  changeSummary?: string;
+  isDeleted: boolean;
+  createdBy: number;
+  createdByName: string;
+  createdByEmail: string;
+  updatedBy?: number;
+  updatedByName?: string;
+  updatedByEmail?: string;
+  createdAt: string;
+  updatedAt: string;
+  rowVersionBase64: string;
+  sections: TemplateSection[];
+  invitees: any[];
+}
+
+interface TemplateData {
+  id: number;
+  name: string;
+  description?: string;
+  createdBy: number;
+  createdByName: string;
+  createdByEmail: string;
+  updatedBy?: number;
+  updatedByName?: string;
+  updatedByEmail?: string;
+  templateRuleInfo: string;
+  createdAt: string;
+  updatedAt?: string;
+  sections?: any;
+  currentVersion: number;
+  activeVersion: TemplateActiveVersion;
+  invitees: any[];
 }
 
 /* ===================== DnD item ===================== */
@@ -630,6 +721,9 @@ export default function TemplateBuilder() {
     localStorage.getItem("arcon_current_template_id") ||
     "";
 
+  // Template data from backend
+  const [templateData, setTemplateData] = useState<TemplateData | null>(null);
+
   // left-rail steps
   const [verificationSteps, setVerificationSteps] = useState<
     VerificationStep[]
@@ -879,31 +973,10 @@ export default function TemplateBuilder() {
     },
   });
 
-  // Hydrate from storage when templateId changes
-  useEffect(() => {
-    if (!templateId) {
-      resetToDefaults();
-      return;
-    }
+  // Apply a snapshot object to local state (used when returning from Preview or loading LS)
+  const applySnapshot = (s: any) => {
     try {
-      localStorage.setItem("arcon_current_template_id", templateId);
-    } catch {}
-
-    const raw = (() => {
-      try {
-        return localStorage.getItem(templateStorageKey(templateId));
-      } catch {
-        return null;
-      }
-    })();
-
-    if (!raw) {
-      resetToDefaults();
-      return;
-    }
-
-    try {
-      const s = JSON.parse(raw);
+      if (!s || typeof s !== "object") return;
       if (Array.isArray(s.verificationSteps))
         setVerificationSteps(s.verificationSteps);
       if (Array.isArray(s.addedFields)) setAddedFields(s.addedFields);
@@ -936,10 +1009,78 @@ export default function TemplateBuilder() {
         setBlockAfterRetries(b.blockAfterRetries);
       if (typeof b.dataRetention === "string")
         setDataRetention(b.dataRetention);
-    } catch {
-      resetToDefaults();
+    } catch {}
+  };
+
+  // Hydrate from snapshot/localStorage when templateId or navigation state changes
+  useEffect(() => {
+    // 1) Prefer snapshot passed via navigation (from Preview)
+    const incoming = (location as any)?.state?.snapshot;
+    if (incoming && typeof incoming === "object") {
+      applySnapshot(incoming);
+      return;
     }
-  }, [templateId]);
+
+    // 2) If we have a templateId, try per-template snapshot
+    if (templateId) {
+      try {
+        localStorage.setItem("arcon_current_template_id", templateId);
+      } catch {}
+
+      try {
+        const raw = localStorage.getItem(templateStorageKey(templateId));
+        if (raw) {
+          const s = JSON.parse(raw);
+          applySnapshot(s);
+          return;
+        }
+      } catch {}
+    }
+
+    // 3) Fallback to global keys to preserve current builder state even for new templates
+    try {
+      const stepsRaw = localStorage.getItem("arcon_verification_steps");
+      const docRaw = localStorage.getItem("arcon_doc_verification_form");
+      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
+
+      const s: any = {};
+      if (stepsRaw) {
+        const steps = JSON.parse(stepsRaw);
+        if (Array.isArray(steps)) s.verificationSteps = steps;
+      }
+      if (docRaw) s.doc = JSON.parse(docRaw);
+      if (bioRaw) s.biometric = JSON.parse(bioRaw);
+
+      if (s.verificationSteps || s.doc || s.biometric) {
+        applySnapshot({
+          verificationSteps: s.verificationSteps || verificationSteps,
+          addedFields,
+          optionalFields,
+          personalInfoExpanded,
+          documentVerificationExpanded,
+          biometricVerificationExpanded,
+          currentSectionId,
+          doc: s.doc || {
+            allowUploadFromDevice,
+            allowCaptureWebcam,
+            documentHandling,
+            selectedCountries,
+            selectedDocuments,
+          },
+          biometric: s.biometric || {
+            maxRetries,
+            askUserRetry,
+            blockAfterRetries,
+            dataRetention,
+          },
+        });
+        return;
+      }
+    } catch {}
+
+    // 4) Nothing found -> defaults
+    resetToDefaults();
+  }, [templateId, (location as any)?.state?.snapshot]);
 
   // Persist snapshot whenever relevant state changes (scoped by templateId)
   const persistSnapshot = () => {
@@ -968,10 +1109,22 @@ export default function TemplateBuilder() {
         "arcon_has_document_verification",
         JSON.stringify(hasDoc),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_has_document_verification:${templateId}`,
+          JSON.stringify(hasDoc),
+        );
+      }
       localStorage.setItem(
         "arcon_has_biometric_verification",
         JSON.stringify(hasBio),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_has_biometric_verification:${templateId}`,
+          JSON.stringify(hasBio),
+        );
+      }
 
       localStorage.setItem(
         "arcon_doc_verification_form",
@@ -983,6 +1136,18 @@ export default function TemplateBuilder() {
           selectedDocuments,
         }),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_doc_verification_form:${templateId}`,
+          JSON.stringify({
+            allowUploadFromDevice,
+            allowCaptureWebcam,
+            documentHandling,
+            selectedCountries,
+            selectedDocuments,
+          }),
+        );
+      }
 
       localStorage.setItem(
         "arcon_biometric_verification_form",
@@ -993,12 +1158,29 @@ export default function TemplateBuilder() {
           dataRetention,
         }),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_biometric_verification_form:${templateId}`,
+          JSON.stringify({
+            maxRetries,
+            askUserRetry,
+            blockAfterRetries,
+            dataRetention,
+          }),
+        );
+      }
 
       // Also keep a simple list of chosen steps
       localStorage.setItem(
         "arcon_verification_steps",
         JSON.stringify(verificationSteps),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_verification_steps:${templateId}`,
+          JSON.stringify(verificationSteps),
+        );
+      }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -1026,33 +1208,180 @@ export default function TemplateBuilder() {
     (s) => s.id,
   );
 
-  /* ============ hydrate personal Added_fields from backend (optional) ============ */
+  /* ============ Fetch template data from backend ============ */
   useEffect(() => {
-    if (!templateId) return;
+    if (!templateId) {
+      setTemplateData(null);
+      return;
+    }
+    
     (async () => {
       try {
-        const tpl: any = await apiGet(`/api/templates/${templateId}`);
-        const added =
-          tpl?.Added_fields ?? tpl?.Personal_info?.Added_fields ?? {};
-
-        const isChecked = (id: string) => {
-          if (id === "date-of-birth") return !!added.dob;
-          if (id === "current-address") return !!added.Current_address;
-          if (id === "permanent-address") return !!added.permanent_address;
-          if (id === "gender") return !!added.Gender;
-          return false;
-        };
-
-        setOptionalFields((prev) =>
-          prev.map((f) => ({ ...f, checked: isChecked(f.id) })),
+        const templateResponse: TemplateData = await apiGet(`/api/Template/${templateId}`);
+        setTemplateData(templateResponse);
+        
+        // Hydrate personal info fields from template data if available
+        const personalSection = templateResponse?.activeVersion?.sections?.find(
+          section => section.sectionType === "personalInformation"
         );
+        
+        if (personalSection?.fieldMappings?.[0]?.structure?.personalInfo) {
+          const personalInfo = personalSection.fieldMappings[0].structure.personalInfo;
+          
+          const isChecked = (id: string) => {
+            if (id === "date-of-birth") return !!personalInfo.dateOfBirth;
+            if (id === "current-address") return !!personalInfo.currentAddress;
+            if (id === "permanent-address") return !!personalInfo.permanentAddress;
+            if (id === "gender") return !!personalInfo.gender;
+            return false;
+          };
+
+          setOptionalFields((prev) =>
+            prev.map((f) => ({ ...f, checked: isChecked(f.id) })),
+          );
+        }
+
+        // Hydrate document verification fields from template data if available
+        const documentSection = templateResponse?.activeVersion?.sections?.find(
+          section => section.sectionType === "documents"
+        );
+        
+        if (documentSection?.fieldMappings?.[0]?.structure?.documentVerification) {
+          const docInfo = documentSection.fieldMappings[0].structure.documentVerification;
+          
+          setAllowUploadFromDevice(!!docInfo.allowUploadFromDevice);
+          setAllowCaptureWebcam(!!docInfo.allowCaptureWebcam);
+          setDocumentHandling(
+            docInfo.documentHandlingRejectImmediately ? "reject" :
+            docInfo.documentHandlingAllowRetries ? "retry" : ""
+          );
+          if (Array.isArray(docInfo.supportedCountries)) {
+            setSelectedCountries(docInfo.supportedCountries);
+          }
+          if (Array.isArray(docInfo.selectedDocuments)) {
+            setSelectedDocuments(docInfo.selectedDocuments);
+          }
+        }
+
+        // Hydrate biometric verification fields from template data if available
+        const biometricSection = templateResponse?.activeVersion?.sections?.find(
+          section => section.sectionType === "biometrics"
+        );
+        
+        if (biometricSection?.fieldMappings?.[0]?.structure?.biometricVerification) {
+          const bioInfo = biometricSection.fieldMappings[0].structure.biometricVerification;
+          
+          if (typeof bioInfo.maxRetries === "number") {
+            setMaxRetries(bioInfo.maxRetries.toString());
+          }
+          setAskUserRetry(!!bioInfo.askUserRetry);
+          setBlockAfterRetries(!!bioInfo.blockAfterRetries);
+          if (typeof bioInfo.dataRetention === "string") {
+            setDataRetention(bioInfo.dataRetention);
+          }
+        }
       } catch (e) {
-        console.warn("Could not hydrate personal Added_fields:", e);
+        console.warn("Could not fetch template data:", e);
+        setTemplateData(null);
       }
     })();
   }, [templateId]);
 
-  /* ============ Step list helpers ============ */
+  /* ============ Section mapping helpers ============ */
+  const getSectionTypeFromStepId = (stepId: VerificationStep["id"]): "personalInformation" | "documents" | "biometrics" => {
+    switch (stepId) {
+      case "personal-info":
+        return "personalInformation";
+      case "document-verification":
+        return "documents";
+      case "biometric-verification":
+        return "biometrics";
+      default:
+        return "personalInformation";
+    }
+  };
+
+  const getFieldMappingId = (stepId: VerificationStep["id"]): number | null => {
+    if (!templateData?.activeVersion?.sections) return null;
+    
+    const sectionType = getSectionTypeFromStepId(stepId);
+    const section = templateData.activeVersion.sections.find(
+      s => s.sectionType === sectionType
+    );
+    
+    return section?.fieldMappings?.[0]?.id || null;
+  };
+
+  const buildPersonalInfoStructure = () => ({
+    personalInfo: {
+      firstName: true,
+      lastName: true,
+      email: true,
+      dateOfBirth: optionalFields.find(f => f.id === "date-of-birth")?.checked || false,
+      currentAddress: optionalFields.find(f => f.id === "current-address")?.checked || false,
+      permanentAddress: optionalFields.find(f => f.id === "permanent-address")?.checked || false,
+      gender: optionalFields.find(f => f.id === "gender")?.checked || false,
+    }
+  });
+
+  const buildDocumentVerificationStructure = () => ({
+    documentVerification: {
+      allowUploadFromDevice,
+      allowCaptureWebcam,
+      documentHandlingRejectImmediately: documentHandling === "reject",
+      documentHandlingAllowRetries: documentHandling === "retry",
+      supportedCountries: selectedCountries,
+      selectedDocuments,
+    }
+  });
+
+  const buildBiometricVerificationStructure = () => ({
+    biometricVerification: {
+      maxRetries: parseInt(maxRetries, 10),
+      askUserRetry,
+      blockAfterRetries,
+      dataRetention: dataRetention,
+    }
+  });
+
+  /* ============ PATCH section data ============ */
+  const patchSectionData = async (stepId: VerificationStep["id"]) => {
+    const fieldMappingId = getFieldMappingId(stepId);
+    if (!fieldMappingId) {
+      throw new Error(`Could not find field mapping ID for section: ${stepId}`);
+    }
+
+    let structure;
+    switch (stepId) {
+      case "personal-info":
+        structure = buildPersonalInfoStructure();
+        break;
+      case "document-verification":
+        structure = buildDocumentVerificationStructure();
+        break;
+      case "biometric-verification":
+        structure = buildBiometricVerificationStructure();
+        break;
+      default:
+        throw new Error(`Unknown step ID: ${stepId}`);
+    }
+
+    const patchData = {
+      structure,
+      captureAllowed: true,
+      uploadAllowed: true,
+    };
+
+    console.log(`Patching section ${stepId} with ID ${fieldMappingId}:`, patchData);
+
+    try {
+      await apiPatch(`/api/section-field-mappings/by-section/${fieldMappingId}`, patchData);
+      console.log(`Successfully patched section ${stepId}`);
+    } catch (error) {
+      console.error(`Failed to patch section ${stepId}:`, error);
+      throw error;
+    }
+  };
   const addVerificationStep = (stepId: VerificationStep["id"]) => {
     const stepToAdd = availableSteps.find((s) => s.id === stepId);
     if (stepToAdd) {
@@ -1365,7 +1694,7 @@ export default function TemplateBuilder() {
     }
   };
 
-  /* ============ Next button - Modified to only test connection ============ */
+  /* ============ Next button - Modified to send PATCH requests ============ */
   const handleNext = async () => {
     const sectionSetters: Record<
       VerificationStep["id"],
@@ -1385,10 +1714,25 @@ export default function TemplateBuilder() {
       activeSections.findIndex((s) => s.name === currentSectionId),
     );
 
-    // Test connection before proceeding
-    const connectionOk = await testConnection();
-    if (!connectionOk) {
-      return; // stay on current page if connection failed
+    // Get current section name
+    const currentSectionName = activeSections[currentIndex]?.name as VerificationStep["id"] | undefined;
+
+    if (currentSectionName) {
+      try {
+        setSaving(true);
+        setSaveError(null);
+        setSaveSuccess(null);
+
+        // Send PATCH request for current section
+        await patchSectionData(currentSectionName);
+        setSaveSuccess(`${currentSectionName} section saved successfully.`);
+      } catch (error: any) {
+        setSaveError(error?.message || `Failed to save ${currentSectionName} section.`);
+        console.error(`Error saving section ${currentSectionName}:`, error);
+        return; // Stay on current page if save failed
+      } finally {
+        setSaving(false);
+      }
     }
 
     if (currentIndex < activeSections.length) {
@@ -1403,11 +1747,14 @@ export default function TemplateBuilder() {
         try {
           persistSnapshot();
         } catch {}
+        const snapshot = buildSnapshot();
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
+            templateId: templateId || "",
             templateName,
             verificationSteps,
             addedFields,
+            snapshot,
             templateData: {
               personalInfo: true,
               documentVerification: verificationSteps.some(

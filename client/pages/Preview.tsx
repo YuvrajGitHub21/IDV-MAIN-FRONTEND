@@ -946,7 +946,7 @@ export default function Preview() {
         </div>
 
         {/* Main Content Area */}
-        <div className="w-[987px] flex flex-col items-center gap-6 p-4 pt-4">
+        <div className="flex-1 max-w-full flex flex-col items-center gap-6 p-4 pt-4 overflow-hidden">
           <div className="flex flex-col items-center gap-4 w-full">
             {/* Render sections in configured order - NO ORDER BADGES */}
             {orderedSections.map((section) => (
@@ -1142,7 +1142,7 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                     <div className="w-[18px] h-[18px] pt-[1.688px] pb-[1.688px] px-[8.438px] flex flex-col items-center gap-[4.5px] rounded-full bg-[#258750]">
                       <Check className="w-2.5 h-2.5 text-white" />
                     </div>
-                    <div className="w-[538px] flex flex-col gap-2">
+                    <div className="flex-1 min-w-0 flex flex-col gap-2">
                       <div className="flex flex-col justify-center w-full h-2.5">
                         <span className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
                           {config.documentHandling === "retry"
@@ -1221,7 +1221,7 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
   }
 
   return (
-    <div className="w-[923px] flex flex-col gap-6">
+    <div className="w-full max-w-full flex flex-col gap-6 overflow-hidden">
       {/* Retry Attempts */}
       {typeof config.maxRetries !== "undefined" && (
         <div className="flex flex-col gap-5 w-full">
@@ -1249,7 +1249,7 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
                         </span>
                       </div>
                     </div>
-                    <div className="w-80 flex gap-3 bg-[#F6F7FB]">
+                    <div className="min-w-0 flex-shrink-0 w-full max-w-80 flex gap-3 bg-[#F6F7FB]">
                       <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4] bg-[#F6F7FB]">
                         <div className="flex items-center gap-2 flex-1">
                           <span className="text-[13px] text-[#676879] leading-5 font-roboto">
@@ -1333,7 +1333,7 @@ const BiometricVerificationSection = ({ config }: { config: any }) => {
                         </span>
                       </div>
                     </div>
-                    <div className="w-80 flex gap-3">
+                    <div className="min-w-0 flex-shrink-0 w-full max-w-80 flex gap-3">
                       <div className="h-8 px-3 py-2 flex items-center justify-between flex-1 rounded border border-[#C3C6D4]">
                         <div className="flex items-center gap-2 flex-1">
                           <span className="text-[13px] text-[#676879] leading-5 font-roboto">

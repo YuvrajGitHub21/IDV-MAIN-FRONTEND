@@ -38,6 +38,7 @@ interface FormData {
   country: string;
   idType: string;
   document?: File;
+  [key: string]: string | File | undefined; // Allow dynamic fields
 }
 
 interface TemplateConfig {
@@ -50,6 +51,12 @@ interface TemplateConfig {
       email: boolean;
       dateOfBirth: boolean;
     };
+    additionalFields?: Array<{
+      id: string;
+      name: string;
+      placeholder: string;
+      value?: string;
+    }>;
   };
   documentVerification: {
     enabled: boolean;
@@ -103,12 +110,15 @@ export default function ReceiverView() {
 
   // Get template configuration from location state or build from dbTemplate or use defaults
   const templateConfig: TemplateConfig = React.useMemo(() => {
+    console.log('Building templateConfig with:', { dbTemplate, snapshot, locationState: location.state });
+
     if (location.state?.templateConfig) {
       return location.state.templateConfig;
     }
 
     // Build from local snapshot (no backend)
     if (snapshot) {
+      console.log('Using snapshot data:', snapshot);
       const steps = Array.isArray(snapshot.verificationSteps)
         ? snapshot.verificationSteps
         : [];
@@ -123,6 +133,9 @@ export default function ReceiverView() {
         ? snapshot.optionalFields
         : [];
       const dob = !!opt.find((f: any) => f.id === "date-of-birth" && f.checked);
+      console.log('Optional fields from snapshot:', opt, 'Date of birth enabled:', dob);
+      console.log('Additional fields from snapshot:', snapshot.addedFields);
+      console.log('Full snapshot for template', templateId, ':', snapshot);
 
       const doc = snapshot.doc || {};
       const supportedDocuments: string[] = Array.isArray(doc.selectedDocuments)
@@ -139,6 +152,9 @@ export default function ReceiverView() {
             email: true,
             dateOfBirth: dob,
           },
+          additionalFields: Array.isArray(snapshot.addedFields) 
+            ? snapshot.addedFields 
+            : [],
         },
         documentVerification: {
           enabled: hasDoc,
@@ -168,6 +184,9 @@ export default function ReceiverView() {
             email: personalInfo.Email !== false,
             dateOfBirth: !!personalInfo.Added_fields?.dob,
           },
+          additionalFields: Array.isArray(dbTemplate.Personal_info?.additionalFields) 
+            ? dbTemplate.Personal_info.additionalFields 
+            : (Array.isArray(snapshot?.addedFields) ? snapshot.addedFields : []),
         },
         documentVerification: {
           enabled:
@@ -198,17 +217,27 @@ export default function ReceiverView() {
       const docCfg = docRaw ? JSON.parse(docRaw) : {};
       const bioCfg = bioRaw ? JSON.parse(bioRaw) : {};
 
+      // Get optional fields configuration from localStorage or snapshot
+      const optionalFields = Array.isArray(snapshot?.optionalFields) 
+        ? snapshot.optionalFields 
+        : [];
+      const hasDateOfBirth = optionalFields.some((f: any) => f.id === "date-of-birth" && f.checked);
+      console.log('localStorage fallback - optionalFields:', optionalFields, 'hasDateOfBirth:', hasDateOfBirth);
+
       return {
         templateName:
           location.state?.templateData?.templateName || "New Template",
         personalInfo: {
           enabled: true,
           fields: {
-            firstName: true,
-            lastName: true,
-            email: true,
-            dateOfBirth: false,
+            firstName: true, // Always required
+            lastName: true,  // Always required
+            email: true,     // Always required
+            dateOfBirth: hasDateOfBirth,
           },
+          additionalFields: Array.isArray(snapshot?.addedFields) 
+            ? snapshot.addedFields 
+            : [],
         },
         documentVerification: {
           enabled: Boolean(hasDoc),
@@ -216,7 +245,7 @@ export default function ReceiverView() {
           allowCaptureWebcam: Boolean(docCfg.allowCaptureWebcam),
           supportedDocuments: Array.isArray(docCfg.selectedDocuments)
             ? docCfg.selectedDocuments
-            : ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
+            : ["Passport", "Aadhar Card", "Driving License", "Pan Card"],
         },
         biometricVerification: {
           enabled: Boolean(hasBio),
@@ -235,6 +264,7 @@ export default function ReceiverView() {
           email: true,
           dateOfBirth: false,
         },
+        additionalFields: [],
       },
       documentVerification: {
         enabled: false,
@@ -387,7 +417,7 @@ export default function ReceiverView() {
     },
     {
       value: "license",
-      label: "Drivers License",
+      label: "Driving License",
       color: "#ED5F00",
       icon: (
         <svg
@@ -423,11 +453,13 @@ export default function ReceiverView() {
         </svg>
       ),
     },
-  ].filter((option) =>
-    templateConfig.documentVerification.supportedDocuments.includes(
+  ].filter((option) => {
+    const isIncluded = templateConfig.documentVerification.supportedDocuments.includes(
       option.label,
-    ),
-  );
+    );
+    console.log(`Document ${option.label} included:`, isIncluded, 'Supported docs:', templateConfig.documentVerification.supportedDocuments);
+    return isIncluded;
+  });
 
   // Build sections in order based on template configuration
   const buildSections = () => {
@@ -518,6 +550,11 @@ export default function ReceiverView() {
 
   const renderPersonalInformation = () => {
     if (!templateConfig.personalInfo.enabled) return null;
+    
+    // Debug logging for additional fields
+    if (templateConfig.personalInfo.additionalFields && templateConfig.personalInfo.additionalFields.length > 0) {
+      console.log('Rendering additional fields:', templateConfig.personalInfo.additionalFields);
+    }
 
     return (
       <div className="border border-[#DEDEDD] rounded bg-white">
@@ -650,6 +687,34 @@ export default function ReceiverView() {
                 </div>
               )}
             </div>
+
+            {/* Additional Fields from Admin Configuration */}
+            {templateConfig.personalInfo.additionalFields && 
+             templateConfig.personalInfo.additionalFields.length > 0 && (
+              <div className="flex flex-col gap-6">
+                {templateConfig.personalInfo.additionalFields.map((field, index) => (
+                  <div key={field.id} className="flex gap-6">
+                    <div className="flex-1 flex flex-col">
+                      <div className="pb-2">
+                        <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
+                          {field.name}
+                        </Label>
+                      </div>
+                      <div className="h-[38px] px-3 py-[15px] flex items-center border border-[#C3C6D4] rounded bg-white">
+                        <Input
+                          value={(formData[field.id] as string) || ""}
+                          onChange={(e) =>
+                            handleInputChange(field.id, e.target.value)
+                          }
+                          placeholder={field.placeholder}
+                          className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -783,22 +848,21 @@ export default function ReceiverView() {
                 {templateConfig.documentVerification.allowCaptureWebcam && (
                   <div className="flex-1 flex flex-col">
                     <div
-                      className="h-[156px] flex flex-col items-center justify-center gap-4 border-2 border-dashed border-[#C3C6D4] rounded-t-lg cursor-pointer hover:border-[#0073EA] bg-white"
+                      className="h-full flex flex-col items-center justify-center gap-6 border-2 border-dashed border-[#C3C6D4] rounded-lg cursor-pointer hover:border-[#0073EA] bg-white p-8"
                       onClick={openCamera}
                     >
-                      <div className="w-[52px] h-[52px] p-2 flex items-center justify-center rounded-full bg-[#F6F7FB]">
+                      <div className="w-[64px] h-[64px] p-3 flex items-center justify-center rounded-full bg-[#F6F7FB]">
                         <Camera
-                          className="w-6 h-6 text-[#676879]"
+                          className="w-8 h-8 text-[#676879]"
                           strokeWidth={1.35}
                         />
                       </div>
-                      <div className="text-center">
-                        <h4 className="text-[13px] font-medium text-[#323238] leading-normal font-figtree mb-2">
+                      <div className="text-center max-w-sm">
+                        <h4 className="text-base font-semibold text-[#323238] leading-normal font-figtree mb-3">
                           Camera
                         </h4>
-                        <p className="w-[257px] text-[13px] text-[#676879] leading-5 text-center font-roboto">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing
-                          elit. Mauris lobortis massa vitae
+                        <p className="text-sm text-[#676879] leading-relaxed font-roboto">
+                          Take a clear photo of your document using your device's camera. Make sure the document is well-lit and all text is readable.
                         </p>
                       </div>
                     </div>
@@ -809,22 +873,21 @@ export default function ReceiverView() {
                 {templateConfig.documentVerification.allowUploadFromDevice && (
                   <div className="flex-1 flex flex-col">
                     <div
-                      className="h-[156px] flex flex-col items-center justify-center gap-4 border-2 border-dashed border-[#C3C6D4] rounded-t-lg cursor-pointer hover:border-[#0073EA] bg-white"
+                      className="h-full flex flex-col items-center justify-center gap-6 border-2 border-dashed border-[#C3C6D4] rounded-lg cursor-pointer hover:border-[#0073EA] bg-white p-8"
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <div className="w-[52px] h-[52px] p-2 flex items-center justify-center rounded-full bg-[#F6F7FB]">
+                      <div className="w-[64px] h-[64px] p-3 flex items-center justify-center rounded-full bg-[#F6F7FB]">
                         <Upload
-                          className="w-6 h-6 text-[#676879]"
+                          className="w-8 h-8 text-[#676879]"
                           strokeWidth={1.41}
                         />
                       </div>
-                      <div className="text-center">
-                        <h4 className="text-[13px] font-medium text-[#323238] leading-normal font-figtree mb-2">
+                      <div className="text-center max-w-sm">
+                        <h4 className="text-base font-semibold text-[#323238] leading-normal font-figtree mb-3">
                           Upload Files
                         </h4>
-                        <p className="w-[257px] text-[13px] text-[#676879] leading-5 text-center font-roboto">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing
-                          elit. Mauris lobortis massa vitae
+                        <p className="text-sm text-[#676879] leading-relaxed font-roboto">
+                          Select and upload a clear image or PDF of your document from your device. Supported formats: JPG, PNG, PDF.
                         </p>
                       </div>
                       <input
@@ -983,13 +1046,13 @@ export default function ReceiverView() {
 
         {/* Section Content */}
         <div className="p-4 border-t border-[#DEDEDD] bg-white">
-          <div className="w-[956px] p-2 flex items-center gap-6">
+          <div className="w-full max-w-full p-2 flex items-center gap-6 overflow-hidden">
             {/* Camera Section */}
-            <div className="h-[428px] flex flex-col flex-1">
+            <div className="h-[428px] flex flex-col flex-1 min-w-0">
               <div className="h-[380px] pt-4 flex flex-col items-center gap-2 border-t-2 border-r-2 border-l-2 border-dashed border-[#C3C6D4] rounded-t-lg bg-white">
                 <div className="flex flex-col items-center justify-center gap-7 flex-1 border-2 border-dashed border-[#C3C6D4] rounded-lg bg-white">
                   <div className="flex flex-col items-center justify-center gap-2 flex-1 rounded-lg bg-white">
-                    <div className="w-[412px] flex flex-col items-center gap-2">
+                    <div className="w-full max-w-[412px] flex flex-col items-center gap-2">
                       <div className="w-[126px] h-[52px] relative">
                         <svg
                           width="33"
@@ -1011,7 +1074,7 @@ export default function ReceiverView() {
                           Camera not detected.
                         </span>
                       </div>
-                      <p className="w-[284px] text-[13px] text-[#676879] text-center leading-5 font-roboto">
+                      <p className="w-full max-w-[284px] text-[13px] text-[#676879] text-center leading-5 font-roboto">
                         Please check your device or close other apps using the
                         camera.
                       </p>
@@ -1019,7 +1082,7 @@ export default function ReceiverView() {
                   </div>
                 </div>
               </div>
-              <div className="w-[440px] h-12 px-4 py-2 flex items-end justify-end gap-2 rounded-b bg-[#F6F7FB]">
+              <div className="w-full max-w-[440px] h-12 px-4 py-2 flex items-end justify-end gap-2 rounded-b bg-[#F6F7FB]">
                 <div className="h-8 px-3 py-[9px] flex items-center gap-1 rounded bg-[#0073EA]">
                   <RefreshCw
                     className="w-[18px] h-[18px] text-white transform -rotate-90"
@@ -1069,8 +1132,8 @@ export default function ReceiverView() {
                         className="w-[128px] h-[132px]"
                       />
                       <div className="flex flex-col items-center justify-center gap-2">
-                        <div className="w-[214px] flex flex-col items-center gap-3">
-                          <div className="w-[214px] flex flex-col">
+                        <div className="w-full max-w-[214px] flex flex-col items-center gap-3">
+                          <div className="w-full max-w-[214px] flex flex-col">
                             <p className="text-[13px] text-center leading-5 font-roboto">
                               <span className="text-[#676879]">
                                 Continue on another device by scanning the QR
@@ -1088,8 +1151,8 @@ export default function ReceiverView() {
                   </div>
                 </div>
               </div>
-              <div className="w-[440px] h-12 px-4 py-4 flex justify-end bg-[#F6F7FB] rounded-b">
-                <div className="w-[135px] flex items-center justify-end gap-1">
+              <div className="w-full max-w-[440px] h-12 px-4 py-4 flex justify-end bg-[#F6F7FB] rounded-b">
+                <div className="max-w-[135px] flex items-center justify-end gap-1">
                   <Info className="w-5 h-5 text-[#0073EA]" strokeWidth={1.5} />
                   <span className="text-[12px] text-[#0073EA] leading-5 font-roboto">
                     How does this work?

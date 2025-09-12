@@ -15,6 +15,7 @@ import TemplateBuilder from "./pages/TemplateBuilder";
 import DocumentVerification from "./pages/DocumentVerification";
 import BiometricVerification from "./pages/BiometricVerification";
 import Preview from "./pages/Preview";
+import PreviewBackend from "./pages/PreviewBackend";
 import ReceiverView from "./pages/ReceiverView";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";

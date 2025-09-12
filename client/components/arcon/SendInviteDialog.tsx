@@ -1,13 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import {
-  X,
-  Search,
-  Filter,
-  Download,
-  Upload,
-  Check,
-  CheckCircle,
-} from "lucide-react";
+import { X, Search, Filter, Download, Upload, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,6 +18,7 @@ interface Employee {
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "http://10.10.2.133:8080";
+const DEFAULT_DEPARTMENT = "Marketing";
 const getToken = () =>
   (typeof window !== "undefined" && localStorage.getItem("access")) || null;
 
@@ -38,10 +31,10 @@ type BackendUser = {
   roleName?: string;
 };
 
-
 interface SendInviteDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  templateId?: string; // ← passed from Templates when clicking "Send Invite"
 }
 
 const DEPARTMENTS = [
@@ -56,147 +49,165 @@ const DEPARTMENTS = [
 ];
 
 const SAMPLE_EMPLOYEES: Employee[] = [
-  {
-    id: "1",
-    name: "Roger G. Rhone",
-    email: "RogerGRhone@teleworm.us",
-    initials: "OP",
-    avatarColor: "#F4DEE4",
-    department: "Operations",
-    selected: true,
-  },
-  {
-    id: "2",
-    name: "Mike J. Torres",
-    email: "MikeJTorres@rhyta.com",
-    initials: "MT",
-    avatarColor: "#D6ECF5",
-    department: "IT & Security",
-    selected: false,
-  },
-  {
-    id: "3",
-    name: "Wanda C. Moore",
-    email: "WandaCMoore@dayrep.com",
-    initials: "WM",
-    avatarColor: "#E0DAEE",
-    department: "Marketing",
-    selected: false,
-  },
-  {
-    id: "4",
-    name: "Roy C. Kephart",
-    email: "RoyCKephart@dayrep.com",
-    initials: "RK",
-    avatarColor: "#FFE6DE",
-    department: "Sales",
-    selected: true,
-  },
-  {
-    id: "5",
-    name: "Lois S. Spencer",
-    email: "LoisSSpencer@rhyta.com",
-    initials: "LS",
-    avatarColor: "#DAE5E6",
-    department: "Finance",
-    selected: false,
-  },
-  {
-    id: "6",
-    name: "Jerry T. Beavers",
-    email: "JerryTBeavers@teleworm.us",
-    initials: "JB",
-    avatarColor: "#F4EBE8",
-    department: "Human Resources",
-    selected: false,
-  },
+  { id: "1", name: "Roger G. Rhone", email: "RogerGRhone@teleworm.us", initials: "OP", avatarColor: "#F4DEE4", department: "Operations", selected: true },
+  { id: "2", name: "Mike J. Torres", email: "MikeJTorres@rhyta.com", initials: "MT", avatarColor: "#D6ECF5", department: "IT & Security", selected: false },
+  { id: "3", name: "Wanda C. Moore", email: "WandaCMoore@dayrep.com", initials: "WM", avatarColor: "#E0DAEE", department: "Marketing", selected: false },
+  { id: "4", name: "Roy C. Kephart", email: "RoyCKephart@dayrep.com", initials: "RK", avatarColor: "#FFE6DE", department: "Sales", selected: true },
+  { id: "5", name: "Lois S. Spencer", email: "LoisSSpencer@rhyta.com", initials: "LS", avatarColor: "#DAE5E6", department: "Finance", selected: false },
+  { id: "6", name: "Jerry T. Beavers", email: "JerryTBeavers@teleworm.us", initials: "JB", avatarColor: "#F4EBE8", department: "Human Resources", selected: false },
 ];
+
+// helpers
+const initialsOf = (f?: string, l?: string) =>
+  ((f?.[0] || "") + (l?.[0] || "")).toUpperCase() || "??";
+
+const hashCode = (s: string) => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+};
+const pickColor = (seed: string) => {
+  const palette = ["#F4DEE4", "#D6ECF5", "#E0DAEE", "#FFE6DE", "#DAE5E6", "#F4EBE8"];
+  return palette[hashCode(seed) % palette.length];
+};
+
+const mapUserToEmployee = (u: BackendUser): Employee => {
+  const id = String(u.id ?? u.email);
+  const name =
+    (u.firstName || u.lastName)
+      ? `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim()
+      : u.email;
+
+  return {
+    id,
+    name,
+    email: u.email,
+    initials: initialsOf(u.firstName, u.lastName),
+    avatarColor: pickColor(id),
+    department: DEFAULT_DEPARTMENT, // backend does not provide department yet
+    selected: false,
+  };
+};
 
 export default function SendInviteDialog({
   isOpen,
   onClose,
+  templateId,
 }: SendInviteDialogProps) {
   const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState<"select" | "bulk">("select");
   const [employees, setEmployees] = useState<Employee[]>(SAMPLE_EMPLOYEES);
+  const [sending, setSending] = useState(false);
 
+  const [versionId, setVersionId] = useState<number | null>(null);
+  const [loadingVersion, setLoadingVersion] = useState(false);
+
+  // Resolve versionId: prefer fetching from templateId; else fallback to LS
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const token = getToken();
+    if (!token) {
+      setVersionId(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setLoadingVersion(true);
+
+        if (templateId) {
+          const r = await fetch(`${API_BASE}/api/Template/${templateId}`, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+          });
+          if (!r.ok) throw new Error(`Template fetch failed: ${r.status}`);
+          const j = await r.json();
+
+          const vid =
+            j?.activeVersion?.versionId ??
+            j?.ActiveVersion?.versionId ??
+            j?.ActiveVersion?.VersionId ??
+            j?.currentVersion ??
+            j?.CurrentVersion ??
+            null;
+
+          if (!cancelled) setVersionId(vid != null ? Number(vid) : null);
+        } else {
+          // fallback if opening from a screen where only LS is available
+          const fromLS = Number(localStorage.getItem("arcon_latest_version_id"));
+          if (!cancelled) setVersionId(Number.isFinite(fromLS) ? fromLS : null);
+        }
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) setVersionId(null);
+        toast.error("Couldn't load template version.");
+      } finally {
+        if (!cancelled) setLoadingVersion(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isOpen, templateId]);
+
+  // fetch users (filter by roleId === 2)
   useEffect(() => {
     if (!isOpen) return;
     let isMounted = true;
     const controller = new AbortController();
 
-    async function loadInvitees() {
+    (async function loadInvitees() {
       try {
         const token = getToken();
         if (!token) {
-          // If your route requires auth, show an error or silently keep sample data
           console.warn("No auth token; using sample invitees.");
           return;
         }
 
         const res = await fetch(`${API_BASE}/api/Users`, {
           method: "GET",
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
 
-        if (res.status === 401) {
-          console.error("401 Unauthorized — token missing/expired.");
-          return;
-        }
-        if (res.status === 403) {
-          console.error("403 Forbidden — insufficient permissions.");
-          return;
-        }
         if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          throw new Error(`HTTP ${res.status} ${res.statusText} ${text}`);
+          console.warn(`Users fetch failed: ${res.status}`);
+          return;
         }
 
         const json = await res.json();
-
-        // Accept common shapes: array, {data: [...]}, or {items: [...]}
         const rawList: BackendUser[] =
           Array.isArray(json) ? json :
           Array.isArray(json?.data) ? json.data :
           Array.isArray(json?.items) ? json.items : [];
 
-        // Keep only roleId === 1 (coerce to number for safety)
-        const onlyRole1 = rawList.filter(u => Number(u.roleId) === 2);
+        const onlyRole2 = rawList.filter((u) => Number(u.roleId) === 2);
+        const mapped = onlyRole2.map(mapUserToEmployee);
 
-        const mapped = onlyRole1.map(mapUserToEmployee);
-
-        if (isMounted && mapped.length) {
-          setEmployees(mapped);
-        }
-      } catch (err) {
-        console.warn("Failed to load /api/Users:", err);
-        // keep SAMPLE_EMPLOYEES fallback
+        if (isMounted && mapped.length) setEmployees(mapped);
+      } catch (e) {
+        console.warn("Failed to load /api/Users:", e);
       }
-    }
+    })();
 
-    loadInvitees();
     return () => {
       isMounted = false;
       controller.abort();
     };
   }, [isOpen]);
 
-
-
+  // UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const uploadIntervalRef = useRef<number | null>(null);
-  const lastToastIdRef = useRef<number | null>(null);
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
-  // Ensure we clear any running interval when component unmounts
   useEffect(() => {
     return () => {
       if (uploadIntervalRef.current) {
@@ -206,7 +217,6 @@ export default function SendInviteDialog({
     };
   }, []);
 
-  // Also clear when dialog closes
   useEffect(() => {
     if (!isOpen && uploadIntervalRef.current) {
       clearInterval(uploadIntervalRef.current);
@@ -217,9 +227,9 @@ export default function SendInviteDialog({
   if (!isOpen) return null;
 
   const filteredEmployees = employees.filter((emp) => {
+    const q = searchQuery.toLowerCase();
     const matchesSearch =
-      emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      emp.email.toLowerCase().includes(searchQuery.toLowerCase());
+      emp.name.toLowerCase().includes(q) || emp.email.toLowerCase().includes(q);
     const matchesDepartment =
       selectedDepartments.length === 0 ||
       selectedDepartments.includes(emp.department);
@@ -227,52 +237,17 @@ export default function SendInviteDialog({
   });
 
   const selectedCount = employees.filter((emp) => emp.selected).length;
-  
-  const initialsOf = (f?: string, l?: string) =>
-    ((f?.[0] || "") + (l?.[0] || "")).toUpperCase() || "??";
-
-  const hashCode = (s: string) => {
-    let h = 0;
-    for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
-    return Math.abs(h);
-  };
-  const pickColor = (seed: string) => {
-    const palette = ["#F4DEE4", "#D6ECF5", "#E0DAEE", "#FFE6DE", "#DAE5E6", "#F4EBE8"];
-    return palette[hashCode(seed) % palette.length];
-  };
-
-  const mapUserToEmployee = (u: BackendUser): Employee => {
-    const id = String(u.id ?? u.email);
-    const name =
-      (u.firstName || u.lastName)
-        ? `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim()
-        : u.email;
-
-    return {
-      id,
-      name,
-      email: u.email,
-      initials: initialsOf(u.firstName, u.lastName),
-      avatarColor: pickColor(id),
-      department: "Marketing",         // <— default department here
-      selected: false,
-    };
-  };
 
   const handleSelectEmployee = (id: string) => {
     setEmployees((prev) =>
-      prev.map((emp) =>
-        emp.id === id ? { ...emp, selected: !emp.selected } : emp,
-      ),
+      prev.map((emp) => (emp.id === id ? { ...emp, selected: !emp.selected } : emp)),
     );
   };
 
   const handleSelectAll = () => {
     const newSelectAll = !selectAll;
     setSelectAll(newSelectAll);
-    setEmployees((prev) =>
-      prev.map((emp) => ({ ...emp, selected: newSelectAll })),
-    );
+    setEmployees((prev) => prev.map((emp) => ({ ...emp, selected: newSelectAll })));
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -280,11 +255,9 @@ export default function SendInviteDialog({
     if (!file) return;
 
     const name = file.name.toLowerCase();
-    const ok =
-      name.endsWith(".csv") || name.endsWith(".xlsx") || name.endsWith(".dbf");
+    const ok = name.endsWith(".csv") || name.endsWith(".xlsx") || name.endsWith(".dbf");
     if (!ok) {
       toast.error("Only CSV, XLSX, and DBF files are supported.");
-      // reset input to allow re-choosing the same filename
       event.currentTarget.value = "";
       return;
     }
@@ -313,83 +286,69 @@ export default function SendInviteDialog({
     uploadIntervalRef.current = id;
   };
 
-  const handleSendInvite = () => {
-    // Show success toast with custom design
-    const toastId = toast.custom(
-      (id) => {
-        return (
-          <div
-            data-toast-id={id}
-            className="flex w-[540px] p-6 justify-center items-center gap-4 rounded-lg bg-white shadow-[0_20px_24px_-4px_rgba(16,24,40,0.08),0_8px_8px_-4px_rgba(16,24,40,0.03)]"
-          >
-            <div className="flex w-12 h-12 p-3 justify-center items-center flex-shrink-0 rounded-[28px] border-[8px] border-[#ECFDF3] bg-[#D1FADF]">
-              <CheckCircle className="w-6 h-6 text-[#039855]" />
-            </div>
-            <div className="flex flex-col items-start gap-7 flex-1">
-              <div className="flex flex-col items-start gap-2 self-stretch">
-                <div className="self-stretch text-[#323238] font-figtree text-base font-bold leading-[26px]">
-                  Invite has been sent
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => toast.dismiss(id)}
-              className="flex w-8 h-8 justify-center items-center gap-[10px] flex-shrink-0 rounded-[50px] bg-white"
-            >
-              <X className="w-5 h-5 text-[#676879]" />
-            </button>
-          </div>
-        );
-      },
-      {
-        duration: 4000,
-        position: "top-center",
-      },
-    );
+  // API call to send invites
+  const handleSendInvite = async () => {
+    const token = getToken();
+    const selected = employees.filter((e) => e.selected);
 
-    // store id so outside click handler can dismiss immediately
+    if (selected.length === 0) { toast.info("Select at least one invitee first."); return; }
+    if (!token) { toast.error("You’re not signed in. Please log in and try again."); return; }
+    if (versionId == null) { toast.error("Missing template version. Open from a template and try again."); return; }
 
-    // keep it for outside-click dismiss
-    lastToastIdRef.current = typeof toastId === "number" ? toastId : Number(toastId);
+    setSending(true);
+    try {
+      const results = await Promise.allSettled(
+        selected.map(async (emp) => {
+          const res = await fetch(`${API_BASE}/api/Invitations/send`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              versionId,
+              email: emp.email,
+              name: emp.name,
+            }),
+          });
+          if (!res.ok) {
+            const text = await res.text().catch(() => "");
+            throw new Error(`HTTP ${res.status} ${res.statusText} ${text}`);
+          }
+          return true;
+        }),
+      );
 
-    // outside-click dismiss
-    const onDocInteract = (e: Event) => {
-      const id = lastToastIdRef.current;
-      if (!id) return;
-      const target = e.target as HTMLElement | null;
-      const inside = target?.closest?.(`[data-toast-id="${String(id)}"]`);
-      if (!inside) toast.dismiss(id);
-    };
+      const ok = results.filter((r) => r.status === "fulfilled").length;
+      const fail = results.length - ok;
 
-    document.addEventListener("mousedown", onDocInteract);
-    document.addEventListener("touchstart", onDocInteract);
-
-    // Cleanup listener after toast duration + small buffer
-    setTimeout(() => {
-      document.removeEventListener("mousedown", onDocInteract);
-      document.removeEventListener("touchstart", onDocInteract);
-      lastToastIdRef.current = null;
-    }, 4200);
-
-    // Close dialog
-    onClose();
-
-    // Navigate to templates (dashboard) page
-    navigate("/dashboard");
+      if (ok > 0 && fail === 0) {
+        toast.success(`Invites sent to ${ok} ${ok === 1 ? "person" : "people"}.`);
+        onClose();
+        navigate("/dashboard");
+      } else if (ok > 0) {
+        toast.warning(`Sent ${ok}, failed ${fail}. You can retry the failed ones.`);
+      } else {
+        toast.error("All invitations failed. Please try again.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong sending invites.");
+    } finally {
+      setSending(false);
+    }
   };
+
+  const sendDisabled = sending || selectedCount === 0 || loadingVersion || versionId == null;
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-full max-w-[800px] max-h-[640px] flex flex-col m-4">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-[#D0D4E4]">
-          <h2 className="text-lg font-bold text-[#323238] font-figtree">
-            Send Invite
-          </h2>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-gray-50"
-          >
+          <h2 className="text-lg font-bold text-[#323238] font-figtree">Send Invite</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white flex items-center justify-center hover:bg-gray-50">
             <X className="w-5 h-5 text-[#676879]" />
           </button>
         </div>
@@ -398,21 +357,13 @@ export default function SendInviteDialog({
         <div className="flex border-b border-[#D0D4E4] px-5">
           <button
             onClick={() => setActiveTab("select")}
-            className={`px-2 py-2 text-sm font-roboto ${
-              activeTab === "select"
-                ? "text-[#172B4D] border-b-2 border-[#0073EA]"
-                : "text-[#505258]"
-            }`}
+            className={`px-2 py-2 text-sm font-roboto ${activeTab === "select" ? "text-[#172B4D] border-b-2 border-[#0073EA]" : "text-[#505258]"}`}
           >
             Select Invitees
           </button>
           <button
             onClick={() => setActiveTab("bulk")}
-            className={`px-2 py-2 text-sm font-roboto ml-2 ${
-              activeTab === "bulk"
-                ? "text-[#172B4D] border-b-2 border-[#0073EA]"
-                : "text-[#505258]"
-            }`}
+            className={`px-2 py-2 text-sm font-roboto ml-2 ${activeTab === "bulk" ? "text-[#172B4D] border-b-2 border-[#0073EA]" : "text-[#505258]"}`}
           >
             Send Bulk Invitation
           </button>
@@ -422,7 +373,7 @@ export default function SendInviteDialog({
         <div className="flex-1 overflow-hidden">
           {activeTab === "select" ? (
             <div className="p-4 h-full flex flex-col">
-              {/* Search and Filter */}
+              {/* Search + Filter */}
               <div className="flex items-center gap-2 border border-[#C3C6D4] rounded px-3 py-2 mb-4">
                 <Search className="w-4 h-4 text-[#676879]" />
                 <Input
@@ -451,23 +402,19 @@ export default function SendInviteDialog({
                 </div>
               </div>
 
-              {/* Stats and Select All */}
+              {/* Stats + Select All */}
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-[#676879]">
                   {filteredEmployees.length} Employees found
                 </span>
                 <div className="flex items-center gap-2">
-                  <Checkbox
-                    checked={selectAll}
-                    onCheckedChange={handleSelectAll}
-                  />
+                  <Checkbox checked={selectAll} onCheckedChange={() => handleSelectAll()} />
                   <span className="text-sm text-[#505258]">Select All</span>
                 </div>
               </div>
 
-              {/* Employee List */}
+              {/* List */}
               <div className="flex-1 overflow-y-auto grid grid-cols-2 gap-2">
-                {/* Left Column */}
                 <div className="space-y-2">
                   {filteredEmployees
                     .filter((_, i) => i % 2 === 0)
@@ -475,11 +422,7 @@ export default function SendInviteDialog({
                       <div
                         key={employee.id}
                         onClick={() => handleSelectEmployee(employee.id)}
-                        className={`p-2 rounded cursor-pointer flex items-center gap-2 ${
-                          employee.selected
-                            ? "bg-[#E6F1FD]"
-                            : "bg-white hover:bg-gray-50"
-                        }`}
+                        className={`p-2 rounded cursor-pointer flex items-center gap-2 ${employee.selected ? "bg-[#E6F1FD]" : "bg-white hover:bg-gray-50"}`}
                       >
                         <div
                           className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-[#505258] border border-white"
@@ -488,12 +431,8 @@ export default function SendInviteDialog({
                           {employee.initials}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-[#323238] truncate">
-                            {employee.name}
-                          </div>
-                          <div className="text-xs text-[#505258] truncate">
-                            {employee.email}
-                          </div>
+                          <div className="text-sm font-medium text-[#323238] truncate">{employee.name}</div>
+                          <div className="text-xs text-[#505258] truncate">{employee.email}</div>
                         </div>
                         {employee.selected && (
                           <div className="w-5 h-5 rounded-full bg-[#0073EA] flex items-center justify-center">
@@ -504,7 +443,6 @@ export default function SendInviteDialog({
                     ))}
                 </div>
 
-                {/* Right Column */}
                 <div className="space-y-2">
                   {filteredEmployees
                     .filter((_, i) => i % 2 === 1)
@@ -512,11 +450,7 @@ export default function SendInviteDialog({
                       <div
                         key={employee.id}
                         onClick={() => handleSelectEmployee(employee.id)}
-                        className={`p-2 rounded cursor-pointer flex items-center gap-2 ${
-                          employee.selected
-                            ? "bg-[#E6F1FD]"
-                            : "bg-white hover:bg-gray-50"
-                        }`}
+                        className={`p-2 rounded cursor-pointer flex items-center gap-2 ${employee.selected ? "bg-[#E6F1FD]" : "bg-white hover:bg-gray-50"}`}
                       >
                         <div
                           className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium text-[#505258] border border-white"
@@ -525,12 +459,8 @@ export default function SendInviteDialog({
                           {employee.initials}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-[#323238] truncate">
-                            {employee.name}
-                          </div>
-                          <div className="text-xs text-[#505258] truncate">
-                            {employee.email}
-                          </div>
+                          <div className="text-sm font-medium text-[#323238] truncate">{employee.name}</div>
+                          <div className="text-xs text-[#505258] truncate">{employee.email}</div>
                         </div>
                         {employee.selected && (
                           <div className="w-5 h-5 rounded-full bg-[#0073EA] flex items-center justify-center">
@@ -543,20 +473,16 @@ export default function SendInviteDialog({
               </div>
             </div>
           ) : (
-            /* Bulk Invitation Tab */
+            // Bulk Invitation tab (UI only)
             <div className="p-4 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div></div>
-                <Button
-                  variant="outline"
-                  className="text-[#0073EA] border-[#0073EA]"
-                >
+                <Button variant="outline" className="text-[#0073EA] border-[#0073EA]">
                   <Download className="w-4 h-4 mr-2" />
                   Download sample format
                 </Button>
               </div>
 
-              {/* Upload Area */}
               <div className="border-2 border-dashed border-[#C3C6D4] rounded-lg p-8 text-center mb-4">
                 <div className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 rounded-full bg-[#F6F7FB] flex items-center justify-center">
@@ -582,33 +508,18 @@ export default function SendInviteDialog({
                 <span>Maximum Size: 25MB</span>
               </div>
 
-              {/* File Upload Status */}
               {uploadedFile && (
                 <div className="bg-[#F6F7FB] rounded-lg p-4 mb-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 border border-[#D0D4E4] rounded bg-white flex items-center justify-center">
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          className="text-[#258750]"
-                        >
-                          <rect
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            rx="2"
-                          />
+                        <svg width="16" height="16" viewBox="0 0 16 16" className="text-[#258750]">
+                          <rect width="16" height="16" fill="currentColor" rx="2" />
                         </svg>
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-[#323238]">
-                          {uploadedFile.name}
-                        </div>
-                        <div className="text-xs text-[#505258]">
-                          Size {Math.round(uploadedFile.size / 1024)}KB
-                        </div>
+                        <div className="text-sm font-medium text-[#323238]">{uploadedFile.name}</div>
+                        <div className="text-xs text-[#505258]">Size {Math.round(uploadedFile.size / 1024)}KB</div>
                       </div>
                     </div>
                     <button
@@ -629,9 +540,7 @@ export default function SendInviteDialog({
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-[#505258]">Pending</span>
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-[#505258]">
-                        {uploadProgress}%
-                      </span>
+                      <span className="text-xs text-[#505258]">{uploadProgress}%</span>
                       {uploadProgress === 100 && (
                         <div className="w-5 h-5 rounded-full bg-[#258750] flex items-center justify-center">
                           <Check className="w-3 h-3 text-white" />
@@ -655,18 +564,16 @@ export default function SendInviteDialog({
         {/* Footer */}
         <div className="flex items-center justify-between p-5 border-t border-[#D0D4E4]">
           <span className="text-sm text-[#676879]">
-            You've selected {selectedCount} employee
-            {selectedCount !== 1 ? "s" : ""}
+            You've selected {selectedCount} employee{selectedCount !== 1 ? "s" : ""}
           </span>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
             <Button
-              className="bg-[#0073EA] hover:bg-[#0073EA]/90"
+              className="bg-[#0073EA] hover:bg-[#0073EA]/90 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSendInvite}
+              disabled={sendDisabled}
             >
-              Send Invite
+              {sending ? "Sending…" : loadingVersion ? "Loading version…" : "Send Invite"}
             </Button>
           </div>
         </div>

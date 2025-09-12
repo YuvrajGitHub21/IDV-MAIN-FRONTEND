@@ -365,6 +365,14 @@ export default function Templates() {
       }
 
       const templateDetails: TemplateDto = await response.json();
+
+      // NEW: persist latest version id for fallback usage elsewhere
+      const vid = (templateDetails as any)?.activeVersion?.versionId;
+      console.log(vid);
+      if (typeof vid === "number" && Number.isFinite(vid)) {
+        localStorage.setItem("arcon_latest_version_id", String(vid));
+      }
+
       console.log("Template details fetched successfully:", templateDetails);
 
       toast.success("Template details loaded successfully!");
@@ -420,6 +428,27 @@ export default function Templates() {
 
   // send invite dialog state
   const [showSendInviteDialog, setShowSendInviteDialog] = useState(false);
+  const [sendInviteTemplateId, setSendInviteTemplateId] = useState<string | null>(null);
+
+  // send invite dialog state
+  const [inviteVersionId, setInviteVersionId] = useState<number | undefined>(undefined);
+
+  // inside Templates() component
+  const resolveVersionIdForTemplate = (tpl: any): number | undefined => {
+    // Your POST payload: template.activeVersion.versionId
+    const candidate = tpl?.activeVersion?.versionId;
+    if (typeof candidate === "number" && Number.isFinite(candidate)) return candidate;
+
+    // optional secondary candidates if your hooks normalize differently:
+    if (typeof tpl?.currentVersion === "number" && Number.isFinite(tpl.currentVersion)) {
+      return tpl.currentVersion;
+    }
+
+    // last resort: localStorage (set below when we fetch details)
+    const fromLS = Number(localStorage.getItem("arcon_latest_version_id"));
+    return Number.isFinite(fromLS) ? fromLS : undefined;
+  };
+
 
   // DELETE call
   const deleteTemplate = async (id: string) => {
@@ -472,7 +501,7 @@ export default function Templates() {
         navigate("/template-builder", { state: { templateId } });
         break;
       case "sendInvite":
-        // open send invite dialog
+        setSendInviteTemplateId(templateId);   // capture which template
         setShowSendInviteDialog(true);
         break;
       case "delete":
@@ -595,7 +624,9 @@ export default function Templates() {
       <SendInviteDialog
         isOpen={showSendInviteDialog}
         onClose={() => setShowSendInviteDialog(false)}
+        templateId={sendInviteTemplateId ?? undefined}
       />
+
 
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between px-3 md:px-4 h-11 border-b border-gray-200 bg-white">

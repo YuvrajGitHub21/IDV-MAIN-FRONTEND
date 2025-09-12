@@ -311,7 +311,7 @@ export default function ReceiverView() {
         enabled: true,
       },
     };
-  }, [location.state, dbTemplate]);
+  }, [location.state, dbTemplate, snapshot]);
 
   console.log("Final template config:", templateConfig);
 
@@ -1485,13 +1485,8 @@ export default function ReceiverView() {
             </div>
           </div>
 
-          {/* Resize Handle */}
-          <div className="w-4 min-h-full flex flex-col items-center gap-2.5 bg-white">
-            <div className="w-px flex-1 bg-[#DEDEDD] min-h-screen"></div>
-          </div>
-
           {/* Main Content Area */}
-          <div className="w-[987px] min-h-full p-6 flex flex-col items-center gap-6">
+          <div className="w-[987px] min-h-full p-6 flex flex-col items-center gap-6 border-l border-[#DEDEDD] self-stretch">
             <div className="flex flex-col items-center gap-4 w-full">
               {/* Render sections in the order specified by the admin */}
               {sections.map((section, index) => (

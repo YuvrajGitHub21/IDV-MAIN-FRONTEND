@@ -86,7 +86,7 @@ export default function ReceiverView() {
         setSnapshot(parsed);
       }
     } catch (e) {
-      console.error('Failed to load template snapshot:', e);
+      console.error("Failed to load template snapshot:", e);
     }
   }, [templateId]);
 
@@ -114,7 +114,11 @@ export default function ReceiverView() {
 
   // Get template configuration from location state or build from dbTemplate or use defaults
   const templateConfig: TemplateConfig = React.useMemo(() => {
-    console.log('Building templateConfig with:', { dbTemplate, snapshot, locationState: location.state });
+    console.log("Building templateConfig with:", {
+      dbTemplate,
+      snapshot,
+      locationState: location.state,
+    });
 
     if (location.state?.templateConfig) {
       return location.state.templateConfig;
@@ -122,7 +126,7 @@ export default function ReceiverView() {
 
     // Build from local snapshot (no backend)
     if (snapshot) {
-      console.log('Using snapshot data:', snapshot);
+      console.log("Using snapshot data:", snapshot);
       const steps = Array.isArray(snapshot.verificationSteps)
         ? snapshot.verificationSteps
         : [];
@@ -137,14 +141,25 @@ export default function ReceiverView() {
         ? snapshot.optionalFields
         : [];
       const dob = !!opt.find((f: any) => f.id === "date-of-birth" && f.checked);
-      console.log('Optional fields from snapshot:', opt, 'Date of birth enabled:', dob);
-      console.log('Additional fields from snapshot:', snapshot.addedFields);
-      console.log('Full snapshot for template', templateId, ':', snapshot);
+      console.log(
+        "Optional fields from snapshot:",
+        opt,
+        "Date of birth enabled:",
+        dob,
+      );
+      console.log("Additional fields from snapshot:", snapshot.addedFields);
+      console.log("Full snapshot for template", templateId, ":", snapshot);
 
       const doc = snapshot.doc || {};
       const supportedDocuments: string[] = Array.isArray(doc.selectedDocuments)
         ? doc.selectedDocuments
         : [];
+
+      console.log("Document configuration from snapshot:", {
+        doc,
+        selectedDocuments: doc.selectedDocuments,
+        supportedDocuments,
+      });
 
       return {
         templateName: snapshot.templateName || "New Template",
@@ -156,8 +171,8 @@ export default function ReceiverView() {
             email: true,
             dateOfBirth: dob,
           },
-          additionalFields: Array.isArray(snapshot.addedFields) 
-            ? snapshot.addedFields 
+          additionalFields: Array.isArray(snapshot.addedFields)
+            ? snapshot.addedFields
             : [],
         },
         documentVerification: {
@@ -188,9 +203,13 @@ export default function ReceiverView() {
             email: personalInfo.Email !== false,
             dateOfBirth: !!personalInfo.Added_fields?.dob,
           },
-          additionalFields: Array.isArray(dbTemplate.Personal_info?.additionalFields) 
-            ? dbTemplate.Personal_info.additionalFields 
-            : (Array.isArray(snapshot?.addedFields) ? snapshot.addedFields : []),
+          additionalFields: Array.isArray(
+            dbTemplate.Personal_info?.additionalFields,
+          )
+            ? dbTemplate.Personal_info.additionalFields
+            : Array.isArray(snapshot?.addedFields)
+              ? snapshot.addedFields
+              : [],
         },
         documentVerification: {
           enabled:
@@ -222,11 +241,18 @@ export default function ReceiverView() {
       const bioCfg = bioRaw ? JSON.parse(bioRaw) : {};
 
       // Get optional fields configuration from localStorage or snapshot
-      const optionalFields = Array.isArray(snapshot?.optionalFields) 
-        ? snapshot.optionalFields 
+      const optionalFields = Array.isArray(snapshot?.optionalFields)
+        ? snapshot.optionalFields
         : [];
-      const hasDateOfBirth = optionalFields.some((f: any) => f.id === "date-of-birth" && f.checked);
-      console.log('localStorage fallback - optionalFields:', optionalFields, 'hasDateOfBirth:', hasDateOfBirth);
+      const hasDateOfBirth = optionalFields.some(
+        (f: any) => f.id === "date-of-birth" && f.checked,
+      );
+      console.log(
+        "localStorage fallback - optionalFields:",
+        optionalFields,
+        "hasDateOfBirth:",
+        hasDateOfBirth,
+      );
 
       return {
         templateName:
@@ -235,12 +261,12 @@ export default function ReceiverView() {
           enabled: true,
           fields: {
             firstName: true, // Always required
-            lastName: true,  // Always required
-            email: true,     // Always required
+            lastName: true, // Always required
+            email: true, // Always required
             dateOfBirth: hasDateOfBirth,
           },
-          additionalFields: Array.isArray(snapshot?.addedFields) 
-            ? snapshot.addedFields 
+          additionalFields: Array.isArray(snapshot?.addedFields)
+            ? snapshot.addedFields
             : [],
         },
         documentVerification: {
@@ -277,7 +303,7 @@ export default function ReceiverView() {
         supportedDocuments: [
           "Passport",
           "Aadhar Card",
-          "Drivers License",
+          "Driving License",
           "Pan Card",
         ],
       },
@@ -285,7 +311,9 @@ export default function ReceiverView() {
         enabled: true,
       },
     };
-  }, [location.state, dbTemplate]);
+  }, [location.state, dbTemplate, snapshot]);
+
+  console.log("Final template config:", templateConfig);
 
   function extractSupportedDocuments(docVerification: any): string[] {
     const countries = Array.isArray(docVerification.Countries_array)
@@ -465,12 +493,23 @@ export default function ReceiverView() {
       ),
     },
   ].filter((option) => {
-    const isIncluded = templateConfig.documentVerification.supportedDocuments.includes(
-      option.label,
-    );
-    console.log(`Document ${option.label} included:`, isIncluded, 'Supported docs:', templateConfig.documentVerification.supportedDocuments);
+    const isIncluded =
+      templateConfig.documentVerification.supportedDocuments.includes(
+        option.label,
+      );
+    console.log(`Document filtering - ${option.label}:`, {
+      isIncluded,
+      supportedDocuments:
+        templateConfig.documentVerification.supportedDocuments,
+      documentVerificationEnabled: templateConfig.documentVerification.enabled,
+    });
     return isIncluded;
   });
+
+  console.log(
+    "Filtered idOptions:",
+    idOptions.map((opt) => opt.label),
+  );
 
   // Build sections in order based on template configuration
   const buildSections = () => {
@@ -494,7 +533,7 @@ export default function ReceiverView() {
           .filter(Boolean);
       }
     }
-    
+
     // Fallback to global localStorage arcon_verification_steps
     if (!sectionsOrder || !sectionsOrder.length) {
       try {
@@ -515,7 +554,7 @@ export default function ReceiverView() {
         }
       } catch {}
     }
-    
+
     // Absolute fallback to default order
     if (!sectionsOrder || !sectionsOrder.length) {
       sectionsOrder = [
@@ -561,27 +600,32 @@ export default function ReceiverView() {
 
   const renderPersonalInformation = () => {
     if (!templateConfig.personalInfo.enabled) return null;
-    
+
     // Debug logging for additional fields
-    if (templateConfig.personalInfo.additionalFields && templateConfig.personalInfo.additionalFields.length > 0) {
-      console.log('Rendering additional fields:', templateConfig.personalInfo.additionalFields);
+    if (
+      templateConfig.personalInfo.additionalFields &&
+      templateConfig.personalInfo.additionalFields.length > 0
+    ) {
+      console.log(
+        "Rendering additional fields:",
+        templateConfig.personalInfo.additionalFields,
+      );
     }
 
     return (
-      <div className="border border-[#DEDEDD] rounded bg-white">
+      <div className="border border-[#DEDEDD] rounded-lg bg-white shadow-sm">
         {/* Section Header */}
-        <div className="px-2 py-4 bg-white">
-          <div className="flex items-center gap-2 pb-1">
-            <Minus
-              className="w-[18px] h-[18px] text-[#323238]"
-              strokeWidth={1.5}
-            />
-            <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
+        <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-[#DEDEDD]">
+          <div className="flex items-center gap-3 pb-2">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <Minus className="w-4 h-4 text-blue-600" strokeWidth={2} />
+            </div>
+            <h2 className="text-lg font-bold text-[#172B4D] leading-6 font-roboto">
               Personal Information
             </h2>
           </div>
-          <div className="pl-7">
-            <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
+          <div className="pl-11">
+            <p className="text-sm text-[#5E6C84] leading-6 font-roboto">
               Please provide your basic personal information to begin the
               identity verification process.
             </p>
@@ -589,63 +633,67 @@ export default function ReceiverView() {
         </div>
 
         {/* Section Content */}
-        <div className="px-[34px] py-5 border-t border-[#DEDEDD] bg-white">
-          <div className="flex flex-col gap-6">
+        <div className="px-8 py-8 bg-white rounded-b-lg">
+          <div className="flex flex-col gap-8">
             {/* First Row - First Name & Last Name */}
-            <div className="flex gap-6">
+            <div className="flex flex-col sm:flex-row gap-6">
               {templateConfig.personalInfo.fields.firstName && (
-                <div className="flex-1 flex flex-col">
-                  <div className="pb-2">
-                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
+                <div className="flex-1 flex flex-col group">
+                  <div className="pb-3">
+                    <Label className="text-sm font-semibold text-[#172B4D] leading-5 font-roboto">
                       First Name
                     </Label>
                   </div>
-                  <div className="h-[38px] px-3 py-[15px] flex items-center border border-[#C3C6D4] rounded bg-white">
-                    <Input
-                      value={formData.firstName}
-                      onChange={(e) =>
-                        handleInputChange("firstName", e.target.value)
-                      }
-                      placeholder="Enter First Name"
-                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
-                    />
+                  <div className="relative">
+                    <div className="h-12 px-4 py-3 flex items-center border-2 border-[#DFE1E6] rounded-lg bg-white hover:border-blue-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
+                      <Input
+                        value={formData.firstName}
+                        onChange={(e) =>
+                          handleInputChange("firstName", e.target.value)
+                        }
+                        placeholder="Enter First Name"
+                        className="border-0 p-0 h-auto text-sm text-[#172B4D] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#8993A4] w-full"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
 
               {templateConfig.personalInfo.fields.lastName && (
-                <div className="flex-1 flex flex-col">
-                  <div className="pb-2">
-                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
+                <div className="flex-1 flex flex-col group">
+                  <div className="pb-3">
+                    <Label className="text-sm font-semibold text-[#172B4D] leading-5 font-roboto">
                       Last Name
                     </Label>
                   </div>
-                  <div className="h-[38px] px-3 py-[15px] flex items-center border border-[#C3C6D4] rounded bg-white">
-                    <Input
-                      value={formData.lastName}
-                      onChange={(e) =>
-                        handleInputChange("lastName", e.target.value)
-                      }
-                      placeholder="Enter Last Name"
-                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
-                    />
+                  <div className="relative">
+                    <div className="h-12 px-4 py-3 flex items-center border-2 border-[#DFE1E6] rounded-lg bg-white hover:border-blue-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
+                      <Input
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          handleInputChange("lastName", e.target.value)
+                        }
+                        placeholder="Enter Last Name"
+                        className="border-0 p-0 h-auto text-sm text-[#172B4D] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#8993A4] w-full"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Second Row - Email & Date of Birth */}
-            <div className="flex gap-6">
+            <div className="flex flex-col sm:flex-row gap-6">
               {templateConfig.personalInfo.fields.email && (
-                <div className="flex-1 flex flex-col">
-                  <div className="pb-2">
-                    <Label className="text-[13px] font-medium leading-[18px] font-roboto">
-                      <span className="text-[#172B4D]">Email </span>
-                      <span className="text-[#D83A52]">*</span>
+                <div className="flex-1 flex flex-col group">
+                  <div className="pb-3">
+                    <Label className="text-sm font-semibold leading-5 font-roboto flex items-center gap-1">
+                      <span className="text-[#172B4D]">Email</span>
+                      <span className="text-red-500 text-lg">*</span>
                     </Label>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <div className="h-[38px] px-3 py-[15px] flex items-center justify-between border border-[#C3C6D4] rounded bg-white">
+                  <div className="flex flex-col gap-3">
+                    <div className="h-12 px-4 py-3 flex items-center justify-between border-2 border-[#DFE1E6] rounded-lg bg-white hover:border-blue-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
                       <Input
                         type="email"
                         value={formData.email}
@@ -653,12 +701,12 @@ export default function ReceiverView() {
                           handleInputChange("email", e.target.value)
                         }
                         placeholder="Enter Your Email Address"
-                        className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 font-roboto placeholder:text-[#676879]"
+                        className="border-0 p-0 h-auto text-sm text-[#172B4D] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 font-roboto placeholder:text-[#8993A4]"
                       />
-                      <div className="h-7 px-3 py-[9px] flex items-center gap-1 rounded bg-white">
+                      <div className="ml-3">
                         <Button
                           onClick={handleEmailVerify}
-                          className="text-[12px] font-medium text-[#0073EA] p-0 h-auto bg-transparent hover:bg-transparent font-figtree"
+                          className="text-sm font-medium text-[#0073EA] px-4 py-2 h-auto bg-blue-50 hover:bg-blue-100 rounded-md transition-colors duration-200"
                           variant="ghost"
                         >
                           Verify
@@ -666,9 +714,9 @@ export default function ReceiverView() {
                       </div>
                     </div>
                     {!emailVerified && (
-                      <div className="h-8 px-2 flex items-center gap-2 border border-[#DEDEDD] rounded bg-[#F1F2F4]">
-                        <Info className="w-[18px] h-[18px] text-[#344563]" />
-                        <span className="text-[12px] text-[#676879] leading-[22px] font-roboto">
+                      <div className="px-3 py-2 flex items-center gap-2 border border-orange-200 rounded-lg bg-orange-50">
+                        <Info className="w-4 h-4 text-orange-600 flex-shrink-0" />
+                        <span className="text-sm text-orange-700 leading-5 font-roboto">
                           Email verification is required to continue
                         </span>
                       </div>
@@ -678,54 +726,81 @@ export default function ReceiverView() {
               )}
 
               {templateConfig.personalInfo.fields.dateOfBirth && (
-                <div className="w-[452px] flex flex-col">
-                  <div className="pb-2">
-                    <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
+                <div className="flex-1 sm:max-w-md flex flex-col group">
+                  <div className="pb-3">
+                    <Label className="text-sm font-semibold text-[#172B4D] leading-5 font-roboto">
                       Date Of Birth
                     </Label>
                   </div>
-                  <div className="h-[38px] px-3 py-[15px] flex items-center justify-between border border-[#C3C6D4] rounded bg-white">
-                    <Input
-                      type="date"
-                      value={formData.dateOfBirth}
-                      onChange={(e) =>
-                        handleInputChange("dateOfBirth", e.target.value)
-                      }
-                      placeholder="DD/MM/YYYY"
-                      className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
-                    />
+                  <div className="relative">
+                    <div className="h-12 px-4 py-3 flex items-center justify-between border-2 border-[#DFE1E6] rounded-lg bg-white hover:border-blue-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
+                      <Input
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={(e) =>
+                          handleInputChange("dateOfBirth", e.target.value)
+                        }
+                        placeholder="DD/MM/YYYY"
+                        className="border-0 p-0 h-auto text-sm text-[#172B4D] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#8993A4] w-full"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Additional Fields from Admin Configuration */}
-            {templateConfig.personalInfo.additionalFields && 
-             templateConfig.personalInfo.additionalFields.length > 0 && (
-              <div className="flex flex-col gap-6">
-                {templateConfig.personalInfo.additionalFields.map((field, index) => (
-                  <div key={field.id} className="flex gap-6">
-                    <div className="flex-1 flex flex-col">
-                      <div className="pb-2">
-                        <Label className="text-[13px] font-medium text-[#172B4D] leading-[18px] font-roboto">
-                          {field.name}
-                        </Label>
+            {templateConfig.personalInfo.additionalFields &&
+              templateConfig.personalInfo.additionalFields.length > 0 &&
+              (() => {
+                console.log(
+                  "Rendering additional fields:",
+                  templateConfig.personalInfo.additionalFields,
+                );
+
+                // Group fields into rows of 2
+                const fields = templateConfig.personalInfo.additionalFields;
+                const rows = [];
+                for (let i = 0; i < fields.length; i += 2) {
+                  rows.push(fields.slice(i, i + 2));
+                }
+
+                return rows.map((row, rowIndex) => (
+                  <div
+                    key={`row-${rowIndex}`}
+                    className="flex flex-col sm:flex-row gap-6"
+                  >
+                    {row.map((field) => (
+                      <div
+                        key={field.id}
+                        className="flex-1 flex flex-col group"
+                      >
+                        <div className="pb-3">
+                          <Label className="text-sm font-semibold text-[#172B4D] leading-5 font-roboto">
+                            {field.name}
+                          </Label>
+                        </div>
+                        <div className="relative">
+                          <div className="h-12 px-4 py-3 flex items-center border-2 border-[#DFE1E6] rounded-lg bg-white hover:border-blue-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
+                            <Input
+                              value={(formData[field.id] as string) || ""}
+                              onChange={(e) =>
+                                handleInputChange(field.id, e.target.value)
+                              }
+                              placeholder={field.placeholder}
+                              className="border-0 p-0 h-auto text-sm text-[#172B4D] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#8993A4] w-full"
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="h-[38px] px-3 py-[15px] flex items-center border border-[#C3C6D4] rounded bg-white">
-                        <Input
-                          value={(formData[field.id] as string) || ""}
-                          onChange={(e) =>
-                            handleInputChange(field.id, e.target.value)
-                          }
-                          placeholder={field.placeholder}
-                          className="border-0 p-0 h-auto text-[13px] text-[#676879] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#676879]"
-                        />
-                      </div>
-                    </div>
+                    ))}
+                    {/* Add empty div if odd number of fields in last row on larger screens */}
+                    {row.length === 1 && (
+                      <div className="hidden sm:block flex-1"></div>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                ));
+              })()}
           </div>
         </div>
       </div>
@@ -873,7 +948,9 @@ export default function ReceiverView() {
                           Camera
                         </h4>
                         <p className="text-sm text-[#676879] leading-relaxed font-roboto">
-                          Take a clear photo of your document using your device's camera. Make sure the document is well-lit and all text is readable.
+                          Take a clear photo of your document using your
+                          device's camera. Make sure the document is well-lit
+                          and all text is readable.
                         </p>
                       </div>
                     </div>
@@ -898,7 +975,9 @@ export default function ReceiverView() {
                           Upload Files
                         </h4>
                         <p className="text-sm text-[#676879] leading-relaxed font-roboto">
-                          Select and upload a clear image or PDF of your document from your device. Supported formats: JPG, PNG, PDF.
+                          Select and upload a clear image or PDF of your
+                          document from your device. Supported formats: JPG,
+                          PNG, PDF.
                         </p>
                       </div>
                       <input
@@ -1324,9 +1403,9 @@ export default function ReceiverView() {
 
       {/* Main Content */}
       <div className="w-full pb-4 flex flex-col items-center">
-        <div className="flex items-start w-full h-[1657px]">
+        <div className="flex items-start w-full min-h-screen">
           {/* Sidebar */}
-          <div className="w-[332px] px-4 pr-2 py-4 flex flex-col gap-2 bg-white">
+          <div className="w-[332px] px-4 pr-2 py-4 flex flex-col gap-2 bg-white min-h-full">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 {/* Admin View Tab - Inactive */}
@@ -1338,22 +1417,28 @@ export default function ReceiverView() {
                         templateId,
                         currentLocationState: location.state,
                         snapshot: snapshot,
-                        templateConfig: templateConfig
+                        templateConfig: templateConfig,
                       });
-                      
+
                       // Use original state if available, otherwise build from current data
                       let previewState = location.state?.originalState;
-                      
+
                       if (!previewState) {
                         // Build proper state for Preview.tsx from current template data
                         previewState = {
-                          templateName: templateConfig.templateName || "New Template",
+                          templateName:
+                            templateConfig.templateName || "New Template",
                           verificationSteps: snapshot?.verificationSteps || [],
                           addedFields: snapshot?.addedFields || [],
                           templateData: {
-                            personalInfo: templateConfig.personalInfo?.enabled ?? true,
-                            documentVerification: templateConfig.documentVerification?.enabled ?? false,
-                            biometricVerification: templateConfig.biometricVerification?.enabled ?? false,
+                            personalInfo:
+                              templateConfig.personalInfo?.enabled ?? true,
+                            documentVerification:
+                              templateConfig.documentVerification?.enabled ??
+                              false,
+                            biometricVerification:
+                              templateConfig.biometricVerification?.enabled ??
+                              false,
                           },
                           snapshot: snapshot,
                         };
@@ -1361,7 +1446,7 @@ export default function ReceiverView() {
                       } else {
                         console.log("Using original state:", previewState);
                       }
-                      
+
                       navigate(
                         templateId ? `/preview/${templateId}` : "/preview",
                         { state: previewState },
@@ -1369,7 +1454,9 @@ export default function ReceiverView() {
                     } catch (error) {
                       console.error("Error navigating to admin view:", error);
                       // Fallback navigation without state
-                      navigate(templateId ? `/preview/${templateId}` : "/preview");
+                      navigate(
+                        templateId ? `/preview/${templateId}` : "/preview",
+                      );
                     }
                   }}
                 >
@@ -1400,13 +1487,8 @@ export default function ReceiverView() {
             </div>
           </div>
 
-          {/* Resize Handle */}
-          <div className="w-4 h-[1641px] flex flex-col items-center gap-2.5 bg-white">
-            <div className="w-px flex-1 bg-[#DEDEDD]"></div>
-          </div>
-
           {/* Main Content Area */}
-          <div className="w-[987px] h-[1641px] p-6 flex flex-col items-center gap-6">
+          <div className="w-[987px] min-h-full p-6 flex flex-col items-center gap-6 border-l border-[#DEDEDD] self-stretch">
             <div className="flex flex-col items-center gap-4 w-full">
               {/* Render sections in the order specified by the admin */}
               {sections.map((section, index) => (

@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
-import { snapshot } from "node:test";
-// import { snapshot } from "node:test";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 const ENABLE_BACKEND_PREVIEW = false;
@@ -50,6 +48,22 @@ export default function Preview() {
   const location = useLocation();
   const { templateId } = useParams();
   const [showSendInviteDialog, setShowSendInviteDialog] = useState(false);
+
+  // Load template snapshot from localStorage
+  const [snapshot, setSnapshot] = useState<any>(null);
+
+  useEffect(() => {
+    if (!templateId) return;
+    try {
+      const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setSnapshot(parsed);
+      }
+    } catch (e) {
+      console.error('Failed to load template snapshot:', e);
+    }
+  }, [templateId]);
 
   // ---------- NEW: template doc from Mongo ----------
   const [dbTemplate, setDbTemplate] = useState<any>(null);
@@ -397,10 +411,9 @@ export default function Preview() {
     // Get sections order from snapshot verificationSteps, or derive from localStorage, else default
     let sectionsOrder: string[] = [];
     
-    // First try to get order from the snapshot in navigation state
-    const navSnapshot = location.state?.snapshot;
-    if (navSnapshot && Array.isArray(navSnapshot.verificationSteps)) {
-      sectionsOrder = navSnapshot.verificationSteps
+    // First try to get order from the loaded snapshot
+    if (snapshot && Array.isArray(snapshot.verificationSteps)) {
+      sectionsOrder = snapshot.verificationSteps
         .map((s: any) =>
           s.id === "personal-info"
             ? "Personal_info"
@@ -464,8 +477,8 @@ export default function Preview() {
     }
 
     // Use snapshot verificationSteps to determine what's enabled, fallback to templateData
-    const steps = Array.isArray(navSnapshot?.verificationSteps) 
-      ? navSnapshot.verificationSteps 
+    const steps = Array.isArray(snapshot?.verificationSteps) 
+      ? snapshot.verificationSteps 
       : Array.isArray(templateData.verificationSteps)
       ? templateData.verificationSteps
       : [];
@@ -580,6 +593,13 @@ export default function Preview() {
 
   // Helper function to convert template data to format expected by ReceiverView
   const buildTemplateConfigForReceiverView = () => {
+    console.log('Preview: Building template config for receiver view', {
+      hasDbTemplate: !!dbTemplate,
+      hasSnapshot: !!snapshot,
+      templateData,
+      snapshot
+    });
+
     if (dbTemplate) {
       // Convert database template to receiver view config
       const personalAddedFields = getPersonalAddedFields(dbTemplate);
@@ -596,6 +616,7 @@ export default function Preview() {
             email: personalShowBase.email,
             dateOfBirth: personalAddedFields.some((f) => f.id === "dob"),
           },
+          additionalFields: personalAddedFields,
         },
         documentVerification: {
           enabled: sectionStatus
@@ -613,9 +634,8 @@ export default function Preview() {
       };
     } else {
       // Convert builder state to receiver view config
-      // Use snapshot data if available, otherwise fall back to templateData
-      const navSnapshot = location.state?.snapshot;
-      const sourceData = navSnapshot || templateData;
+      // Use loaded snapshot if available, otherwise fall back to templateData
+      const sourceData = snapshot || templateData;
       const steps = Array.isArray(sourceData.verificationSteps)
         ? sourceData.verificationSteps
         : [];
@@ -636,7 +656,7 @@ export default function Preview() {
       );
       const dob = !!optionalFields.find((f: any) => f.id === "date-of-birth" && f.checked);
       
-      return {
+      const config = {
         templateName: sourceData.templateName || templateData.templateName,
         personalInfo: {
           enabled: true,
@@ -646,6 +666,10 @@ export default function Preview() {
             email: true,
             dateOfBirth: dob || addedFields.some((f) => f.id.includes("date")),
           },
+          additionalFields: addedFields.filter((field) => 
+            !['firstName', 'lastName', 'email'].includes(field.id) &&
+            !field.id.includes('date')
+          ),
         },
         documentVerification: {
           enabled: hasDoc,
@@ -653,12 +677,28 @@ export default function Preview() {
           allowCaptureWebcam: !!docConfig.allowCaptureWebcam,
           supportedDocuments: Array.isArray(docConfig.selectedDocuments)
             ? docConfig.selectedDocuments
-            : ["Passport", "Aadhar Card", "Drivers License", "Pan Card"],
+            : ["Passport", "Aadhar Card", "Driving License", "Pan Card"],
         },
         biometricVerification: {
           enabled: hasBio,
         },
       };
+      
+      console.log('Preview: Built template config from snapshot/templateData:', {
+        config,
+        docConfig,
+        selectedDocuments: docConfig.selectedDocuments,
+        hasDoc,
+        hasBio,
+        dob,
+        addedFields,
+        filteredAdditionalFields: addedFields.filter((field) => 
+          !['firstName', 'lastName', 'email'].includes(field.id) &&
+          !field.id.includes('date')
+        )
+      });
+      
+      return config;
     }
   };
 
@@ -734,7 +774,7 @@ export default function Preview() {
         state: { 
           templateConfig, 
           templateData, 
-          snapshot: location.state?.snapshot,
+          snapshot: snapshot || location.state?.snapshot,
           originalState: location.state 
         },
       });

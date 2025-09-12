@@ -1479,11 +1479,14 @@ export default function TemplateBuilder() {
         try {
           persistSnapshot();
         } catch {}
+        const snapshot = buildSnapshot();
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
+            templateId: templateId || "",
             templateName,
             verificationSteps,
             addedFields,
+            snapshot,
             templateData: {
               personalInfo: true,
               documentVerification: verificationSteps.some(

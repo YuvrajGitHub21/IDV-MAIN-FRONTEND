@@ -725,7 +725,12 @@ export default function Preview() {
   };
 
   const handleBack = () => {
-    navigate("/template-builder");
+    navigate("/template-builder", {
+      state: {
+        templateId: templateId || localStorage.getItem("arcon_current_template_id") || "",
+        snapshot: snapshot || null,
+      },
+    });
   };
 
   const handleSaveAndSendInvite = async () => {

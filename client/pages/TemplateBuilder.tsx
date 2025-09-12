@@ -1312,6 +1312,17 @@ export default function TemplateBuilder() {
     return section?.fieldMappings?.[0]?.id || null;
   };
 
+  const getSectionId = (stepId: VerificationStep["id"]): number | null => {
+    if (!templateData?.activeVersion?.sections) return null;
+    
+    const sectionType = getSectionTypeFromStepId(stepId);
+    const section = templateData.activeVersion.sections.find(
+      s => s.sectionType === sectionType
+    );
+    
+    return section?.id || null;
+  };
+
   const buildPersonalInfoStructure = () => ({
     personalInfo: {
       firstName: true,
@@ -1379,6 +1390,29 @@ export default function TemplateBuilder() {
       console.log(`Successfully patched section ${stepId}`);
     } catch (error) {
       console.error(`Failed to patch section ${stepId}:`, error);
+      throw error;
+    }
+  };
+
+  /* ============ PUT section order and activation ============ */
+  const updateSectionOrderAndStatus = async (stepId: VerificationStep["id"], orderIndex: number) => {
+    const sectionId = getSectionId(stepId);
+    if (!sectionId) {
+      throw new Error(`Could not find section ID for section: ${stepId}`);
+    }
+
+    const putData = {
+      orderIndex,
+      isActive: true,
+    };
+
+    console.log(`Updating section ${stepId} order and status with ID ${sectionId}:`, putData);
+
+    try {
+      await apiPut(`/api/sections/${sectionId}`, putData);
+      console.log(`Successfully updated section ${stepId} order and status`);
+    } catch (error) {
+      console.error(`Failed to update section ${stepId} order and status:`, error);
       throw error;
     }
   };
@@ -1714,8 +1748,9 @@ export default function TemplateBuilder() {
       activeSections.findIndex((s) => s.name === currentSectionId),
     );
 
-    // Get current section name
+    // Get current section name and calculate order index (1-based)
     const currentSectionName = activeSections[currentIndex]?.name as VerificationStep["id"] | undefined;
+    const orderIndex = currentIndex + 1; // Convert 0-based index to 1-based order
 
     if (currentSectionName) {
       try {
@@ -1723,8 +1758,12 @@ export default function TemplateBuilder() {
         setSaveError(null);
         setSaveSuccess(null);
 
-        // Send PATCH request for current section
+        // Send PATCH request for current section structure
         await patchSectionData(currentSectionName);
+        
+        // Send PUT request for section order and activation
+        await updateSectionOrderAndStatus(currentSectionName, orderIndex);
+        
         setSaveSuccess(`${currentSectionName} section saved successfully.`);
       } catch (error: any) {
         setSaveError(error?.message || `Failed to save ${currentSectionName} section.`);

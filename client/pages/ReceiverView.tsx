@@ -86,7 +86,7 @@ export default function ReceiverView() {
         setSnapshot(parsed);
       }
     } catch (e) {
-      console.error('Failed to load template snapshot:', e);
+      console.error("Failed to load template snapshot:", e);
     }
   }, [templateId]);
 
@@ -114,7 +114,11 @@ export default function ReceiverView() {
 
   // Get template configuration from location state or build from dbTemplate or use defaults
   const templateConfig: TemplateConfig = React.useMemo(() => {
-    console.log('Building templateConfig with:', { dbTemplate, snapshot, locationState: location.state });
+    console.log("Building templateConfig with:", {
+      dbTemplate,
+      snapshot,
+      locationState: location.state,
+    });
 
     if (location.state?.templateConfig) {
       return location.state.templateConfig;
@@ -122,7 +126,7 @@ export default function ReceiverView() {
 
     // Build from local snapshot (no backend)
     if (snapshot) {
-      console.log('Using snapshot data:', snapshot);
+      console.log("Using snapshot data:", snapshot);
       const steps = Array.isArray(snapshot.verificationSteps)
         ? snapshot.verificationSteps
         : [];
@@ -137,19 +141,24 @@ export default function ReceiverView() {
         ? snapshot.optionalFields
         : [];
       const dob = !!opt.find((f: any) => f.id === "date-of-birth" && f.checked);
-      console.log('Optional fields from snapshot:', opt, 'Date of birth enabled:', dob);
-      console.log('Additional fields from snapshot:', snapshot.addedFields);
-      console.log('Full snapshot for template', templateId, ':', snapshot);
+      console.log(
+        "Optional fields from snapshot:",
+        opt,
+        "Date of birth enabled:",
+        dob,
+      );
+      console.log("Additional fields from snapshot:", snapshot.addedFields);
+      console.log("Full snapshot for template", templateId, ":", snapshot);
 
       const doc = snapshot.doc || {};
       const supportedDocuments: string[] = Array.isArray(doc.selectedDocuments)
         ? doc.selectedDocuments
         : [];
-      
-      console.log('Document configuration from snapshot:', {
+
+      console.log("Document configuration from snapshot:", {
         doc,
         selectedDocuments: doc.selectedDocuments,
-        supportedDocuments
+        supportedDocuments,
       });
 
       return {
@@ -162,8 +171,8 @@ export default function ReceiverView() {
             email: true,
             dateOfBirth: dob,
           },
-          additionalFields: Array.isArray(snapshot.addedFields) 
-            ? snapshot.addedFields 
+          additionalFields: Array.isArray(snapshot.addedFields)
+            ? snapshot.addedFields
             : [],
         },
         documentVerification: {
@@ -177,8 +186,6 @@ export default function ReceiverView() {
         },
       };
     }
-
-    console.log('Template config final result:', templateConfig);
 
     if (ENABLE_BACKEND_RECEIVER && dbTemplate) {
       const sectionStatus = dbTemplate.Section_status || {};
@@ -196,9 +203,13 @@ export default function ReceiverView() {
             email: personalInfo.Email !== false,
             dateOfBirth: !!personalInfo.Added_fields?.dob,
           },
-          additionalFields: Array.isArray(dbTemplate.Personal_info?.additionalFields) 
-            ? dbTemplate.Personal_info.additionalFields 
-            : (Array.isArray(snapshot?.addedFields) ? snapshot.addedFields : []),
+          additionalFields: Array.isArray(
+            dbTemplate.Personal_info?.additionalFields,
+          )
+            ? dbTemplate.Personal_info.additionalFields
+            : Array.isArray(snapshot?.addedFields)
+              ? snapshot.addedFields
+              : [],
         },
         documentVerification: {
           enabled:
@@ -230,11 +241,18 @@ export default function ReceiverView() {
       const bioCfg = bioRaw ? JSON.parse(bioRaw) : {};
 
       // Get optional fields configuration from localStorage or snapshot
-      const optionalFields = Array.isArray(snapshot?.optionalFields) 
-        ? snapshot.optionalFields 
+      const optionalFields = Array.isArray(snapshot?.optionalFields)
+        ? snapshot.optionalFields
         : [];
-      const hasDateOfBirth = optionalFields.some((f: any) => f.id === "date-of-birth" && f.checked);
-      console.log('localStorage fallback - optionalFields:', optionalFields, 'hasDateOfBirth:', hasDateOfBirth);
+      const hasDateOfBirth = optionalFields.some(
+        (f: any) => f.id === "date-of-birth" && f.checked,
+      );
+      console.log(
+        "localStorage fallback - optionalFields:",
+        optionalFields,
+        "hasDateOfBirth:",
+        hasDateOfBirth,
+      );
 
       return {
         templateName:
@@ -243,12 +261,12 @@ export default function ReceiverView() {
           enabled: true,
           fields: {
             firstName: true, // Always required
-            lastName: true,  // Always required
-            email: true,     // Always required
+            lastName: true, // Always required
+            email: true, // Always required
             dateOfBirth: hasDateOfBirth,
           },
-          additionalFields: Array.isArray(snapshot?.addedFields) 
-            ? snapshot.addedFields 
+          additionalFields: Array.isArray(snapshot?.addedFields)
+            ? snapshot.addedFields
             : [],
         },
         documentVerification: {
@@ -293,9 +311,9 @@ export default function ReceiverView() {
         enabled: true,
       },
     };
-  }, [location.state, dbTemplate]);
+  }, [location.state, dbTemplate, snapshot]);
 
-  console.log('Final template config:', templateConfig);
+  console.log("Final template config:", templateConfig);
 
   function extractSupportedDocuments(docVerification: any): string[] {
     const countries = Array.isArray(docVerification.Countries_array)
@@ -475,18 +493,23 @@ export default function ReceiverView() {
       ),
     },
   ].filter((option) => {
-    const isIncluded = templateConfig.documentVerification.supportedDocuments.includes(
-      option.label,
-    );
+    const isIncluded =
+      templateConfig.documentVerification.supportedDocuments.includes(
+        option.label,
+      );
     console.log(`Document filtering - ${option.label}:`, {
       isIncluded,
-      supportedDocuments: templateConfig.documentVerification.supportedDocuments,
-      documentVerificationEnabled: templateConfig.documentVerification.enabled
+      supportedDocuments:
+        templateConfig.documentVerification.supportedDocuments,
+      documentVerificationEnabled: templateConfig.documentVerification.enabled,
     });
     return isIncluded;
   });
 
-  console.log('Filtered idOptions:', idOptions.map(opt => opt.label));
+  console.log(
+    "Filtered idOptions:",
+    idOptions.map((opt) => opt.label),
+  );
 
   // Build sections in order based on template configuration
   const buildSections = () => {
@@ -510,7 +533,7 @@ export default function ReceiverView() {
           .filter(Boolean);
       }
     }
-    
+
     // Fallback to global localStorage arcon_verification_steps
     if (!sectionsOrder || !sectionsOrder.length) {
       try {
@@ -531,7 +554,7 @@ export default function ReceiverView() {
         }
       } catch {}
     }
-    
+
     // Absolute fallback to default order
     if (!sectionsOrder || !sectionsOrder.length) {
       sectionsOrder = [
@@ -577,10 +600,16 @@ export default function ReceiverView() {
 
   const renderPersonalInformation = () => {
     if (!templateConfig.personalInfo.enabled) return null;
-    
+
     // Debug logging for additional fields
-    if (templateConfig.personalInfo.additionalFields && templateConfig.personalInfo.additionalFields.length > 0) {
-      console.log('Rendering additional fields:', templateConfig.personalInfo.additionalFields);
+    if (
+      templateConfig.personalInfo.additionalFields &&
+      templateConfig.personalInfo.additionalFields.length > 0
+    ) {
+      console.log(
+        "Rendering additional fields:",
+        templateConfig.personalInfo.additionalFields,
+      );
     }
 
     return (
@@ -589,10 +618,7 @@ export default function ReceiverView() {
         <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-[#DEDEDD]">
           <div className="flex items-center gap-3 pb-2">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <Minus
-                className="w-4 h-4 text-blue-600"
-                strokeWidth={2}
-              />
+              <Minus className="w-4 h-4 text-blue-600" strokeWidth={2} />
             </div>
             <h2 className="text-lg font-bold text-[#172B4D] leading-6 font-roboto">
               Personal Information
@@ -724,22 +750,31 @@ export default function ReceiverView() {
             </div>
 
             {/* Additional Fields from Admin Configuration */}
-            {templateConfig.personalInfo.additionalFields && 
-             templateConfig.personalInfo.additionalFields.length > 0 && 
+            {templateConfig.personalInfo.additionalFields &&
+              templateConfig.personalInfo.additionalFields.length > 0 &&
               (() => {
-                console.log('Rendering additional fields:', templateConfig.personalInfo.additionalFields);
-                
+                console.log(
+                  "Rendering additional fields:",
+                  templateConfig.personalInfo.additionalFields,
+                );
+
                 // Group fields into rows of 2
                 const fields = templateConfig.personalInfo.additionalFields;
                 const rows = [];
                 for (let i = 0; i < fields.length; i += 2) {
                   rows.push(fields.slice(i, i + 2));
                 }
-                
+
                 return rows.map((row, rowIndex) => (
-                  <div key={`row-${rowIndex}`} className="flex flex-col sm:flex-row gap-6">
+                  <div
+                    key={`row-${rowIndex}`}
+                    className="flex flex-col sm:flex-row gap-6"
+                  >
                     {row.map((field) => (
-                      <div key={field.id} className="flex-1 flex flex-col group">
+                      <div
+                        key={field.id}
+                        className="flex-1 flex flex-col group"
+                      >
                         <div className="pb-3">
                           <Label className="text-sm font-semibold text-[#172B4D] leading-5 font-roboto">
                             {field.name}
@@ -760,11 +795,12 @@ export default function ReceiverView() {
                       </div>
                     ))}
                     {/* Add empty div if odd number of fields in last row on larger screens */}
-                    {row.length === 1 && <div className="hidden sm:block flex-1"></div>}
+                    {row.length === 1 && (
+                      <div className="hidden sm:block flex-1"></div>
+                    )}
                   </div>
                 ));
-              })()
-            }
+              })()}
           </div>
         </div>
       </div>
@@ -912,7 +948,9 @@ export default function ReceiverView() {
                           Camera
                         </h4>
                         <p className="text-sm text-[#676879] leading-relaxed font-roboto">
-                          Take a clear photo of your document using your device's camera. Make sure the document is well-lit and all text is readable.
+                          Take a clear photo of your document using your
+                          device's camera. Make sure the document is well-lit
+                          and all text is readable.
                         </p>
                       </div>
                     </div>
@@ -937,7 +975,9 @@ export default function ReceiverView() {
                           Upload Files
                         </h4>
                         <p className="text-sm text-[#676879] leading-relaxed font-roboto">
-                          Select and upload a clear image or PDF of your document from your device. Supported formats: JPG, PNG, PDF.
+                          Select and upload a clear image or PDF of your
+                          document from your device. Supported formats: JPG,
+                          PNG, PDF.
                         </p>
                       </div>
                       <input
@@ -1377,22 +1417,28 @@ export default function ReceiverView() {
                         templateId,
                         currentLocationState: location.state,
                         snapshot: snapshot,
-                        templateConfig: templateConfig
+                        templateConfig: templateConfig,
                       });
-                      
+
                       // Use original state if available, otherwise build from current data
                       let previewState = location.state?.originalState;
-                      
+
                       if (!previewState) {
                         // Build proper state for Preview.tsx from current template data
                         previewState = {
-                          templateName: templateConfig.templateName || "New Template",
+                          templateName:
+                            templateConfig.templateName || "New Template",
                           verificationSteps: snapshot?.verificationSteps || [],
                           addedFields: snapshot?.addedFields || [],
                           templateData: {
-                            personalInfo: templateConfig.personalInfo?.enabled ?? true,
-                            documentVerification: templateConfig.documentVerification?.enabled ?? false,
-                            biometricVerification: templateConfig.biometricVerification?.enabled ?? false,
+                            personalInfo:
+                              templateConfig.personalInfo?.enabled ?? true,
+                            documentVerification:
+                              templateConfig.documentVerification?.enabled ??
+                              false,
+                            biometricVerification:
+                              templateConfig.biometricVerification?.enabled ??
+                              false,
                           },
                           snapshot: snapshot,
                         };
@@ -1400,7 +1446,7 @@ export default function ReceiverView() {
                       } else {
                         console.log("Using original state:", previewState);
                       }
-                      
+
                       navigate(
                         templateId ? `/preview/${templateId}` : "/preview",
                         { state: previewState },
@@ -1408,7 +1454,9 @@ export default function ReceiverView() {
                     } catch (error) {
                       console.error("Error navigating to admin view:", error);
                       // Fallback navigation without state
-                      navigate(templateId ? `/preview/${templateId}` : "/preview");
+                      navigate(
+                        templateId ? `/preview/${templateId}` : "/preview",
+                      );
                     }
                   }}
                 >
@@ -1439,13 +1487,8 @@ export default function ReceiverView() {
             </div>
           </div>
 
-          {/* Resize Handle */}
-          <div className="w-4 min-h-full flex flex-col items-center gap-2.5 bg-white">
-            <div className="w-px flex-1 bg-[#DEDEDD] min-h-screen"></div>
-          </div>
-
           {/* Main Content Area */}
-          <div className="w-[987px] min-h-full p-6 flex flex-col items-center gap-6">
+          <div className="w-[987px] min-h-full p-6 flex flex-col items-center gap-6 border-l border-[#DEDEDD] self-stretch">
             <div className="flex flex-col items-center gap-4 w-full">
               {/* Render sections in the order specified by the admin */}
               {sections.map((section, index) => (

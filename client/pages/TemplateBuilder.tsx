@@ -973,31 +973,10 @@ export default function TemplateBuilder() {
     },
   });
 
-  // Hydrate from storage when templateId changes
-  useEffect(() => {
-    if (!templateId) {
-      resetToDefaults();
-      return;
-    }
+  // Apply a snapshot object to local state (used when returning from Preview or loading LS)
+  const applySnapshot = (s: any) => {
     try {
-      localStorage.setItem("arcon_current_template_id", templateId);
-    } catch {}
-
-    const raw = (() => {
-      try {
-        return localStorage.getItem(templateStorageKey(templateId));
-      } catch {
-        return null;
-      }
-    })();
-
-    if (!raw) {
-      resetToDefaults();
-      return;
-    }
-
-    try {
-      const s = JSON.parse(raw);
+      if (!s || typeof s !== "object") return;
       if (Array.isArray(s.verificationSteps))
         setVerificationSteps(s.verificationSteps);
       if (Array.isArray(s.addedFields)) setAddedFields(s.addedFields);
@@ -1030,10 +1009,78 @@ export default function TemplateBuilder() {
         setBlockAfterRetries(b.blockAfterRetries);
       if (typeof b.dataRetention === "string")
         setDataRetention(b.dataRetention);
-    } catch {
-      resetToDefaults();
+    } catch {}
+  };
+
+  // Hydrate from snapshot/localStorage when templateId or navigation state changes
+  useEffect(() => {
+    // 1) Prefer snapshot passed via navigation (from Preview)
+    const incoming = (location as any)?.state?.snapshot;
+    if (incoming && typeof incoming === "object") {
+      applySnapshot(incoming);
+      return;
     }
-  }, [templateId]);
+
+    // 2) If we have a templateId, try per-template snapshot
+    if (templateId) {
+      try {
+        localStorage.setItem("arcon_current_template_id", templateId);
+      } catch {}
+
+      try {
+        const raw = localStorage.getItem(templateStorageKey(templateId));
+        if (raw) {
+          const s = JSON.parse(raw);
+          applySnapshot(s);
+          return;
+        }
+      } catch {}
+    }
+
+    // 3) Fallback to global keys to preserve current builder state even for new templates
+    try {
+      const stepsRaw = localStorage.getItem("arcon_verification_steps");
+      const docRaw = localStorage.getItem("arcon_doc_verification_form");
+      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
+
+      const s: any = {};
+      if (stepsRaw) {
+        const steps = JSON.parse(stepsRaw);
+        if (Array.isArray(steps)) s.verificationSteps = steps;
+      }
+      if (docRaw) s.doc = JSON.parse(docRaw);
+      if (bioRaw) s.biometric = JSON.parse(bioRaw);
+
+      if (s.verificationSteps || s.doc || s.biometric) {
+        applySnapshot({
+          verificationSteps: s.verificationSteps || verificationSteps,
+          addedFields,
+          optionalFields,
+          personalInfoExpanded,
+          documentVerificationExpanded,
+          biometricVerificationExpanded,
+          currentSectionId,
+          doc: s.doc || {
+            allowUploadFromDevice,
+            allowCaptureWebcam,
+            documentHandling,
+            selectedCountries,
+            selectedDocuments,
+          },
+          biometric: s.biometric || {
+            maxRetries,
+            askUserRetry,
+            blockAfterRetries,
+            dataRetention,
+          },
+        });
+        return;
+      }
+    } catch {}
+
+    // 4) Nothing found -> defaults
+    resetToDefaults();
+  }, [templateId, (location as any)?.state?.snapshot]);
 
   // Persist snapshot whenever relevant state changes (scoped by templateId)
   const persistSnapshot = () => {
@@ -1062,10 +1109,22 @@ export default function TemplateBuilder() {
         "arcon_has_document_verification",
         JSON.stringify(hasDoc),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_has_document_verification:${templateId}`,
+          JSON.stringify(hasDoc),
+        );
+      }
       localStorage.setItem(
         "arcon_has_biometric_verification",
         JSON.stringify(hasBio),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_has_biometric_verification:${templateId}`,
+          JSON.stringify(hasBio),
+        );
+      }
 
       localStorage.setItem(
         "arcon_doc_verification_form",
@@ -1077,6 +1136,18 @@ export default function TemplateBuilder() {
           selectedDocuments,
         }),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_doc_verification_form:${templateId}`,
+          JSON.stringify({
+            allowUploadFromDevice,
+            allowCaptureWebcam,
+            documentHandling,
+            selectedCountries,
+            selectedDocuments,
+          }),
+        );
+      }
 
       localStorage.setItem(
         "arcon_biometric_verification_form",
@@ -1087,12 +1158,29 @@ export default function TemplateBuilder() {
           dataRetention,
         }),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_biometric_verification_form:${templateId}`,
+          JSON.stringify({
+            maxRetries,
+            askUserRetry,
+            blockAfterRetries,
+            dataRetention,
+          }),
+        );
+      }
 
       // Also keep a simple list of chosen steps
       localStorage.setItem(
         "arcon_verification_steps",
         JSON.stringify(verificationSteps),
       );
+      if (templateId) {
+        localStorage.setItem(
+          `arcon_verification_steps:${templateId}`,
+          JSON.stringify(verificationSteps),
+        );
+      }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -1659,11 +1747,14 @@ export default function TemplateBuilder() {
         try {
           persistSnapshot();
         } catch {}
+        const snapshot = buildSnapshot();
         navigate(templateId ? `/preview/${templateId}` : "/preview", {
           state: {
+            templateId: templateId || "",
             templateName,
             verificationSteps,
             addedFields,
+            snapshot,
             templateData: {
               personalInfo: true,
               documentVerification: verificationSteps.some(

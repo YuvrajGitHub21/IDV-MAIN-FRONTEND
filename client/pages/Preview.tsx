@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
+import { snapshot } from "node:test";
+// import { snapshot } from "node:test";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 const ENABLE_BACKEND_PREVIEW = false;
@@ -395,9 +397,10 @@ export default function Preview() {
     // Get sections order from snapshot verificationSteps, or derive from localStorage, else default
     let sectionsOrder: string[] = [];
     
-    // First try to get order from the snapshot
-    if (snapshot && Array.isArray(snapshot.verificationSteps)) {
-      sectionsOrder = snapshot.verificationSteps
+    // First try to get order from the snapshot in navigation state
+    const navSnapshot = location.state?.snapshot;
+    if (navSnapshot && Array.isArray(navSnapshot.verificationSteps)) {
+      sectionsOrder = navSnapshot.verificationSteps
         .map((s: any) =>
           s.id === "personal-info"
             ? "Personal_info"
@@ -461,8 +464,8 @@ export default function Preview() {
     }
 
     // Use snapshot verificationSteps to determine what's enabled, fallback to templateData
-    const steps = Array.isArray(snapshot?.verificationSteps) 
-      ? snapshot.verificationSteps 
+    const steps = Array.isArray(navSnapshot?.verificationSteps) 
+      ? navSnapshot.verificationSteps 
       : Array.isArray(templateData.verificationSteps)
       ? templateData.verificationSteps
       : [];
@@ -611,18 +614,20 @@ export default function Preview() {
     } else {
       // Convert builder state to receiver view config
       // Use snapshot data if available, otherwise fall back to templateData
-      const sourceData = snapshot || templateData;
+      const navSnapshot = location.state?.snapshot;
+      const sourceData = navSnapshot || templateData;
       const steps = Array.isArray(sourceData.verificationSteps)
         ? sourceData.verificationSteps
         : [];
       const addedFields = Array.isArray(sourceData.addedFields)
         ? sourceData.addedFields
         : templateData.addedFields || [];
-      const optionalFields = Array.isArray(sourceData.optionalFields)
-        ? sourceData.optionalFields
-        : [];
+      const optionalFields =
+        "optionalFields" in sourceData && Array.isArray((sourceData as any).optionalFields)
+          ? (sourceData as any).optionalFields
+          : [];
       
-      const docConfig = sourceData.doc || {};
+      const docConfig = 'doc' in sourceData ? (sourceData as any).doc || {} : {};
       const hasDoc = steps.some(
         (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
       );
@@ -722,13 +727,14 @@ export default function Preview() {
 
   // Navigate to receiver view
   const handleReceiverViewClick = () => {
+    // Build the templateConfig before using it
+    const templateConfig = buildTemplateConfigForReceiverView();
     try {
-      const templateConfig = buildTemplateConfigForReceiverView();
       navigate(templateId ? `/receiver-view/${templateId}` : "/receiver-view", {
         state: { 
           templateConfig, 
           templateData, 
-          snapshot,
+          snapshot: location.state?.snapshot,
           originalState: location.state 
         },
       });

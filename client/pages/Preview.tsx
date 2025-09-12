@@ -52,6 +52,7 @@ export default function Preview() {
   const location = useLocation();
   const { templateId } = useParams();
   const [showSendInviteDialog, setShowSendInviteDialog] = useState(false);
+  const [sendInviteTemplateId, setSendInviteTemplateId] = useState<string | null>(null);
 
   // Load template snapshot from navigation (preferred) or localStorage
   const [snapshot, setSnapshot] = useState<any>(null);
@@ -134,6 +135,12 @@ export default function Preview() {
         }
         const json = await res.json();
         setApiTemplate(json);
+        // Persist latest version id for SendInviteDialog resolver
+        const vid = json?.activeVersion?.versionId;
+        if (typeof vid === "number" && Number.isFinite(vid)) {
+          localStorage.setItem("arcon_latest_version_id", String(vid));
+        }
+
       } catch (e: any) {
         if (e?.name === "AbortError") return;
         setTplError(e?.message || "Failed to load template");
@@ -1283,7 +1290,9 @@ export default function Preview() {
       <SendInviteDialog
         isOpen={showSendInviteDialog}
         onClose={() => setShowSendInviteDialog(false)}
+        templateId={templateId}
       />
+
     </div>
   );
 }

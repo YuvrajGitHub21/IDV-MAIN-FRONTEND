@@ -101,14 +101,20 @@ export default function Preview() {
 
   useEffect(() => {
     try {
-      const docRaw = localStorage.getItem("arcon_doc_verification_form");
+      const docKey = templateId
+        ? `arcon_doc_verification_form:${templateId}`
+        : "arcon_doc_verification_form";
+      const docRaw = localStorage.getItem(docKey) || localStorage.getItem("arcon_doc_verification_form");
       if (docRaw) setDocVerificationConfig(JSON.parse(docRaw));
     } catch {}
     try {
-      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
+      const bioKey = templateId
+        ? `arcon_biometric_verification_form:${templateId}`
+        : "arcon_biometric_verification_form";
+      const bioRaw = localStorage.getItem(bioKey) || localStorage.getItem("arcon_biometric_verification_form");
       if (bioRaw) setBiometricConfig(JSON.parse(bioRaw));
     } catch {}
-  }, []);
+  }, [templateId]);
 
   // Also support per-template snapshot saved by TemplateBuilder
   useEffect(() => {
@@ -128,13 +134,17 @@ export default function Preview() {
   const [lsSteps, setLsSteps] = useState<VerificationStep[]>([]);
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("arcon_verification_steps");
+      const key = templateId
+        ? `arcon_verification_steps:${templateId}`
+        : "arcon_verification_steps";
+      const raw =
+        localStorage.getItem(key) || localStorage.getItem("arcon_verification_steps");
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) setLsSteps(parsed);
       }
     } catch {}
-  }, []);
+  }, [templateId]);
 
   // Get template data from navigation state, else build from LS
   const templateData: TemplateData = location.state || {
@@ -444,7 +454,11 @@ export default function Preview() {
     // Final fallback to localStorage arcon_verification_steps
     if (!sectionsOrder || !sectionsOrder.length) {
       try {
-        const raw = localStorage.getItem("arcon_verification_steps");
+        const key = templateId
+          ? `arcon_verification_steps:${templateId}`
+          : "arcon_verification_steps";
+        const raw =
+          localStorage.getItem(key) || localStorage.getItem("arcon_verification_steps");
         const parsed = raw ? JSON.parse(raw) : [];
         if (Array.isArray(parsed) && parsed.length) {
           sectionsOrder = parsed
@@ -498,11 +512,19 @@ export default function Preview() {
     let docFlag = false;
     let bioFlag = false;
     try {
-      const rawDoc = localStorage.getItem("arcon_has_document_verification");
+      const docKey = templateId
+        ? `arcon_has_document_verification:${templateId}`
+        : "arcon_has_document_verification";
+      const rawDoc =
+        localStorage.getItem(docKey) || localStorage.getItem("arcon_has_document_verification");
       if (rawDoc) docFlag = Boolean(JSON.parse(rawDoc));
     } catch {}
     try {
-      const rawBio = localStorage.getItem("arcon_has_biometric_verification");
+      const bioKey = templateId
+        ? `arcon_has_biometric_verification:${templateId}`
+        : "arcon_has_biometric_verification";
+      const rawBio =
+        localStorage.getItem(bioKey) || localStorage.getItem("arcon_has_biometric_verification");
       if (rawBio) bioFlag = Boolean(JSON.parse(rawBio));
     } catch {}
 

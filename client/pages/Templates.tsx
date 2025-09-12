@@ -377,8 +377,8 @@ export default function Templates() {
 
       toast.success("Template details loaded successfully!");
 
-      // Navigate to preview page with template details
-      navigate(`/preview/${templateId}`, {
+      // Navigate to backend-powered preview page
+      navigate(`/preview-backend/${templateId}`, {
         state: {
           templateDetails: templateDetails,
           templateName: templateDetails.Name,

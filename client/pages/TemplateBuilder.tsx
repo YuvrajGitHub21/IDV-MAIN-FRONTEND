@@ -883,26 +883,38 @@ export default function TemplateBuilder() {
   const applySnapshot = (s: any) => {
     try {
       if (!s || typeof s !== "object") return;
-      if (Array.isArray(s.verificationSteps)) setVerificationSteps(s.verificationSteps);
+      if (Array.isArray(s.verificationSteps))
+        setVerificationSteps(s.verificationSteps);
       if (Array.isArray(s.addedFields)) setAddedFields(s.addedFields);
       if (Array.isArray(s.optionalFields)) setOptionalFields(s.optionalFields);
-      if (typeof s.personalInfoExpanded === "boolean") setPersonalInfoExpanded(s.personalInfoExpanded);
-      if (typeof s.documentVerificationExpanded === "boolean") setDocumentVerificationExpanded(s.documentVerificationExpanded);
-      if (typeof s.biometricVerificationExpanded === "boolean") setBiometricVerificationExpanded(s.biometricVerificationExpanded);
-      if (typeof s.currentSectionId === "string") setCurrentSectionId(s.currentSectionId);
+      if (typeof s.personalInfoExpanded === "boolean")
+        setPersonalInfoExpanded(s.personalInfoExpanded);
+      if (typeof s.documentVerificationExpanded === "boolean")
+        setDocumentVerificationExpanded(s.documentVerificationExpanded);
+      if (typeof s.biometricVerificationExpanded === "boolean")
+        setBiometricVerificationExpanded(s.biometricVerificationExpanded);
+      if (typeof s.currentSectionId === "string")
+        setCurrentSectionId(s.currentSectionId);
 
       const d = s.doc || {};
-      if (typeof d.allowUploadFromDevice === "boolean") setAllowUploadFromDevice(d.allowUploadFromDevice);
-      if (typeof d.allowCaptureWebcam === "boolean") setAllowCaptureWebcam(d.allowCaptureWebcam);
-      if (typeof d.documentHandling === "string") setDocumentHandling(d.documentHandling);
-      if (Array.isArray(d.selectedCountries)) setSelectedCountries(d.selectedCountries);
-      if (Array.isArray(d.selectedDocuments)) setSelectedDocuments(d.selectedDocuments);
+      if (typeof d.allowUploadFromDevice === "boolean")
+        setAllowUploadFromDevice(d.allowUploadFromDevice);
+      if (typeof d.allowCaptureWebcam === "boolean")
+        setAllowCaptureWebcam(d.allowCaptureWebcam);
+      if (typeof d.documentHandling === "string")
+        setDocumentHandling(d.documentHandling);
+      if (Array.isArray(d.selectedCountries))
+        setSelectedCountries(d.selectedCountries);
+      if (Array.isArray(d.selectedDocuments))
+        setSelectedDocuments(d.selectedDocuments);
 
       const b = s.biometric || {};
       if (typeof b.maxRetries === "string") setMaxRetries(b.maxRetries);
       if (typeof b.askUserRetry === "boolean") setAskUserRetry(b.askUserRetry);
-      if (typeof b.blockAfterRetries === "boolean") setBlockAfterRetries(b.blockAfterRetries);
-      if (typeof b.dataRetention === "string") setDataRetention(b.dataRetention);
+      if (typeof b.blockAfterRetries === "boolean")
+        setBlockAfterRetries(b.blockAfterRetries);
+      if (typeof b.dataRetention === "string")
+        setDataRetention(b.dataRetention);
     } catch {}
   };
 

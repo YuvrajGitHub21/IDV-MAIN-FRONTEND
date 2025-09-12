@@ -70,7 +70,7 @@ export default function Preview() {
         setSnapshot((prev) => prev || parsed);
       }
     } catch (e) {
-      console.error('Failed to load template snapshot:', e);
+      console.error("Failed to load template snapshot:", e);
     }
   }, [templateId]);
 
@@ -113,14 +113,18 @@ export default function Preview() {
       const docKey = templateId
         ? `arcon_doc_verification_form:${templateId}`
         : "arcon_doc_verification_form";
-      const docRaw = localStorage.getItem(docKey) || localStorage.getItem("arcon_doc_verification_form");
+      const docRaw =
+        localStorage.getItem(docKey) ||
+        localStorage.getItem("arcon_doc_verification_form");
       if (docRaw) setDocVerificationConfig(JSON.parse(docRaw));
     } catch {}
     try {
       const bioKey = templateId
         ? `arcon_biometric_verification_form:${templateId}`
         : "arcon_biometric_verification_form";
-      const bioRaw = localStorage.getItem(bioKey) || localStorage.getItem("arcon_biometric_verification_form");
+      const bioRaw =
+        localStorage.getItem(bioKey) ||
+        localStorage.getItem("arcon_biometric_verification_form");
       if (bioRaw) setBiometricConfig(JSON.parse(bioRaw));
     } catch {}
   }, [templateId]);
@@ -147,7 +151,8 @@ export default function Preview() {
         ? `arcon_verification_steps:${templateId}`
         : "arcon_verification_steps";
       const raw =
-        localStorage.getItem(key) || localStorage.getItem("arcon_verification_steps");
+        localStorage.getItem(key) ||
+        localStorage.getItem("arcon_verification_steps");
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) setLsSteps(parsed);
@@ -429,7 +434,7 @@ export default function Preview() {
 
     // Get sections order from snapshot verificationSteps, or derive from localStorage, else default
     let sectionsOrder: string[] = [];
-    
+
     // First try to get order from the loaded snapshot
     if (snapshot && Array.isArray(snapshot.verificationSteps)) {
       sectionsOrder = snapshot.verificationSteps
@@ -444,9 +449,12 @@ export default function Preview() {
         )
         .filter(Boolean);
     }
-    
+
     // Fallback to templateData.verificationSteps if snapshot not available
-    if ((!sectionsOrder || !sectionsOrder.length) && Array.isArray(templateData.verificationSteps)) {
+    if (
+      (!sectionsOrder || !sectionsOrder.length) &&
+      Array.isArray(templateData.verificationSteps)
+    ) {
       sectionsOrder = templateData.verificationSteps
         .map((s: any) =>
           s.id === "personal-info"
@@ -459,7 +467,7 @@ export default function Preview() {
         )
         .filter(Boolean);
     }
-    
+
     // Final fallback to localStorage arcon_verification_steps
     if (!sectionsOrder || !sectionsOrder.length) {
       try {
@@ -467,7 +475,8 @@ export default function Preview() {
           ? `arcon_verification_steps:${templateId}`
           : "arcon_verification_steps";
         const raw =
-          localStorage.getItem(key) || localStorage.getItem("arcon_verification_steps");
+          localStorage.getItem(key) ||
+          localStorage.getItem("arcon_verification_steps");
         const parsed = raw ? JSON.parse(raw) : [];
         if (Array.isArray(parsed) && parsed.length) {
           sectionsOrder = parsed
@@ -484,7 +493,7 @@ export default function Preview() {
         }
       } catch {}
     }
-    
+
     // Absolute fallback to default order
     if (!sectionsOrder || !sectionsOrder.length) {
       sectionsOrder = [
@@ -500,11 +509,11 @@ export default function Preview() {
     }
 
     // Use snapshot verificationSteps to determine what's enabled, fallback to templateData
-    const steps = Array.isArray(snapshot?.verificationSteps) 
-      ? snapshot.verificationSteps 
+    const steps = Array.isArray(snapshot?.verificationSteps)
+      ? snapshot.verificationSteps
       : Array.isArray(templateData.verificationSteps)
-      ? templateData.verificationSteps
-      : [];
+        ? templateData.verificationSteps
+        : [];
 
     const docFromState = Array.isArray(steps)
       ? steps.some(
@@ -525,7 +534,8 @@ export default function Preview() {
         ? `arcon_has_document_verification:${templateId}`
         : "arcon_has_document_verification";
       const rawDoc =
-        localStorage.getItem(docKey) || localStorage.getItem("arcon_has_document_verification");
+        localStorage.getItem(docKey) ||
+        localStorage.getItem("arcon_has_document_verification");
       if (rawDoc) docFlag = Boolean(JSON.parse(rawDoc));
     } catch {}
     try {
@@ -533,7 +543,8 @@ export default function Preview() {
         ? `arcon_has_biometric_verification:${templateId}`
         : "arcon_has_biometric_verification";
       const rawBio =
-        localStorage.getItem(bioKey) || localStorage.getItem("arcon_has_biometric_verification");
+        localStorage.getItem(bioKey) ||
+        localStorage.getItem("arcon_has_biometric_verification");
       if (rawBio) bioFlag = Boolean(JSON.parse(rawBio));
     } catch {}
 
@@ -624,11 +635,11 @@ export default function Preview() {
 
   // Helper function to convert template data to format expected by ReceiverView
   const buildTemplateConfigForReceiverView = () => {
-    console.log('Preview: Building template config for receiver view', {
+    console.log("Preview: Building template config for receiver view", {
       hasDbTemplate: !!dbTemplate,
       hasSnapshot: !!snapshot,
       templateData,
-      snapshot
+      snapshot,
     });
 
     if (dbTemplate) {
@@ -674,19 +685,23 @@ export default function Preview() {
         ? sourceData.addedFields
         : templateData.addedFields || [];
       const optionalFields =
-        "optionalFields" in sourceData && Array.isArray((sourceData as any).optionalFields)
+        "optionalFields" in sourceData &&
+        Array.isArray((sourceData as any).optionalFields)
           ? (sourceData as any).optionalFields
           : [];
-      
-      const docConfig = 'doc' in sourceData ? (sourceData as any).doc || {} : {};
+
+      const docConfig =
+        "doc" in sourceData ? (sourceData as any).doc || {} : {};
       const hasDoc = steps.some(
         (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
       );
       const hasBio = steps.some(
         (s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true),
       );
-      const dob = !!optionalFields.find((f: any) => f.id === "date-of-birth" && f.checked);
-      
+      const dob = !!optionalFields.find(
+        (f: any) => f.id === "date-of-birth" && f.checked,
+      );
+
       const config = {
         templateName: sourceData.templateName || templateData.templateName,
         personalInfo: {
@@ -697,9 +712,10 @@ export default function Preview() {
             email: true,
             dateOfBirth: dob || addedFields.some((f) => f.id.includes("date")),
           },
-          additionalFields: addedFields.filter((field) => 
-            !['firstName', 'lastName', 'email'].includes(field.id) &&
-            !field.id.includes('date')
+          additionalFields: addedFields.filter(
+            (field) =>
+              !["firstName", "lastName", "email"].includes(field.id) &&
+              !field.id.includes("date"),
           ),
         },
         documentVerification: {
@@ -714,21 +730,25 @@ export default function Preview() {
           enabled: hasBio,
         },
       };
-      
-      console.log('Preview: Built template config from snapshot/templateData:', {
-        config,
-        docConfig,
-        selectedDocuments: docConfig.selectedDocuments,
-        hasDoc,
-        hasBio,
-        dob,
-        addedFields,
-        filteredAdditionalFields: addedFields.filter((field) => 
-          !['firstName', 'lastName', 'email'].includes(field.id) &&
-          !field.id.includes('date')
-        )
-      });
-      
+
+      console.log(
+        "Preview: Built template config from snapshot/templateData:",
+        {
+          config,
+          docConfig,
+          selectedDocuments: docConfig.selectedDocuments,
+          hasDoc,
+          hasBio,
+          dob,
+          addedFields,
+          filteredAdditionalFields: addedFields.filter(
+            (field) =>
+              !["firstName", "lastName", "email"].includes(field.id) &&
+              !field.id.includes("date"),
+          ),
+        },
+      );
+
       return config;
     }
   };
@@ -736,7 +756,8 @@ export default function Preview() {
   const handleBack = () => {
     navigate("/template-builder", {
       state: {
-        templateId: templateId || localStorage.getItem("arcon_current_template_id") || "",
+        templateId:
+          templateId || localStorage.getItem("arcon_current_template_id") || "",
         snapshot: snapshot || null,
       },
     });
@@ -794,7 +815,8 @@ export default function Preview() {
   const handlePrevious = () => {
     navigate("/template-builder", {
       state: {
-        templateId: templateId || localStorage.getItem("arcon_current_template_id") || "",
+        templateId:
+          templateId || localStorage.getItem("arcon_current_template_id") || "",
         templateName: templateData.templateName,
         verificationSteps: templateData.verificationSteps,
         addedFields: templateData.addedFields,
@@ -809,11 +831,11 @@ export default function Preview() {
     const templateConfig = buildTemplateConfigForReceiverView();
     try {
       navigate(templateId ? `/receiver-view/${templateId}` : "/receiver-view", {
-        state: { 
-          templateConfig, 
-          templateData, 
+        state: {
+          templateConfig,
+          templateData,
           snapshot: snapshot || location.state?.snapshot,
-          originalState: location.state 
+          originalState: location.state,
         },
       });
     } catch (error) {

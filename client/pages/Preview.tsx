@@ -49,16 +49,25 @@ export default function Preview() {
   const { templateId } = useParams();
   const [showSendInviteDialog, setShowSendInviteDialog] = useState(false);
 
-  // Load template snapshot from localStorage
+  // Load template snapshot from navigation (preferred) or localStorage
   const [snapshot, setSnapshot] = useState<any>(null);
 
+  // Prefer snapshot passed via navigation state
+  useEffect(() => {
+    const navSnap = (location as any)?.state?.snapshot;
+    if (navSnap && typeof navSnap === "object") {
+      setSnapshot(navSnap);
+    }
+  }, [location]);
+
+  // Fallback to per-template saved snapshot
   useEffect(() => {
     if (!templateId) return;
     try {
       const raw = localStorage.getItem(`arcon_tpl_state:${templateId}`);
       if (raw) {
         const parsed = JSON.parse(raw);
-        setSnapshot(parsed);
+        setSnapshot((prev) => prev || parsed);
       }
     } catch (e) {
       console.error('Failed to load template snapshot:', e);

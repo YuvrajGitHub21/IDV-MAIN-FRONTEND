@@ -586,11 +586,11 @@ export default function ReceiverView() {
     return (
       <div className="border border-[#DEDEDD] rounded-lg bg-white shadow-sm">
         {/* Section Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-[#DEDEDD]">
+        <div className="px-6 py-5 bg-white rounded-t-lg border-b border-[#DEDEDD]">
           <div className="flex items-center gap-3 pb-2">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
               <Minus
-                className="w-4 h-4 text-blue-600"
+                className="w-4 h-4 text-black"
                 strokeWidth={2}
               />
             </div>
@@ -777,11 +777,11 @@ export default function ReceiverView() {
     return (
       <div className="border border-[#DEDEDD] rounded-lg bg-white shadow-sm">
         {/* Section Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-[#DEDEDD]">
+        <div className="px-6 py-5 bg-white rounded-t-lg border-b border-[#DEDEDD]">
           <div className="flex items-center gap-3 pb-2">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
               <Minus
-                className="w-4 h-4 text-blue-600"
+                className="w-4 h-4 text-black"
                 strokeWidth={2}
               />
             </div>
@@ -1077,11 +1077,11 @@ export default function ReceiverView() {
     return (
       <div className="border border-[#DEDEDD] rounded-lg bg-white shadow-sm">
         {/* Section Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-[#DEDEDD]">
+        <div className="px-6 py-5 bg-white rounded-t-lg border-b border-[#DEDEDD]">
           <div className="flex items-center gap-3 pb-2">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
               <Minus
-                className="w-4 h-4 text-blue-600"
+                className="w-4 h-4 text-black"
                 strokeWidth={2}
               />
             </div>

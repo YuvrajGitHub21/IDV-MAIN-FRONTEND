@@ -91,7 +91,9 @@ export default function PreviewBackend() {
       (apiData as any)?.TemplateVersions ||
       null;
     if (Array.isArray(list) && list.length) return list[0];
-    return (apiData as any).activeVersion || (apiData as any).ActiveVersion || {};
+    return (
+      (apiData as any).activeVersion || (apiData as any).ActiveVersion || {}
+    );
   }
 
   // Build sections from the selected version
@@ -119,13 +121,29 @@ export default function PreviewBackend() {
         const s = structure.personalInfo || structure.personal || {};
         const added: AddedField[] = [];
         if (s?.dateOfBirth)
-          added.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
+          added.push({
+            id: "dob",
+            name: "Date of Birth",
+            placeholder: "DD/MM/YYYY",
+          });
         if (s?.currentAddress)
-          added.push({ id: "currentAddress", name: "Current Address", placeholder: "Enter your current address" });
+          added.push({
+            id: "currentAddress",
+            name: "Current Address",
+            placeholder: "Enter your current address",
+          });
         if (s?.permanentAddress)
-          added.push({ id: "permanentAddress", name: "Permanent Address", placeholder: "Enter your permanent address" });
+          added.push({
+            id: "permanentAddress",
+            name: "Permanent Address",
+            placeholder: "Enter your permanent address",
+          });
         if (s?.gender)
-          added.push({ id: "gender", name: "Gender", placeholder: "Select gender" });
+          added.push({
+            id: "gender",
+            name: "Gender",
+            placeholder: "Select gender",
+          });
         const showBase = {
           firstName: !!s?.firstName,
           lastName: !!s?.lastName,
@@ -138,15 +156,22 @@ export default function PreviewBackend() {
             "Please provide your basic personal information to begin the identity verification process.",
           enabled: true,
           component: (
-            <PersonalInformationSection addedFields={added} showBase={showBase} />
+            <PersonalInformationSection
+              addedFields={added}
+              showBase={showBase}
+            />
           ),
         });
       } else if (type === "documents") {
         const d = structure.documentVerification || structure.documents || {};
         // derive selected documents from either an array or an object of booleans
         let selectedDocuments: string[] = [];
-        if (Array.isArray(d.selectedDocuments)) selectedDocuments = d.selectedDocuments;
-        else if (d.selectedDocuments && typeof d.selectedDocuments === "object") {
+        if (Array.isArray(d.selectedDocuments))
+          selectedDocuments = d.selectedDocuments;
+        else if (
+          d.selectedDocuments &&
+          typeof d.selectedDocuments === "object"
+        ) {
           selectedDocuments = Object.entries(d.selectedDocuments)
             .filter(([, v]) => Boolean(v))
             .map(([k]) => k as string);
@@ -157,8 +182,8 @@ export default function PreviewBackend() {
           documentHandling: d.documentHandlingRejectImmediately
             ? "reject"
             : d.documentHandlingAllowRetries
-            ? "retry"
-            : undefined,
+              ? "retry"
+              : undefined,
           selectedDocuments,
         };
         out.push({
@@ -172,7 +197,8 @@ export default function PreviewBackend() {
       } else if (type === "biometrics") {
         const b = structure.biometricVerification || structure.biometrics || {};
         const config = {
-          maxRetries: typeof b.maxRetries === "number" ? b.maxRetries : undefined,
+          maxRetries:
+            typeof b.maxRetries === "number" ? b.maxRetries : undefined,
           askUserRetry: !!b.askUserRetry,
           blockAfterRetries: !!b.blockAfterRetries,
           dataRetention: b.dataRetention || "",
@@ -221,17 +247,37 @@ export default function PreviewBackend() {
 
     const added: AddedField[] = [];
     if (personalFields?.dateOfBirth)
-      added.push({ id: "dob", name: "Date of Birth", placeholder: "DD/MM/YYYY" });
+      added.push({
+        id: "dob",
+        name: "Date of Birth",
+        placeholder: "DD/MM/YYYY",
+      });
     if (personalFields?.currentAddress)
-      added.push({ id: "currentAddress", name: "Current Address", placeholder: "Enter your current address" });
+      added.push({
+        id: "currentAddress",
+        name: "Current Address",
+        placeholder: "Enter your current address",
+      });
     if (personalFields?.permanentAddress)
-      added.push({ id: "permanentAddress", name: "Permanent Address", placeholder: "Enter your permanent address" });
+      added.push({
+        id: "permanentAddress",
+        name: "Permanent Address",
+        placeholder: "Enter your permanent address",
+      });
     if (personalFields?.gender)
-      added.push({ id: "gender", name: "Gender", placeholder: "Select gender" });
+      added.push({
+        id: "gender",
+        name: "Gender",
+        placeholder: "Select gender",
+      });
 
     let docs: string[] = [];
-    if (Array.isArray(docCfg.selectedDocuments)) docs = docCfg.selectedDocuments;
-    else if (docCfg.selectedDocuments && typeof docCfg.selectedDocuments === "object") {
+    if (Array.isArray(docCfg.selectedDocuments))
+      docs = docCfg.selectedDocuments;
+    else if (
+      docCfg.selectedDocuments &&
+      typeof docCfg.selectedDocuments === "object"
+    ) {
       docs = Object.entries(docCfg.selectedDocuments)
         .filter(([, v]) => Boolean(v))
         .map(([k]) => k as string);
@@ -250,13 +296,17 @@ export default function PreviewBackend() {
         additionalFields: added,
       },
       documentVerification: {
-        enabled: sections.some((s: any) => s.sectionType === "documents" && s.isActive === true),
+        enabled: sections.some(
+          (s: any) => s.sectionType === "documents" && s.isActive === true,
+        ),
         allowUploadFromDevice: !!docCfg.allowUploadFromDevice,
         allowCaptureWebcam: !!docCfg.allowCaptureWebcam,
         supportedDocuments: docs,
       },
       biometricVerification: {
-        enabled: sections.some((s: any) => s.sectionType === "biometrics" && s.isActive === true),
+        enabled: sections.some(
+          (s: any) => s.sectionType === "biometrics" && s.isActive === true,
+        ),
       },
     };
   };

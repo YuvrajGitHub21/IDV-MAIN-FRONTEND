@@ -775,20 +775,22 @@ export default function ReceiverView() {
     if (!templateConfig.documentVerification.enabled) return null;
 
     return (
-      <div className="border border-[#DEDEDD] rounded bg-white">
+      <div className="border border-[#DEDEDD] rounded-lg bg-white shadow-sm">
         {/* Section Header */}
-        <div className="px-3 py-4 bg-white">
-          <div className="flex items-center gap-2 pb-1">
-            <Minus
-              className="w-[18px] h-[18px] text-[#323238]"
-              strokeWidth={1.5}
-            />
-            <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
+        <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-[#DEDEDD]">
+          <div className="flex items-center gap-3 pb-2">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <Minus
+                className="w-4 h-4 text-blue-600"
+                strokeWidth={2}
+              />
+            </div>
+            <h2 className="text-lg font-bold text-[#172B4D] leading-6 font-roboto">
               Document Verification
             </h2>
           </div>
-          <div className="pl-7">
-            <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
+          <div className="pl-11">
+            <p className="text-sm text-[#5E6C84] leading-6 font-roboto">
               Choose a valid government-issued ID (like a passport, driver's
               license, or national ID) and upload a clear photo of it.
             </p>
@@ -1073,20 +1075,22 @@ export default function ReceiverView() {
     if (!templateConfig.biometricVerification.enabled) return null;
 
     return (
-      <div className="border border-[#DEDEDD] rounded bg-white">
+      <div className="border border-[#DEDEDD] rounded-lg bg-white shadow-sm">
         {/* Section Header */}
-        <div className="px-3 py-4 bg-white">
-          <div className="flex items-center gap-2 pb-1">
-            <Minus
-              className="w-[18px] h-[18px] text-[#323238]"
-              strokeWidth={1.5}
-            />
-            <h2 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
+        <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-[#DEDEDD]">
+          <div className="flex items-center gap-3 pb-2">
+            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <Minus
+                className="w-4 h-4 text-blue-600"
+                strokeWidth={2}
+              />
+            </div>
+            <h2 className="text-lg font-bold text-[#172B4D] leading-6 font-roboto">
               Biometric Verification
             </h2>
           </div>
-          <div className="pl-7">
-            <p className="text-[13px] text-[#172B4D] leading-5 font-roboto">
+          <div className="pl-11">
+            <p className="text-sm text-[#5E6C84] leading-6 font-roboto">
               Take a live selfie to confirm you are the person in the ID
               document. Make sure you're in a well-lit area and your face is
               clearly visible.

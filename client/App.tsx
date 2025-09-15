@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { useTokenRefresh } from "@/hooks/useTokenRefresh";
 import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Templates from "./pages/Templates";
@@ -23,6 +24,12 @@ import ChooseTemplate from "./pages/ChooseTemplate";
 import Debug from "./pages/Debug";
 
 const queryClient = new QueryClient();
+
+// Component to handle automatic token refresh
+const TokenRefreshProvider = ({ children }: { children: React.ReactNode }) => {
+  useTokenRefresh();
+  return <>{children}</>;
+};
 // 1st change
 // chhota change
 
@@ -31,40 +38,42 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <DndProvider backend={HTML5Backend}>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<SignUp />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/dashboard" element={<Templates />} />
-              <Route path="/template-builder" element={<TemplateBuilder />} />
-              <Route path="/TemplateBuilder" element={<TemplateBuilder />} />
+        <TokenRefreshProvider>
+          <Toaster />
+          <Sonner />
+          <DndProvider backend={HTML5Backend}>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<SignUp />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/dashboard" element={<Templates />} />
+                <Route path="/template-builder" element={<TemplateBuilder />} />
+                <Route path="/TemplateBuilder" element={<TemplateBuilder />} />
 
-              <Route path="/preview" element={<Preview />} />
-              <Route path="/Preview" element={<Preview />} />
-              <Route path="/preview/:templateId" element={<Preview />} />
+                <Route path="/preview" element={<Preview />} />
+                <Route path="/Preview" element={<Preview />} />
+                <Route path="/preview/:templateId" element={<Preview />} />
 
-              <Route path="/preview-backend/:id" element={<PreviewBackend />} />
+                <Route path="/preview-backend/:id" element={<PreviewBackend />} />
 
-              <Route path="/receiver-view" element={<ReceiverView />} />
-              <Route path="/ReceiverView" element={<ReceiverView />} />
-              <Route
-                path="/receiver-view/:templateId"
-                element={<ReceiverView />}
-              />
+                <Route path="/receiver-view" element={<ReceiverView />} />
+                <Route path="/ReceiverView" element={<ReceiverView />} />
+                <Route
+                  path="/receiver-view/:templateId"
+                  element={<ReceiverView />}
+                />
 
-              <Route path="/home" element={<Home />} />
-              <Route path="/choose-template" element={<ChooseTemplate />} />
-              <Route path="/debug" element={<Debug />} />
+                <Route path="/home" element={<Home />} />
+                <Route path="/choose-template" element={<ChooseTemplate />} />
+                <Route path="/debug" element={<Debug />} />
 
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </DndProvider>
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </DndProvider>
+        </TokenRefreshProvider>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>

@@ -69,6 +69,25 @@ export default function Templates() {
   const [filterUpdatedTo, setFilterUpdatedTo] = useState<string | undefined>(
     undefined,
   );
+  // Keep your existing states above…
+
+  const MAX_NAME_LEN = 30;
+
+  // Clone dialog state
+  const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
+  const [cloneTemplateId, setCloneTemplateId] = useState<string | null>(null);
+  const [cloneTemplateName, setCloneTemplateName] = useState("");
+  const [cloneDefaultName, setCloneDefaultName] = useState("");
+  const [cloneErrorMessage, setCloneErrorMessage] = useState("");
+
+  const buildDefaultCloneName = (n: string) => {
+    const suffix = " (Copy)";
+    const base = `${n}${suffix}`;
+    if (base.length <= MAX_NAME_LEN) return base;
+    const allowed = Math.max(0, MAX_NAME_LEN - suffix.length);
+    return `${n.slice(0, allowed)}${suffix}`;
+  };
+
   const navigate = useNavigate();
   // const { templates, totalItems, fetchTemplates, applyFilters } = useTemplates();
   const {
@@ -216,28 +235,87 @@ export default function Templates() {
     }
   };
 
-  const handleCloneTemplate = async (templateId: string) => {
+  // const handleCloneTemplate = async (templateId: string) => {
+  //   const token = getToken();
+  //   if (!token) {
+  //     toast.error("Authentication required. Please login again.");
+  //     return;
+  //   }
+
+  //   // Find the template to clone by ID (this would typically be fetched or passed as a parameter)
+  //   const templateToClone = templates.find(
+  //     (template) => template.id === templateId,
+  //   );
+
+  //   if (!templateToClone) {
+  //     toast.error("Template not found.");
+  //     return;
+  //   }
+
+  //   // Create a cloned template with a new name, description, and templateRuleId
+  //   const clonedTemplate = {
+  //     name: `${templateToClone.name} (Copy)`, // New name for the cloned template
+  //     description: `${templateToClone.description}` || "New", // Use the original description or default to "New"
+  //     templateRuleId: templateToClone.templateRuleId || 1, // Use the same template rule ID (ensure it's valid)
+  //   };
+
+  //   try {
+  //     const response = await fetch(`${API_BASE}/api/Template`, {
+  //       method: "POST",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(clonedTemplate),
+  //     });
+
+  //     if (!response.ok) {
+  //       const text = await response.text();
+  //       console.error("Clone Error:", text);
+  //       throw new Error(`Failed to clone template: ${text}`);
+  //     }
+
+  //     // Refresh templates after cloning
+  //     await fetchTemplates();
+  //     applyFilters(buildCurrentFilters());
+
+  //     toast.success(`Template ${templateToClone.name} cloned successfully!`);
+  //   } catch (error) {
+  //     console.error("Error cloning template:", error);
+  //     toast.error(
+  //       error.message || `Failed to clone template ${templateToClone.name}.`,
+  //     );
+  //   }
+  // };
+
+  // Enhanced click outside functionality for mobile sidebar
+  
+  const handleCloneSubmit = async () => {
     const token = getToken();
     if (!token) {
       toast.error("Authentication required. Please login again.");
       return;
     }
+    if (!cloneTemplateId) return;
 
-    // Find the template to clone by ID (this would typically be fetched or passed as a parameter)
-    const templateToClone = templates.find(
-      (template) => template.id === templateId,
-    );
-
-    if (!templateToClone) {
+    const src = templates.find((t) => t.id === cloneTemplateId);
+    if (!src) {
       toast.error("Template not found.");
       return;
     }
 
-    // Create a cloned template with a new name, description, and templateRuleId
-    const clonedTemplate = {
-      name: `${templateToClone.name} (Copy)`, // New name for the cloned template
-      description: `${templateToClone.description}` || "New", // Use the original description or default to "New"
-      templateRuleId: templateToClone.templateRuleId || 1, // Use the same template rule ID (ensure it's valid)
+    // If user cleared the input, fall back to default "(Copy)" name
+    const chosen = (cloneTemplateName ?? "").trim() || cloneDefaultName;
+
+    if (chosen.length > MAX_NAME_LEN) {
+      setCloneErrorMessage(`Max length is ${MAX_NAME_LEN} characters.`);
+      return;
+    }
+
+    const payload = {
+      name: chosen,
+      description: `${src.description ?? ""}`,
+      templateRuleId: src.templateRuleId || 1,
     };
 
     try {
@@ -247,29 +325,27 @@ export default function Templates() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(clonedTemplate),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        const text = await response.text();
-        console.error("Clone Error:", text);
-        throw new Error(`Failed to clone template: ${text}`);
+        const text = await response.text().catch(() => "");
+        throw new Error(text || "Failed to clone template.");
       }
 
-      // Refresh templates after cloning
       await fetchTemplates();
       applyFilters(buildCurrentFilters());
 
-      toast.success(`Template ${templateToClone.name} cloned successfully!`);
-    } catch (error) {
+      setCloneDialogOpen(false);
+      toast.success(`Template cloned as "${payload.name}".`);
+    } catch (error: any) {
       console.error("Error cloning template:", error);
-      toast.error(
-        error.message || `Failed to clone template ${templateToClone.name}.`,
-      );
+      toast.error(error?.message || "Failed to clone template.");
     }
   };
 
-  // Enhanced click outside functionality for mobile sidebar
+  
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -524,10 +600,25 @@ export default function Templates() {
         setTemplateIdToRename(templateId);
         setRenameDialogOpen(true);
         break;
-      case "clone":
-        // Handle the clone action
-        await handleCloneTemplate(templateId);
+      // case "clone":
+      //   // Handle the clone action
+      //   await handleCloneTemplate(templateId);
+      //   break;
+      case "clone": {
+        const tpl = templates.find((t) => t.id === templateId);
+        if (!tpl) {
+          toast.error("Template not found.");
+          break;
+        }
+        const defaultName = buildDefaultCloneName(tpl.name ?? "Untitled");
+        setCloneTemplateId(templateId);
+        setCloneDefaultName(defaultName);
+        setCloneTemplateName(defaultName); // prefill like Rename
+        setCloneErrorMessage("");
+        setCloneDialogOpen(true);
         break;
+      }
+
       default:
         console.log(`Action ${action} not yet implemented`);
     }
@@ -1461,6 +1552,79 @@ export default function Templates() {
                 </div>
               </div>
             )}
+
+            {/* Clone Dialog */}
+            {cloneDialogOpen && (
+              <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+                <div className="bg-white p-6 rounded-lg w-96">
+                  <h2 className="text-lg font-semibold mb-4">Clone Template</h2>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Name your cloned template (optional). If left blank, we’ll use the default.
+                  </p>
+
+                  <input
+                    type="text"
+                    className={cn(
+                      "w-full p-2 border rounded mb-1",
+                      cloneErrorMessage
+                        ? "border-red-500 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300"
+                    )}
+                    placeholder={cloneDefaultName}
+                    value={cloneTemplateName}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setCloneTemplateName(v);
+                      if (v.trim().length > MAX_NAME_LEN) {
+                        setCloneErrorMessage(`Max length is ${MAX_NAME_LEN} characters.`);
+                      } else {
+                        setCloneErrorMessage("");
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleCloneSubmit();
+                      if (e.key === "Escape") setCloneDialogOpen(false);
+                    }}
+                    aria-invalid={!!cloneErrorMessage}
+                    aria-describedby={cloneErrorMessage ? "clone-error" : undefined}
+                  />
+
+                  {cloneErrorMessage && (
+                    <p id="clone-error" className="text-xs text-red-600 mb-3">
+                      {cloneErrorMessage}
+                    </p>
+                  )}
+
+                  <div className="flex justify-between items-center mt-2">
+                    <span className="text-xs text-gray-500">
+                      Default: <em>{cloneDefaultName}</em>
+                    </span>
+                    <div className="flex gap-2">
+                      <button
+                        className="px-4 py-2 bg-gray-300 rounded text-sm"
+                        onClick={() => {
+                          setCloneErrorMessage("");
+                          setCloneDialogOpen(false);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className={cn(
+                          "px-4 py-2 bg-blue-600 text-white rounded text-sm",
+                          !!cloneErrorMessage && "opacity-50 cursor-not-allowed"
+                        )}
+                        onClick={handleCloneSubmit}
+                        disabled={!!cloneErrorMessage}
+                      >
+                        Clone
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
 
           {/* Footer */}

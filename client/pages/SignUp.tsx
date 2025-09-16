@@ -287,11 +287,12 @@ export default function SignUp() {
           {/* Form Content */}
           <div className="space-y-5 sm:space-y-6 md:space-y-7">
             <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label htmlFor="firstName" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 First Name
               </label>
               <div className="relative">
                 <input
+                  id="firstName" 
                   type="text"
                   name="firstName"
                   value={formData.firstName}
@@ -312,11 +313,12 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label htmlFor="lastName" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Last Name
               </label>
               <div className="relative">
                 <input
+                  id="lastName"
                   type="text"
                   name="lastName"
                   value={formData.lastName}
@@ -337,11 +339,12 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label htmlFor="email" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Email Address
               </label>
               <div className="relative">
                 <input
+                  id="email" 
                   type="email"
                   name="email"
                   value={formData.email}
@@ -360,11 +363,12 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label htmlFor="phone" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Phone Number (Optional)
               </label>
               <div className="relative">
                 <input
+                  id="phone" 
                   type="tel"
                   name="phone"
                   value={formData.phone}
@@ -383,11 +387,12 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label htmlFor="password" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Password
               </label>
               <div className="relative">
                 <input
+                  id="password" 
                   type="password"
                   name="password"
                   value={formData.password}
@@ -408,11 +413,12 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label htmlFor="confirmPassword" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Confirm Password
               </label>
               <div className="relative">
                 <input
+                  id="confirmPassword"
                   type="password"
                   name="confirmPassword"
                   value={formData.confirmPassword}

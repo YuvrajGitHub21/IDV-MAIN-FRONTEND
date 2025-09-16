@@ -284,11 +284,12 @@ export default function Login() {
           {/* Form */}
           <form onSubmit={handleSubmit} noValidate className="space-y-5 md:space-y-6">
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label htmlFor="email" className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
                 Mobile Number Or Email Address
               </label>
               <div className="relative">
                 <input
+                  id="email"
                   type="email"
                   name="email"
                   value={formData.email}
@@ -307,11 +308,12 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label htmlFor="password" className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
                 Password
               </label>
               <div className="relative">
                 <input
+                  id="password"
                   type="password"
                   name="password"
                   value={formData.password}

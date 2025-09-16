@@ -99,14 +99,6 @@ export default function Templates() {
     error,
   } = useTemplates();
 
-  // Use custom hooks for API integration
-  // const {
-  //   templates,
-  //   loading: templatesLoading,
-  //   error: templatesError,
-  //   totalItems,
-  //   fetchTemplates,
-  // } = useTemplates();
   const { users, fetchMultipleUsers } = useUsers();
 
   // helper: detect Mongo-like ObjectId strings
@@ -1148,7 +1140,7 @@ export default function Templates() {
                         </tr>
                       ) : (
                         templates.map((template) => (
-                          <tr key={template.id} className="hover:bg-gray-50">
+                          <tr key={template.id} data-testid={`template-name-${template.id}`} className="hover:bg-gray-50">
                             <td className="px-2 py-2 text-sm text-gray-900">
                               {template.name}
                             </td>

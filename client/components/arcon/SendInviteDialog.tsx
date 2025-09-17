@@ -259,9 +259,20 @@ export default function SendInviteDialog({
     if (!file) return;
 
     const name = file.name.toLowerCase();
-    const ok = name.endsWith(".csv") || name.endsWith(".xlsx") || name.endsWith(".dbf");
-    if (!ok) {
-      toast.error("Only CSV, XLSX, and DBF files are supported.");
+    const ext = name.slice(name.lastIndexOf(".") + 1);
+    const limits: Record<string, number> = {
+      csv: 10 * 1024 * 1024, // 10 MB
+      xls:  5 * 1024 * 1024, // 5 MB
+      xlsx: 10 * 1024 * 1024 // 10 MB
+    };
+    if (!limits[ext]) {
+      toast.error("Only CSV, XLS, and XLSX files are supported.");
+      event.currentTarget.value = "";
+      return;
+    }
+    if (file.size > limits[ext]) {
+      const mb = ext === "xls" ? 5 : 10;
+      toast.error(`${ext.toUpperCase()} files must be ≤ ${mb} MB.`);
       event.currentTarget.value = "";
       return;
     }
@@ -524,7 +535,7 @@ export default function SendInviteDialog({
                       <input
                         type="file"
                         className="hidden"
-                        accept=".csv,.xlsx,.dbf"
+                        accept=".csv,.xls,.xlsx"
                         onChange={handleFileUpload}
                       />
                     </label>
@@ -533,8 +544,8 @@ export default function SendInviteDialog({
               </div>
 
               <div className="flex justify-between text-xs text-[#505258] mb-4">
-                <span>Supported Formats: CSV, XLSX, DBF</span>
-                <span>Maximum Size: 25MB</span>
+                <span>Supported Formats: CSV (≤10MB), XLS (≤5MB), XLSX (≤10MB)</span>
+                <span>Max: CSV 10MB · XLS 5MB · XLSX 10MB</span>
               </div>
 
               {uploadedFile && (

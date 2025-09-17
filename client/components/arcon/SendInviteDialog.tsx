@@ -290,6 +290,31 @@ export default function SendInviteDialog({
     uploadIntervalRef.current = id;
   };
 
+  // CSV download: sample format (name, email, department)
+  const handleDownloadSample = () => {
+    // CSV utils
+    const escapeCsv = (v: string | number) =>
+      `"${String(v).replace(/"/g, '""')}"`;
+    const toRow = (cols: (string | number)[]) => cols.map(escapeCsv).join(',');
+
+    // Headers + a few sample rows (use your in-file SAMPLE_EMPLOYEES)
+    const headers = ['name', 'email'];
+    const rows = SAMPLE_EMPLOYEES.slice(0, 5).map(e => [e.name, e.email]);
+
+    // Prepend BOM so Excel opens UTF-8 correctly
+    const csvText = '\uFEFF' + [toRow(headers), ...rows.map(toRow)].join('\r\n');
+
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'invitees-sample.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   // API call to send invites
   const handleSendInvite = async () => {
     const token = getToken();
@@ -481,7 +506,7 @@ export default function SendInviteDialog({
             <div className="p-4 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div></div>
-                <Button variant="outline" className="text-[#0073EA] border-[#0073EA]">
+                <Button variant="outline"  onClick={handleDownloadSample} className="text-[#0073EA] border-[#0073EA]">
                   <Download className="w-4 h-4 mr-2" />
                   Download sample format
                 </Button>

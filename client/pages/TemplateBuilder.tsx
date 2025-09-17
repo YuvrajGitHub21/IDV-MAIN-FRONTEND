@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
@@ -29,6 +30,62 @@ const getToken = () => {
     );
   }
   return null;
+};
+
+/* ===================== Types for Countries and Documents ===================== */
+interface Country {
+  id: number;
+  name: string;
+  isoCodeAlpha2: string;
+  isoCodeAlpha3: string;
+  isActive: boolean;
+}
+
+interface DocumentType {
+  id: number;
+  name: string;
+  code: string;
+}
+
+interface CountryWithDocuments extends Country {
+  documentTypes: DocumentType[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* ===================== API functions for Countries ===================== */
+const fetchCountries = async (): Promise<Country[]> => {
+  const token = getToken();
+  const response = await fetch(`${API_BASE}/api/Countries`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch countries: ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
+const fetchCountryById = async (countryId: number): Promise<CountryWithDocuments> => {
+  const token = getToken();
+  const response = await fetch(`${API_BASE}/api/Countries/${countryId}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch country ${countryId}: ${response.statusText}`);
+  }
+
+  return response.json();
 };
 
 const apiGet = async <T = any,>(path: string): Promise<T> => {
@@ -93,6 +150,29 @@ const apiPatch = async (path: string, body: any) => {
     );
   }
   return res.status === 204 ? null : res.json();
+};
+
+/* ===================== Helper functions ===================== */
+/**
+ * Helper function to get the active version from template data.
+ * Handles both old API structure (activeVersion) and new API structure (versions array).
+ * This fixes the issue where the API response changed from "activeVersion" to "versions" array.
+ */
+const getActiveVersion = (templateData: TemplateData | null): TemplateActiveVersion | null => {
+  if (!templateData) return null;
+  
+  // For backward compatibility, check if activeVersion exists
+  if (templateData.activeVersion) {
+    return templateData.activeVersion;
+  }
+  
+  // New API structure: find active version from versions array
+  if (templateData.versions && Array.isArray(templateData.versions)) {
+    const activeVersion = templateData.versions.find(version => version.isActive);
+    return activeVersion || templateData.versions[0] || null; // Fallback to first version if none is marked active
+  }
+  
+  return null;
 };
 
 /* ===================== UI types ===================== */
@@ -182,15 +262,11 @@ interface TemplateData {
   updatedBy?: number;
   updatedByName?: string;
   updatedByEmail?: string;
-  templateRuleInfo?: string;
   createdAt: string;
   updatedAt?: string;
-  sections?: any;
-  currentVersion?: number;
-  // Support both old and new API response structures
+  versions: TemplateActiveVersion[];
+  // Legacy support for backward compatibility
   activeVersion?: TemplateActiveVersion;
-  versions?: TemplateActiveVersion[];
-  invitees: any[];
 }
 
 /* ===================== DnD item ===================== */
@@ -259,6 +335,16 @@ const DocumentVerificationSection: React.FC<{
     setAllowCaptureWebcam: (v: boolean) => void;
     documentHandling: string;
     setDocumentHandling: (v: string) => void;
+    // New country and document state
+    availableCountries: Country[];
+    selectedCountryIds: number[];
+    setSelectedCountryIds: React.Dispatch<React.SetStateAction<number[]>>;
+    countryDocuments: Map<number, DocumentType[]>;
+    selectedDocumentIds: Map<number, number[]>;
+    setSelectedDocumentIds: React.Dispatch<React.SetStateAction<Map<number, number[]>>>;
+    loadingCountries: boolean;
+    loadingDocuments: Set<number>;
+    // Legacy state for backward compatibility
     selectedCountries: string[];
     setSelectedCountries: React.Dispatch<React.SetStateAction<string[]>>;
     selectedDocuments: string[];
@@ -272,30 +358,60 @@ const DocumentVerificationSection: React.FC<{
     setAllowCaptureWebcam,
     documentHandling,
     setDocumentHandling,
+    availableCountries,
+    selectedCountryIds,
+    setSelectedCountryIds,
+    countryDocuments,
+    selectedDocumentIds,
+    setSelectedDocumentIds,
+    loadingCountries,
+    loadingDocuments,
     selectedCountries,
     setSelectedCountries,
     selectedDocuments,
     setSelectedDocuments,
   } = stateBag;
 
-  const toggleDocument = (docType: string) => {
-    setSelectedDocuments((prev) =>
-      prev.includes(docType)
-        ? prev.filter((d) => d !== docType)
-        : [...prev, docType],
-    );
+  // Local state for controlling the Select component
+  const [selectValue, setSelectValue] = React.useState<string>("");
+
+  const toggleDocument = (countryId: number, documentId: number) => {
+    setSelectedDocumentIds(prev => {
+      const newMap = new Map(prev);
+      const currentDocs = newMap.get(countryId) || [];
+      
+      if (currentDocs.includes(documentId)) {
+        // Remove document
+        newMap.set(countryId, currentDocs.filter(id => id !== documentId));
+      } else {
+        // Add document
+        newMap.set(countryId, [...currentDocs, documentId]);
+      }
+      
+      return newMap;
+    });
   };
 
-  const removeCountry = (country: string) => {
-    setSelectedCountries((prev) => prev.filter((c) => c !== country));
+  const removeCountry = (countryId: number) => {
+    setSelectedCountryIds(prev => prev.filter(id => id !== countryId));
+    setSelectedDocumentIds(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(countryId);
+      return newMap;
+    });
   };
 
-  const documentTypes: string[] = [
-    "Aadhar Card",
-    "Pan Card",
-    "Driving License",
-    "Passport",
-  ];
+  const addCountry = (countryId: number) => {
+    if (!selectedCountryIds.includes(countryId)) {
+      setSelectedCountryIds(prev => [...prev, countryId]);
+      setSelectValue(""); // Reset the select value
+    }
+  };
+
+  // Get country name by ID
+  const getCountryName = (countryId: number): string => {
+    return availableCountries.find(c => c.id === countryId)?.name || `Country ${countryId}`;
+  };
 
   return (
     <div className="border border-gray-300 rounded">
@@ -464,55 +580,89 @@ const DocumentVerificationSection: React.FC<{
                   Which countries are supported?
                 </Label>
                 <div className="relative max-w-80">
-                  <Button
-                    variant="outline"
-                    className="w-full h-8 justify-between text-sm text-gray-600 border-gray-300 bg-white"
+                  <Select 
+                    value={selectValue} 
+                    onValueChange={(value) => {
+                      const countryId = parseInt(value, 10);
+                      if (!isNaN(countryId)) {
+                        addCountry(countryId);
+                      }
+                    }}
+                    disabled={loadingCountries}
                   >
-                    Select Countries
-                    <ChevronDown className="w-2.5 h-2.5" />
-                  </Button>
+                    <SelectTrigger className="w-full h-8 text-sm text-gray-600 border-gray-300 bg-white">
+                      <SelectValue placeholder={loadingCountries ? "Loading countries..." : "Select Countries"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableCountries
+                        .filter(country => !selectedCountryIds.includes(country.id))
+                        .map((country) => (
+                          <SelectItem key={country.id} value={country.id.toString()}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      {availableCountries.filter(country => !selectedCountryIds.includes(country.id)).length === 0 && (
+                        <SelectItem value="no-countries" disabled>
+                          {loadingCountries ? "Loading..." : "No more countries available"}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {selectedCountries.map((country) => (
-                <div key={country} className="bg-white rounded p-3">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium text-black">
-                      {country}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-8 h-8 p-0 hover:bg-gray-100"
-                      onClick={() => removeCountry(country)}
-                    >
-                      <Trash2 className="w-4 h-4 text-gray-600" />
-                    </Button>
-                  </div>
+              {selectedCountryIds.map((countryId) => {
+                const countryName = getCountryName(countryId);
+                const documents = countryDocuments.get(countryId) || [];
+                const selectedDocs = selectedDocumentIds.get(countryId) || [];
+                const isLoadingDocs = loadingDocuments.has(countryId);
 
-                  <div className="bg-gray-50 rounded p-3 flex flex-wrap gap-2">
-                    {documentTypes.map((docType) => (
-                      <div
-                        key={docType}
-                        className="flex items-center gap-2 bg-gray-50 rounded-full px-2 py-2"
+                return (
+                  <div key={countryId} className="bg-white rounded p-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-black">
+                        {countryName}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-8 h-8 p-0 hover:bg-gray-100"
+                        onClick={() => removeCountry(countryId)}
                       >
-                        <Checkbox
-                          id={`${country}-${docType}`}
-                          checked={selectedDocuments.includes(docType)}
-                          onCheckedChange={() => toggleDocument(docType)}
-                          className="w-4 h-4"
-                        />
-                        <Label
-                          htmlFor={`${country}-${docType}`}
-                          className="text-sm font-medium text-gray-600 cursor-pointer"
-                        >
-                          {docType}
-                        </Label>
-                      </div>
-                    ))}
+                        <Trash2 className="w-4 h-4 text-gray-600" />
+                      </Button>
+                    </div>
+
+                    <div className="bg-gray-50 rounded p-3 flex flex-wrap gap-2">
+                      {isLoadingDocs ? (
+                        <div className="text-sm text-gray-500">Loading documents...</div>
+                      ) : documents.length === 0 ? (
+                        <div className="text-sm text-gray-500">No documents available for this country</div>
+                      ) : (
+                        documents.map((doc) => (
+                          <div
+                            key={doc.id}
+                            className="flex items-center gap-2 bg-gray-50 rounded-full px-2 py-2"
+                          >
+                            <Checkbox
+                              id={`${countryId}-${doc.id}`}
+                              checked={selectedDocs.includes(doc.id)}
+                              onCheckedChange={() => toggleDocument(countryId, doc.id)}
+                              className="w-4 h-4"
+                            />
+                            <Label
+                              htmlFor={`${countryId}-${doc.id}`}
+                              className="text-sm font-medium text-gray-600 cursor-pointer"
+                            >
+                              {doc.name}
+                            </Label>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -866,9 +1016,17 @@ export default function TemplateBuilder() {
   const [allowUploadFromDevice, setAllowUploadFromDevice] = useState(false);
   const [allowCaptureWebcam, setAllowCaptureWebcam] = useState(false);
   const [documentHandling, setDocumentHandling] = useState("");
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([
-    "India",
-  ]);
+  
+  // Updated country and document state
+  const [availableCountries, setAvailableCountries] = useState<Country[]>([]);
+  const [selectedCountryIds, setSelectedCountryIds] = useState<number[]>([]);
+  const [countryDocuments, setCountryDocuments] = useState<Map<number, DocumentType[]>>(new Map());
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState<Map<number, number[]>>(new Map());
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingDocuments, setLoadingDocuments] = useState<Set<number>>(new Set());
+
+  // Legacy state for backward compatibility (can be removed later)
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
 
   // biometric verification state bag
@@ -883,6 +1041,85 @@ export default function TemplateBuilder() {
       setBlockAfterRetries(false);
     }
   }, [askUserRetry, blockAfterRetries]);
+
+  // Load available countries on component mount
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        setLoadingCountries(true);
+        const countries = await fetchCountries();
+        setAvailableCountries(countries.filter(c => c.isActive));
+        console.log('✅ Loaded countries:', countries);
+      } catch (error) {
+        console.error('❌ Failed to load countries:', error);
+      } finally {
+        setLoadingCountries(false);
+      }
+    };
+
+    loadCountries();
+  }, []);
+
+  // Load documents when countries are selected
+  useEffect(() => {
+    const loadDocumentsForSelectedCountries = async () => {
+      for (const countryId of selectedCountryIds) {
+        if (!countryDocuments.has(countryId) && !loadingDocuments.has(countryId)) {
+          try {
+            setLoadingDocuments(prev => new Set(prev).add(countryId));
+            const countryWithDocs = await fetchCountryById(countryId);
+            setCountryDocuments(prev => new Map(prev).set(countryId, countryWithDocs.documentTypes));
+            console.log(`✅ Loaded documents for country ${countryId}:`, countryWithDocs.documentTypes);
+          } catch (error) {
+            console.error(`❌ Failed to load documents for country ${countryId}:`, error);
+          } finally {
+            setLoadingDocuments(prev => {
+              const newSet = new Set(prev);
+              newSet.delete(countryId);
+              return newSet;
+            });
+          }
+        }
+      }
+    };
+
+    if (selectedCountryIds.length > 0) {
+      loadDocumentsForSelectedCountries();
+    }
+  }, [selectedCountryIds]); // Remove countryDocuments and loadingDocuments from dependencies
+
+  // Convert Map-based selections to legacy arrays for backward compatibility with Preview/ReceiverView
+  useEffect(() => {
+    // Update selectedCountries array with country names
+    const countryNames = selectedCountryIds.map(countryId => {
+      const country = availableCountries.find(c => c.id === countryId);
+      return country ? country.name : `Country_${countryId}`;
+    });
+    setSelectedCountries(countryNames);
+
+    // Update selectedDocuments array with all selected document names across all countries
+    const allSelectedDocuments: string[] = [];
+    selectedCountryIds.forEach(countryId => {
+      const selectedDocIds = selectedDocumentIds.get(countryId) || [];
+      const countryDocs = countryDocuments.get(countryId) || [];
+      
+      selectedDocIds.forEach(docId => {
+        const doc = countryDocs.find(d => d.id === docId);
+        if (doc && !allSelectedDocuments.includes(doc.name)) {
+          allSelectedDocuments.push(doc.name);
+        }
+      });
+    });
+    setSelectedDocuments(allSelectedDocuments);
+    
+    console.log('🔄 Updated legacy arrays for Preview/ReceiverView:', {
+      selectedCountries: countryNames,
+      selectedDocuments: allSelectedDocuments,
+      selectedCountryIds,
+      selectedDocumentIds: Object.fromEntries(selectedDocumentIds),
+      countryDocuments: Object.fromEntries(countryDocuments)
+    });
+  }, [selectedCountryIds, selectedDocumentIds, countryDocuments, availableCountries]);
 
   // save state
   const [saving, setSaving] = useState(false);
@@ -942,7 +1179,14 @@ export default function TemplateBuilder() {
     setAllowUploadFromDevice(false);
     setAllowCaptureWebcam(false);
     setDocumentHandling("");
-    setSelectedCountries(["India"]);
+    
+    // Reset new country and document state
+    setSelectedCountryIds([]);
+    setCountryDocuments(new Map());
+    setSelectedDocumentIds(new Map());
+    
+    // Reset legacy state
+    setSelectedCountries([]);
     setSelectedDocuments([]);
 
     setMaxRetries("4");
@@ -964,6 +1208,11 @@ export default function TemplateBuilder() {
       allowUploadFromDevice,
       allowCaptureWebcam,
       documentHandling,
+      // New country and document state (serialize Maps to objects)
+      selectedCountryIds,
+      countryDocuments: Object.fromEntries(countryDocuments),
+      selectedDocumentIds: Object.fromEntries(selectedDocumentIds),
+      // Legacy state for backward compatibility
       selectedCountries,
       selectedDocuments,
     },
@@ -999,6 +1248,16 @@ export default function TemplateBuilder() {
         setAllowCaptureWebcam(d.allowCaptureWebcam);
       if (typeof d.documentHandling === "string")
         setDocumentHandling(d.documentHandling);
+        
+      // Handle new country and document state
+      if (Array.isArray(d.selectedCountryIds))
+        setSelectedCountryIds(d.selectedCountryIds);
+      if (d.countryDocuments && typeof d.countryDocuments === "object")
+        setCountryDocuments(new Map(Object.entries(d.countryDocuments).map(([k, v]) => [parseInt(k, 10), v as DocumentType[]])));
+      if (d.selectedDocumentIds && typeof d.selectedDocumentIds === "object")
+        setSelectedDocumentIds(new Map(Object.entries(d.selectedDocumentIds).map(([k, v]) => [parseInt(k, 10), v as number[]])));
+        
+      // Handle legacy state for backward compatibility
       if (Array.isArray(d.selectedCountries))
         setSelectedCountries(d.selectedCountries);
       if (Array.isArray(d.selectedDocuments))
@@ -1197,6 +1456,8 @@ export default function TemplateBuilder() {
     allowUploadFromDevice,
     allowCaptureWebcam,
     documentHandling,
+    selectedCountryIds,        // ✅ add these
+    selectedDocumentIds,       // ✅ add these
     selectedCountries,
     selectedDocuments,
     maxRetries,
@@ -1210,26 +1471,6 @@ export default function TemplateBuilder() {
     (s) => s.id,
   );
 
-  /* ============ Helper function to get active version from either structure ============ */
-  const getActiveVersion = (templateData: TemplateData | null): TemplateActiveVersion | null => {
-    if (!templateData) return null;
-    
-    // New structure: versions array
-    if (templateData.versions && Array.isArray(templateData.versions)) {
-      console.log('📋 TemplateBuilder: Using new API structure with versions array');
-      return templateData.versions.find(version => version.isActive) || templateData.versions[0] || null;
-    }
-    
-    // Old structure: activeVersion object
-    if (templateData.activeVersion) {
-      console.log('📋 TemplateBuilder: Using old API structure with activeVersion object');
-      return templateData.activeVersion;
-    }
-    
-    console.warn('📋 TemplateBuilder: No valid template structure found');
-    return null;
-  };
-
   /* ============ Fetch template data from backend ============ */
   useEffect(() => {
     if (!templateId) {
@@ -1240,10 +1481,12 @@ export default function TemplateBuilder() {
     (async () => {
       try {
         const templateResponse: TemplateData = await apiGet(`/api/Template/${templateId}`);
+        console.log('🔍 Template response received:', templateResponse);
         setTemplateData(templateResponse);
         
         // Get active version using helper function
         const activeVersion = getActiveVersion(templateResponse);
+        console.log('🔍 Active version found:', activeVersion);
         
         // Hydrate personal info fields from template data if available
         const personalSection = activeVersion?.sections?.find(
@@ -1328,6 +1571,7 @@ export default function TemplateBuilder() {
 
   const getFieldMappingId = (stepId: VerificationStep["id"]): number | null => {
     const activeVersion = getActiveVersion(templateData);
+    console.log(`🔍 Getting field mapping ID for ${stepId}:`, { activeVersion, sections: activeVersion?.sections });
     if (!activeVersion?.sections) return null;
     
     const sectionType = getSectionTypeFromStepId(stepId);
@@ -1335,11 +1579,14 @@ export default function TemplateBuilder() {
       s => s.sectionType === sectionType
     );
     
-    return section?.fieldMappings?.[0]?.id || null;
+    const mappingId = section?.fieldMappings?.[0]?.id || null;
+    console.log(`🔍 Field mapping ID for ${stepId}:`, mappingId);
+    return mappingId;
   };
 
   const getSectionId = (stepId: VerificationStep["id"]): number | null => {
     const activeVersion = getActiveVersion(templateData);
+    console.log(`🔍 Getting section ID for ${stepId}:`, { activeVersion, sections: activeVersion?.sections });
     if (!activeVersion?.sections) return null;
     
     const sectionType = getSectionTypeFromStepId(stepId);
@@ -1347,7 +1594,9 @@ export default function TemplateBuilder() {
       s => s.sectionType === sectionType
     );
     
-    return section?.id || null;
+    const sectionId = section?.id || null;
+    console.log(`🔍 Section ID for ${stepId}:`, sectionId);
+    return sectionId;
   };
 
   const buildPersonalInfoStructure = () => ({
@@ -1362,16 +1611,37 @@ export default function TemplateBuilder() {
     }
   });
 
-  const buildDocumentVerificationStructure = () => ({
-    documentVerification: {
-      allowUploadFromDevice,
-      allowCaptureWebcam,
-      documentHandlingRejectImmediately: documentHandling === "reject",
-      documentHandlingAllowRetries: documentHandling === "retry",
-      supportedCountries: selectedCountries,
-      selectedDocuments,
-    }
-  });
+  const buildDocumentVerificationStructure = () => {
+    // Convert Map-based data to the expected format with country names and document lists
+    const supportedCountries = selectedCountryIds.map(countryId => {
+      const country = availableCountries.find(c => c.id === countryId);
+      const countryName = country ? country.name : `Country_${countryId}`;
+      const documents = selectedDocumentIds.get(countryId) || [];
+      const documentNames = documents.map(docId => {
+        const countryDocs = countryDocuments.get(countryId) || [];
+        const doc = countryDocs.find(d => d.id === docId);
+        return doc ? doc.name : `Document_${docId}`;
+      });
+      
+      return {
+        countryName,
+        documents: documentNames
+      };
+    });
+
+    return {
+      documentVerification: {
+        allowUploadFromDevice,
+        allowCaptureWebcam,
+        documentHandlingRejectImmediately: documentHandling === "reject",
+        documentHandlingAllowRetries: documentHandling === "retry",
+        supportedCountries,
+        selectedCountries,  // ✅ keep arrays for Preview/ReceiverView
+        selectedDocuments,  // ✅ ensure these are synced
+        // selectedDocuments: [], // Keep for backward compatibility if needed
+      }
+    };
+  };
 
   const buildBiometricVerificationStructure = () => ({
     biometricVerification: {
@@ -2274,6 +2544,16 @@ export default function TemplateBuilder() {
                         setAllowCaptureWebcam,
                         documentHandling,
                         setDocumentHandling,
+                        // New country and document state
+                        availableCountries,
+                        selectedCountryIds,
+                        setSelectedCountryIds,
+                        countryDocuments,
+                        selectedDocumentIds,
+                        setSelectedDocumentIds,
+                        loadingCountries,
+                        loadingDocuments,
+                        // Legacy state for backward compatibility
                         selectedCountries,
                         setSelectedCountries,
                         selectedDocuments,

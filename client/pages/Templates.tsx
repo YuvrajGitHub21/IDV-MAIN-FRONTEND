@@ -1165,10 +1165,9 @@ export default function Templates() {
                             </td>
                             <td className="px-2 py-2 text-sm text-gray-900">
                               {/* <InviteesAvatarGroup /> */}
-                              <InviteesAvatarGroup
-                                invitees={template.invitees ?? []}
-                                maxVisible={2}
-                              />
+                              {template.invitees?.length
+                                ? <InviteesAvatarGroup invitees={template.invitees} maxVisible={2} />
+                                : <span className="text-xs text-gray-500">No invitees yet</span>}
                             </td>
                             <td className="px-2 py-2 text-sm text-gray-900">
                               {formatDate(template.createdAtUtc)}
@@ -1258,10 +1257,9 @@ export default function Templates() {
                             </p>
                             <div className="mt-2 flex items-center gap-3">
                               {/* <InviteesAvatarGroup /> */}
-                              <InviteesAvatarGroup
-                                invitees={template.invitees ?? []}
-                                maxVisible={2}
-                              />
+                              {template.invitees?.length
+                                ? <InviteesAvatarGroup invitees={template.invitees} maxVisible={2} />
+                                : <span className="text-xs text-gray-500">No invitees yet</span>}
                               {getStatusBadge(template.isActive)}
                             </div>
                           </div>

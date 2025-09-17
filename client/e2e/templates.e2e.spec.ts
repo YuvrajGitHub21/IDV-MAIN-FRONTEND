@@ -8,11 +8,8 @@ const E2E_PASSWORD = "ChangeMe123!";
 
 // Optional: names of *existing* templates for rename/delete/preview flows.
 // Set these to safe, disposable fixtures in your env.
-const E2E_TEMPLATE_EXISTING = process.env.E2E_TEMPLATE_EXISTING || "t";       // e.g. "Welcome Kit"
+const E2E_TEMPLATE_EXISTING = "t";       // e.g. "Welcome Kit"
 let newTemplateName: string;
-const E2E_TEMPLATE_FOR_RENAME = process.env.E2E_TEMPLATE_FOR_RENAME || "t";   // will be renamed
-const E2E_TEMPLATE_FOR_DELETE = process.env.E2E_TEMPLATE_FOR_DELETE || "t";   // will be deleted
-const E2E_TEMPLATE_FOR_PREVIEW = process.env.E2E_TEMPLATE_FOR_PREVIEW || "t"; // should have details
 
 // Skip whole file when creds are not provided.
 test.skip(!E2E_EMAIL || !E2E_PASSWORD, 'Set E2E_EMAIL and E2E_PASSWORD to run these tests.');
@@ -79,6 +76,7 @@ test.describe('Templates e2e (real API)', () => {
 
     // Optionally assert a known template is present
     if (E2E_TEMPLATE_EXISTING) {
+      await page.getByPlaceholder('Search').fill(E2E_TEMPLATE_EXISTING  );
       await expect(rowByName(page, E2E_TEMPLATE_EXISTING)).toBeVisible();
     }
   });

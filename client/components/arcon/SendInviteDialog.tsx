@@ -125,13 +125,21 @@ export default function SendInviteDialog({
             headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
           });
           if (!r.ok) throw new Error(`Template fetch failed: ${r.status}`);
+          // const j = await r.json();
+
+          // const vid =
+          //   j?.activeVersion?.versionId ??
+          //   null;
+
+          // if (!cancelled) setVersionId(vid != null ? Number(vid) : null);
           const j = await r.json();
 
-          const vid =
-            j?.activeVersion?.versionId ??
-            null;
+          // Pick the active version from the array
+          const active = j?.versions?.find(v => v.isActive);
+          const vid = active?.versionId ?? null;
 
           if (!cancelled) setVersionId(vid != null ? Number(vid) : null);
+
         } else {
           // fallback if opening from a screen where only LS is available
           const fromLS = Number(localStorage.getItem("arcon_latest_version_id"));

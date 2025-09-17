@@ -1440,12 +1440,13 @@ export default function Templates() {
             {/* Rename Dialog */}
             {renameDialogOpen && (
               <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                <div className="bg-white p-6 rounded-lg w-96">
+                <div role="dialog" aria-label="Rename Template" className="bg-white p-6 rounded-lg w-96">
                   <h2 className="text-lg font-semibold mb-4">
                     Rename Template
                   </h2>
 
                   <input
+                    id="rename-template-input"
                     type="text"
                     className={cn(
                       "w-full p-2 border rounded mb-1",

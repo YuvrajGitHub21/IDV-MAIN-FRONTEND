@@ -22,6 +22,12 @@ import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import ChooseTemplate from "./pages/ChooseTemplate";
 import Debug from "./pages/Debug";
+import { Navigate } from 'react-router-dom';
+import { isAuthenticated } from '@/lib/auth';
+
+function Protected({ children }: { children: React.ReactNode }) {
+  return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />;
+}
 
 const queryClient = new QueryClient();
 
@@ -47,26 +53,24 @@ const App = () => (
                 <Route path="/" element={<SignUp />} />
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<Templates />} />
-                <Route path="/template-builder" element={<TemplateBuilder />} />
-                <Route path="/TemplateBuilder" element={<TemplateBuilder />} />
+                <Route path="/dashboard" element={<Protected><Templates /></Protected>} />
+                <Route path="/template-builder" element={<Protected><TemplateBuilder /></Protected>} />
+                <Route path="/TemplateBuilder" element={<Protected><TemplateBuilder /></Protected>} />
 
-                <Route path="/preview" element={<Preview />} />
-                <Route path="/Preview" element={<Preview />} />
-                <Route path="/preview/:templateId" element={<Preview />} />
+                <Route path="/preview" element={<Protected><Preview /></Protected>} />
+                <Route path="/Preview" element={<Protected><Preview /></Protected>} />
+                <Route path="/preview/:templateId" element={<Protected><Preview /></Protected>} />
 
-                <Route path="/preview-backend/:id" element={<PreviewBackend />} />
+                <Route path="/preview-backend/:id" element={<Protected><PreviewBackend /></Protected>} />
 
-                <Route path="/receiver-view" element={<ReceiverView />} />
-                <Route path="/ReceiverView" element={<ReceiverView />} />
-                <Route
-                  path="/receiver-view/:templateId"
-                  element={<ReceiverView />}
+                <Route path="/receiver-view" element={<Protected><ReceiverView /></Protected>} />
+                <Route path="/ReceiverView" element={<Protected><ReceiverView /></Protected>} />
+                <Route path="/receiver-view/:templateId" element={<Protected><ReceiverView /></Protected>}
                 />
 
-                <Route path="/home" element={<Home />} />
-                <Route path="/choose-template" element={<ChooseTemplate />} />
-                <Route path="/debug" element={<Debug />} />
+                <Route path="/home" element={<Protected><Home /></Protected>} />
+                <Route path="/choose-template" element={<Protected><ChooseTemplate /></Protected>} />
+                <Route path="/debug" element={<Protected><Debug /></Protected>} />
 
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

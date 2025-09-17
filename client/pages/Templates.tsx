@@ -381,8 +381,19 @@ export default function Templates() {
 
       const templateDetails: TemplateDto = await response.json();
 
-      // NEW: persist latest version id for fallback usage elsewhere
-      const vid = (templateDetails as any)?.activeVersion?.versionId;
+      // NEW: persist latest version id for fallback usage elsewhere - handle both old and new structure
+      let vid: number | undefined;
+      
+      // New structure: versions array
+      if ((templateDetails as any)?.versions && Array.isArray((templateDetails as any).versions)) {
+        const activeVersion = (templateDetails as any).versions.find((v: any) => v.isActive);
+        vid = activeVersion?.versionId || (templateDetails as any).versions[0]?.versionId;
+      } 
+      // Old structure: activeVersion object
+      else {
+        vid = (templateDetails as any)?.activeVersion?.versionId;
+      }
+      
       console.log(vid);
       if (typeof vid === "number" && Number.isFinite(vid)) {
         localStorage.setItem("arcon_latest_version_id", String(vid));
@@ -454,7 +465,15 @@ export default function Templates() {
 
   // inside Templates() component
   const resolveVersionIdForTemplate = (tpl: any): number | undefined => {
-    // Your POST payload: template.activeVersion.versionId
+    // Handle new structure: versions array
+    if (tpl?.versions && Array.isArray(tpl.versions)) {
+      const activeVersion = tpl.versions.find((v: any) => v.isActive);
+      const candidate = activeVersion?.versionId || tpl.versions[0]?.versionId;
+      if (typeof candidate === "number" && Number.isFinite(candidate))
+        return candidate;
+    }
+    
+    // Handle old structure: activeVersion object
     const candidate = tpl?.activeVersion?.versionId;
     if (typeof candidate === "number" && Number.isFinite(candidate))
       return candidate;

@@ -135,8 +135,20 @@ export default function Preview() {
         }
         const json = await res.json();
         setApiTemplate(json);
-        // Persist latest version id for SendInviteDialog resolver
-        const vid = json?.activeVersion?.versionId;
+        
+        // Persist latest version id for SendInviteDialog resolver - handle both old and new structure
+        let vid: number | undefined;
+        
+        // New structure: versions array
+        if (json?.versions && Array.isArray(json.versions)) {
+          const activeVersion = json.versions.find((v: any) => v.isActive);
+          vid = activeVersion?.versionId || json.versions[0]?.versionId;
+        } 
+        // Old structure: activeVersion object
+        else {
+          vid = json?.activeVersion?.versionId;
+        }
+        
         if (typeof vid === "number" && Number.isFinite(vid)) {
           localStorage.setItem("arcon_latest_version_id", String(vid));
         }
@@ -236,7 +248,20 @@ export default function Preview() {
   // Build sections from the .NET Template API response
   function buildSectionsFromApiTemplate(apiData: any): SectionConfig[] {
     if (!apiData) return [];
-    const sections = apiData?.activeVersion?.sections || [];
+    
+    // Handle both old and new API structure
+    let sections: any[] = [];
+    
+    // New structure: versions array
+    if (apiData?.versions && Array.isArray(apiData.versions)) {
+      const activeVersion = apiData.versions.find((v: any) => v.isActive) || apiData.versions[0];
+      sections = activeVersion?.sections || [];
+    } 
+    // Old structure: activeVersion object
+    else {
+      sections = apiData?.activeVersion?.sections || [];
+    }
+    
     if (!Array.isArray(sections)) return [];
 
     // sort by orderIndex

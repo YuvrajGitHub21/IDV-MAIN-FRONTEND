@@ -182,12 +182,14 @@ interface TemplateData {
   updatedBy?: number;
   updatedByName?: string;
   updatedByEmail?: string;
-  templateRuleInfo: string;
+  templateRuleInfo?: string;
   createdAt: string;
   updatedAt?: string;
   sections?: any;
-  currentVersion: number;
-  activeVersion: TemplateActiveVersion;
+  currentVersion?: number;
+  // Support both old and new API response structures
+  activeVersion?: TemplateActiveVersion;
+  versions?: TemplateActiveVersion[];
   invitees: any[];
 }
 
@@ -1208,6 +1210,26 @@ export default function TemplateBuilder() {
     (s) => s.id,
   );
 
+  /* ============ Helper function to get active version from either structure ============ */
+  const getActiveVersion = (templateData: TemplateData | null): TemplateActiveVersion | null => {
+    if (!templateData) return null;
+    
+    // New structure: versions array
+    if (templateData.versions && Array.isArray(templateData.versions)) {
+      console.log('📋 TemplateBuilder: Using new API structure with versions array');
+      return templateData.versions.find(version => version.isActive) || templateData.versions[0] || null;
+    }
+    
+    // Old structure: activeVersion object
+    if (templateData.activeVersion) {
+      console.log('📋 TemplateBuilder: Using old API structure with activeVersion object');
+      return templateData.activeVersion;
+    }
+    
+    console.warn('📋 TemplateBuilder: No valid template structure found');
+    return null;
+  };
+
   /* ============ Fetch template data from backend ============ */
   useEffect(() => {
     if (!templateId) {
@@ -1220,8 +1242,11 @@ export default function TemplateBuilder() {
         const templateResponse: TemplateData = await apiGet(`/api/Template/${templateId}`);
         setTemplateData(templateResponse);
         
+        // Get active version using helper function
+        const activeVersion = getActiveVersion(templateResponse);
+        
         // Hydrate personal info fields from template data if available
-        const personalSection = templateResponse?.activeVersion?.sections?.find(
+        const personalSection = activeVersion?.sections?.find(
           section => section.sectionType === "personalInformation"
         );
         
@@ -1242,7 +1267,7 @@ export default function TemplateBuilder() {
         }
 
         // Hydrate document verification fields from template data if available
-        const documentSection = templateResponse?.activeVersion?.sections?.find(
+        const documentSection = activeVersion?.sections?.find(
           section => section.sectionType === "documents"
         );
         
@@ -1264,7 +1289,7 @@ export default function TemplateBuilder() {
         }
 
         // Hydrate biometric verification fields from template data if available
-        const biometricSection = templateResponse?.activeVersion?.sections?.find(
+        const biometricSection = activeVersion?.sections?.find(
           section => section.sectionType === "biometrics"
         );
         
@@ -1302,10 +1327,11 @@ export default function TemplateBuilder() {
   };
 
   const getFieldMappingId = (stepId: VerificationStep["id"]): number | null => {
-    if (!templateData?.activeVersion?.sections) return null;
+    const activeVersion = getActiveVersion(templateData);
+    if (!activeVersion?.sections) return null;
     
     const sectionType = getSectionTypeFromStepId(stepId);
-    const section = templateData.activeVersion.sections.find(
+    const section = activeVersion.sections.find(
       s => s.sectionType === sectionType
     );
     
@@ -1313,10 +1339,11 @@ export default function TemplateBuilder() {
   };
 
   const getSectionId = (stepId: VerificationStep["id"]): number | null => {
-    if (!templateData?.activeVersion?.sections) return null;
+    const activeVersion = getActiveVersion(templateData);
+    if (!activeVersion?.sections) return null;
     
     const sectionType = getSectionTypeFromStepId(stepId);
-    const section = templateData.activeVersion.sections.find(
+    const section = activeVersion.sections.find(
       s => s.sectionType === sectionType
     );
     

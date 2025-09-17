@@ -1,17 +1,6 @@
 import { useState, useCallback } from "react";
 
 /* ===================== Types (UI) ===================== */
-// export interface TemplateItem {
-//   id: string;
-//   name: string;
-//   description: string | null;
-//   createdBy: string;
-//   templateRuleId : number | null;
-//   templateRules: string | null;
-//   isActive: boolean;
-//   createdAtUtc: string;
-//   updatedAtUtc?: string;
-// }
 
 export interface TemplatesResponse {
   page?: number;
@@ -68,9 +57,22 @@ export interface TemplateItem {
   activeVersionId?: number | null;
   invitees?: InviteeItem[];
   isActive: boolean;     // true => Completed, false => In Progress
+  versions?: VersionItem[]; // ← NEW
 
   createdAtUtc: string;
   updatedAtUtc?: string;
+}
+
+export interface VersionItem {
+  versionId: number;
+  versionNumber: number;
+  isActive: boolean;
+  enforceRekyc: boolean;
+  rekycDeadline?: string | null;
+  changeSummary?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+  invitees?: InviteeItem[];
 }
 
 /* ===================== Fallback data (unchanged) ===================== */
@@ -204,26 +206,44 @@ const objectIdToIso = (id?: string): string => {
         : undefined;
 
     // ---- pull status + invitees from activeVersion ----
-    const av = doc?.activeVersion ?? doc?.ActiveVersion ?? null;
+    const versions = Array.isArray(doc?.versions) ? doc.versions : [];
 
-    const activeVersionId: number | null =
-      av?.versionId ?? av?.VersionId ?? null;
+    // pick the active version (for dashboard convenience)
+    const av = versions.find((v: any) => v.isActive) ?? null;
+    const activeVersionId: number | null = av?.versionId ?? null;
+    const isActive: boolean = Boolean(av?.isActive ?? false);
 
-    // boolean isActive comes straight from activeVersion in your payload
-    const isActive: boolean = Boolean(av?.isActive ?? av?.IsActive ?? false);
-
-    // prefer activeVersion.invitees; fallback to root invitees if any
+    // map invitees from active version (or fallback)
     const rawInvitees =
       (Array.isArray(av?.invitees) ? av.invitees : null) ??
       (Array.isArray(doc?.invitees) ? doc.invitees : null) ??
       [];
 
     const invitees: InviteeItem[] = rawInvitees.map((i: any) => ({
-      id: String(i?.id ?? i?.Id ?? i?.email ?? Math.random().toString(36).slice(2)),
+      id: String(i?.id ?? i?.Id ?? i?.email ?? crypto.randomUUID()),
       name: String(i?.name ?? i?.Name ?? i?.email ?? "Invitee"),
       email: String(i?.email ?? i?.Email ?? ""),
       status: i?.status ?? i?.Status ?? null,
     }));
+
+    // map versions array
+    const mappedVersions: VersionItem[] = versions.map((v: any) => ({
+      versionId: v.versionId,
+      versionNumber: v.versionNumber,
+      isActive: v.isActive,
+      enforceRekyc: v.enforceRekyc,
+      rekycDeadline: v.rekycDeadline,
+      changeSummary: v.changeSummary,
+      createdAt: v.createdAt,
+      updatedAt: v.updatedAt,
+      invitees: (Array.isArray(v.invitees) ? v.invitees : []).map((i: any) => ({
+        id: String(i?.id ?? i?.email ?? crypto.randomUUID()),
+        name: String(i?.name ?? i?.email ?? "Invitee"),
+        email: String(i?.email ?? ""),
+        status: i?.status ?? null,
+      })),
+    }));
+
 
     return {
       id,
@@ -234,7 +254,9 @@ const objectIdToIso = (id?: string): string => {
       templateRules,
       activeVersionId,
       invitees,
-      isActive,              // <- dashboard will show Completed/In Progress from this
+      isActive,           
+         // <- dashboard will show Completed/In Progress from this
+      versions: mappedVersions,   
       createdAtUtc,
       updatedAtUtc,
     };

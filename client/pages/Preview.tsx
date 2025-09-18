@@ -326,6 +326,10 @@ export default function Preview() {
         });
       } else if (type === "documents") {
         const d = structure.documentVerification || {};
+        const countryName =
+          (Array.isArray(d?.supportedCountries) && d.supportedCountries[0]?.countryName) ||
+          (Array.isArray(d?.selectedCountries) && d.selectedCountries[0]) || undefined;
+
         const config = {
           allowUploadFromDevice: !!d.allowUploadFromDevice,
           allowCaptureWebcam: !!d.allowCaptureWebcam,
@@ -334,6 +338,7 @@ export default function Preview() {
             : d.documentHandlingAllowRetries
               ? "retry"
               : undefined,
+          countryName,
           selectedDocuments: Array.isArray(d.selectedDocuments)
             ? d.selectedDocuments
             : [],
@@ -1512,7 +1517,7 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
             <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
               <div className="h-[42px] flex items-center gap-6 w-full">
                 <span className="text-sm font-medium text-black leading-[22px] font-roboto">
-                  India
+                  {config.countryName ?? "Country"}
                 </span>
               </div>
               <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">

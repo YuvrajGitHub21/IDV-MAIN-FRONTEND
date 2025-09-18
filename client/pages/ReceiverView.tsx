@@ -1,47 +1,33 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import {
-  ChevronLeft,
-  Camera,
-  Upload,
-  Info,
-  RefreshCw,
-  Send,
-  Save,
-  Check,
-  X,
-  FileText,
-  Minus,
-} from "lucide-react";
+import { ChevronLeft, Camera, Upload, Info, RefreshCw,Send, Save, Check, X, FileText, Minus} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
-import { config } from "node_modules/zod/v4/core/core";
-import DocumentVerification from "./DocumentVerification";
+import { getAccessToken } from "@/lib/auth";
 
-const API_BASE = import.meta.env.VITE_API_URL ?? "";
+const API_BASE = "http://10.10.2.133:8080";
 const ENABLE_BACKEND_RECEIVER = false;
 
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  dateOfBirth: string;
-  country: string;
-  idType: string;
-  document?: File;
-  [key: string]: string | File | undefined; // Allow dynamic fields
-}
+type CountryDocs = { countryName: string; documents: string[] };
+
+type DocConfig = {
+  allowUploadFromDevice?: boolean;
+  allowCaptureWebcam?: boolean;
+  // "retry" | "reject" matches the preview page semantics
+  documentHandling?: "retry" | "reject";
+
+  // NEW (preferred, multi-country)
+  countries?: CountryDocs[];
+
+  // Legacy single-country (back-compat)
+  countryName?: string;
+  supportedDocuments?: string[];
+};
 
 interface TemplateConfig {
   templateName: string;
@@ -64,12 +50,25 @@ interface TemplateConfig {
     enabled: boolean;
     allowUploadFromDevice: boolean;
     allowCaptureWebcam: boolean;
-    countryName: string[];
-    supportedDocuments: string[];
+    // use countries[] primarily; fall back to legacy fields if present
+    countries?: CountryDocs[];
+    countryName?: string;          // legacy
+    supportedDocuments?: string[]; // legacy
   };
   biometricVerification: {
     enabled: boolean;
   };
+}
+
+interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  dateOfBirth: string;
+  country: string;
+  idType: string;
+  document?: File;
+  [key: string]: string | File | undefined; // Allow dynamic fields
 }
 
 export default function ReceiverView() {
@@ -96,23 +95,38 @@ export default function ReceiverView() {
   // Load template from database or state
   const [dbTemplate, setDbTemplate] = useState<any>(null);
   const [loadingTpl, setLoadingTpl] = useState(false);
+  // .NET GET /api/Template/{id}
+  const [apiTemplate, setApiTemplate] = useState<any>(null);
+  const [tplError, setTplError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!templateId) return;
-    const run = async () => {
-      setLoadingTpl(true);
+    const controller = new AbortController();
+    setLoadingTpl(true);
+    (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/templates/${templateId}`);
-        if (!res.ok) throw new Error(`Failed to fetch template`);
+        const token = typeof getAccessToken === "function" ? getAccessToken() : undefined;
+        const res = await fetch(`${API_BASE}/api/Template/${templateId}`, {
+          headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`Failed to fetch template: ${res.status}`);
         const json = await res.json();
-        setDbTemplate(json);
+        setApiTemplate(json);
+        console.log("✅ Fetched template from backend:", json);
       } catch (e: any) {
-        console.error("Failed to load template:", e);
+        if (e?.name !== "AbortError") {
+          console.error("Failed to load template:", e);
+          setTplError(e?.message || "Failed to load template");
+        }
       } finally {
         setLoadingTpl(false);
       }
-    };
-    run();
+    })();
+    return () => controller.abort();
   }, [templateId]);
 
   // Get template configuration from location state or build from dbTemplate or use defaults
@@ -125,6 +139,142 @@ export default function ReceiverView() {
 
     if (location.state?.templateConfig) {
       return location.state.templateConfig;
+    }
+
+    // 1) Prefer the new .NET GET /api/Template/{id}
+    if (apiTemplate) {
+      const active =
+        Array.isArray(apiTemplate.versions)
+          ? (apiTemplate.versions.find((v: any) => v.isActive) ?? apiTemplate.versions[0])
+          : apiTemplate.activeVersion;
+
+      const sections: any[] = Array.isArray(active?.sections) ? active.sections : [];
+
+      // defaults
+      let personalEnabled = true;
+      let showBase = { firstName: true, lastName: true, email: true, dateOfBirth: false };
+      const additionalFields: NonNullable<TemplateConfig["personalInfo"]["additionalFields"]> = [];
+
+      let docEnabled = false;
+      let docCfg: DocConfig = {};
+      let bioEnabled = false;
+
+      for (const sec of sections) {
+        if (sec?.isActive === false) continue;
+        const type = String(sec?.sectionType || "");
+        const mapping = Array.isArray(sec?.fieldMappings) && sec.fieldMappings.length ? sec.fieldMappings[0] : null;
+        const structure = mapping?.structure || {};
+
+        if (type === "personalInformation") {
+          personalEnabled = true;
+          const s = structure.personalInfo || {};
+          showBase = {
+            firstName: !!s?.firstName,
+            lastName: !!s?.lastName,
+            email: !!s?.email,
+            dateOfBirth: !!s?.dateOfBirth,
+          };
+          if (s?.currentAddress) additionalFields.push({ id: "currentAddress", name: "Current Address", placeholder: "Enter your current address" });
+          if (s?.permanentAddress) additionalFields.push({ id: "permanentAddress", name: "Permanent Address", placeholder: "Enter your permanent address" });
+          if (s?.gender) additionalFields.push({ id: "gender", name: "Gender", placeholder: "Select gender" });
+        }
+
+        if (type === "documents") {
+          docEnabled = true;
+          const d = structure.documentVerification || structure.documents || {};
+
+          type SupportedCountry = {
+            countryName?: string;
+            country?: string;
+            name?: string;
+            documents?: string[];
+          };
+
+          const supported: SupportedCountry[] = Array.isArray(d.supportedCountries)
+            ? (d.supportedCountries as SupportedCountry[])
+            : [];
+
+          // Normalize -> CountryDocs[]
+          const normalized: CountryDocs[] = supported
+            .map((c) => ({
+              countryName: String(c.countryName ?? c.country ?? c.name ?? "").trim(),
+              documents: Array.isArray(c.documents) ? c.documents.filter(Boolean) : [],
+            }))
+            .filter((c) => c.countryName.length > 0);
+
+          // Dedupe by name
+          const seen = new Set<string>();
+          let countries: CountryDocs[] = normalized.filter((c) => {
+            const valid =
+              typeof c.countryName === "string" && c.countryName.trim().length > 0;
+            if (!valid) {
+              console.warn("⚠️ Invalid country in normalized list:", c);
+              return false;
+            }
+            if (seen.has(c.countryName)) return false;
+            seen.add(c.countryName);
+            return true;
+          });
+
+          // NEW: get preferred country list from API (selectedCountries) as a string[]
+          const selectedCountryNames = extractSupportedCountries(d);
+
+          // NEW: if API provided selectedCountries, filter the CountryDocs[] to only those
+          if (selectedCountryNames.length) {
+            const want = new Set(
+              selectedCountryNames.map((s) => s.trim().toLowerCase()),
+            );
+            countries = countries.filter((c) =>
+              want.has(c.countryName.trim().toLowerCase()),
+            );
+          }
+
+          docCfg = {
+            allowUploadFromDevice: !!d.allowUploadFromDevice,
+            allowCaptureWebcam: !!d.allowCaptureWebcam,
+            documentHandling: d.documentHandlingRejectImmediately
+              ? "reject"
+              : d.documentHandlingAllowRetries
+              ? "retry"
+              : undefined,
+            countries, // used by the dropdown + docs UI
+          };
+
+          // OPTIONAL: if you also want a simple string[] of country names available:
+          console.log("✅ Country names array:", countries.map((c) => c.countryName));
+        }
+      // Right after computing allCountries
+      const countryNamesArray: string[] = allCountries.map((c) => c.countryName);
+      console.log("🌍 countryNamesArray:", countryNamesArray);
+
+
+
+
+
+        if (type === "biometrics") {
+          bioEnabled = true;
+        }
+      }
+
+      const countries = docCfg.countries ?? [];
+
+      return {
+        templateName: apiTemplate?.templateName || apiTemplate?.name || "New Template",
+        personalInfo: {
+          enabled: personalEnabled,
+          fields: showBase,
+          additionalFields,
+        },
+        documentVerification: {
+          enabled: docEnabled,
+          allowUploadFromDevice: !!docCfg.allowUploadFromDevice,
+          allowCaptureWebcam: !!docCfg.allowCaptureWebcam,
+          countries,
+          // only include supportedDocuments when we DON'T have per-country lists
+          ...(countries.length ? {} : { supportedDocuments: [] }),
+        },
+        biometricVerification: { enabled: bioEnabled },
+      };
     }
 
     // Build from local snapshot (no backend)
@@ -152,11 +302,8 @@ export default function ReceiverView() {
       );
       console.log("Additional fields from snapshot:", snapshot.addedFields);
       console.log("Full snapshot for template", templateId, ":", snapshot);
+
       const d = snapshot.documentVerification || snapshot.documents || {};
-      const countryName =
-        (Array.isArray(d?.supportedCountries) && d.supportedCountries[0]?.countryName) ||
-        (Array.isArray(d?.selectedCountries) && d.selectedCountries[0]) ||
-        undefined;
 
       const doc = snapshot.doc || {};
       const supportedDocuments: string[] = Array.isArray(doc.selectedDocuments)
@@ -168,6 +315,14 @@ export default function ReceiverView() {
         selectedDocuments: doc.selectedDocuments,
         supportedDocuments,
       });
+      
+      // Use the same robust normalizer used in the API path:
+      const normalizedCountries = normalizeCountriesFromDocCfg({
+        ...d,
+        // provide a fallback so each selected country at least gets *some* docs
+        selectedDocuments: supportedDocuments,
+      });
+
 
       return {
         templateName: snapshot.templateName || "New Template",
@@ -187,9 +342,17 @@ export default function ReceiverView() {
           enabled: hasDoc,
           allowUploadFromDevice: !!doc.allowUploadFromDevice,
           allowCaptureWebcam: !!doc.allowCaptureWebcam,
-          countryName,
-          supportedDocuments,
-        },
+          // If we have selected countries in the snapshot, expose a proper multi-country array.
+          ...(normalizedCountries.length
+            ? { countries: normalizedCountries }
+            : {
+                // legacy single-country fallback
+                countryName:
+                  (Array.isArray(d?.supportedCountries) && d.supportedCountries[0]?.countryName) ||
+                  undefined,
+                supportedDocuments,
+              }),
+            },
         biometricVerification: {
           enabled: hasBio,
         },
@@ -320,9 +483,32 @@ export default function ReceiverView() {
         enabled: true,
       },
     };
-  }, [location.state, dbTemplate, snapshot]);
+  }, [location.state, apiTemplate, dbTemplate, snapshot]);
 
   console.log("Final template config:", templateConfig);
+
+  function normalizeCountriesFromDocCfg(d: any): CountryDocs[] {
+    if (!d) return [];
+    const out: CountryDocs[] = [];
+
+    // .NET shape
+    if (Array.isArray(d.supportedCountries)) {
+      for (const c of d.supportedCountries) {
+        const name = String(c?.countryName ?? c?.country ?? c?.name ?? "").trim();
+        const docs = Array.isArray(c?.documents) ? c.documents.filter(Boolean) : [];
+
+        if (name) {
+          out.push({ countryName: name, documents: docs });
+          console.log("✔️ Parsed supported country:", name, docs);
+        } else {
+          console.warn("❌ Skipping invalid country:", c);
+        }
+      }
+    }
+
+    return out;
+  }
+
 
   function extractSupportedDocuments(docVerification: any): string[] {
     const countries = Array.isArray(docVerification.Countries_array)
@@ -340,13 +526,56 @@ export default function ReceiverView() {
     return supportedDocs;
   }
 
+  // NEW: extract countries into a simple string[] from multiple possible shapes
+  function extractSupportedCountries(input: any): string[] {
+    // 1) Preferred: .NET API shape has a string[] of selectedCountries
+    if (Array.isArray(input?.selectedCountries)) {
+      return Array.from(
+        new Set(
+          input.selectedCountries
+            .map((s: any) => String(s ?? "").trim())
+            .filter(Boolean),
+        ),
+      );
+    }
+
+    // 2) Or derive from supportedCountries[].countryName
+    if (Array.isArray(input?.supportedCountries)) {
+      return Array.from(
+        new Set(
+          input.supportedCountries
+            .map((c: any) =>
+              String(c?.countryName ?? c?.country ?? c?.name ?? "").trim(),
+            )
+            .filter(Boolean),
+        ),
+      );
+    }
+
+    // 3) Legacy DB fallback (if present)
+    if (Array.isArray(input?.Countries_array)) {
+      return Array.from(
+        new Set(
+          input.Countries_array
+            .map((c: any) =>
+              String(c?.countryName ?? c?.country ?? c?.name ?? c?.label ?? "")
+                .trim(),
+            )
+            .filter(Boolean),
+        ),
+      );
+    }
+
+    return [];
+  }
+
   const [formData, setFormData] = useState<FormData>({
     firstName: "",
     lastName: "",
     email: "",
     dateOfBirth: "",
     country: "India",
-    idType: "passport",
+    idType: "",
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -361,6 +590,51 @@ export default function ReceiverView() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Country -> docs mapping derived from templateConfig
+  
+// After templateConfig is computed
+  const allCountries: CountryDocs[] =
+    templateConfig.documentVerification.countries ?? [];
+
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+
+  // when countries load/change, pick the first one and reset idType
+  useEffect(() => {
+    if (Array.isArray(allCountries) && allCountries.length > 0) {
+      const first = allCountries[0].countryName;
+      if (first && typeof first === "string" && first.trim().length > 0) {
+        setSelectedCountry(first);
+        setFormData((prev) => ({ ...prev, country: first, idType: "" }));
+      }
+    }
+  }, [JSON.stringify(allCountries)]); // <- ensures effect runs when country data updates
+
+
+
+  const onCountryChange = (value: string) => {
+    setSelectedCountry(value);
+    setFormData((prev) => ({ ...prev, country: value, idType: "" }));
+  };
+
+
+  const hasMultiCountry = (allCountries?.length ?? 0) > 0;
+  const allowedDocsForCountry = hasMultiCountry
+    ? (allCountries.find(c => c.countryName === selectedCountry)?.documents ?? [])
+    : (templateConfig.documentVerification.supportedDocuments ?? []);
+
+  
+  // Select first doc type by default when list changes
+  useEffect(() => {
+    if (allowedDocsForCountry && allowedDocsForCountry.length) {
+      const first = allowedDocsForCountry[0];
+      const v = slugifyLabel(first);
+      setFormData((prev) => (prev.idType ? prev : { ...prev, idType: v }));
+    } else {
+      // reset when no docs available
+      setFormData((prev) => ({ ...prev, idType: "" }));
+    }
+  }, [selectedCountry, allowedDocsForCountry]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -424,101 +698,88 @@ export default function ReceiverView() {
     openCamera();
   };
 
-  const idOptions = [
-    {
-      value: "passport",
-      label: "Passport",
-      color: "#5A43D6",
-      icon: (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z"
-            fill="white"
-          />
-        </svg>
-      ),
-    },
-    {
-      value: "aadhar",
-      label: "Aadhar Card",
-      color: "#00B499",
-      icon: (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M12.25 17.6923C11.2653 17.6923 10.316 17.8509 9.402 18.1683C8.48783 18.4856 7.64225 18.9679 6.86525 19.6152C6.87808 19.7064 6.91342 19.7882 6.97125 19.8605C7.02892 19.933 7.093 19.9795 7.1635 20H17.327C17.3975 19.9795 17.4616 19.933 17.5193 19.8605C17.5769 19.7882 17.6122 19.7064 17.625 19.6152C16.8608 18.9679 16.0218 18.4856 15.1077 18.1683C14.1936 17.8509 13.241 17.6923 12.25 17.6923Z"
-            fill="white"
-          />
-        </svg>
-      ),
-    },
-    {
-      value: "license",
-      label: "Driving License",
-      color: "#ED5F00",
-      icon: (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M4.80775 20.5C4.30258 20.5 3.875 20.325 3.525 19.975C3.175 19.625 3 19.1974 3 18.6923V5.30775C3 4.80258 3.175 4.375 3.525 4.025C3.875 3.675 4.30258 3.5 4.80775 3.5H20.1923C20.6974 3.5 21.125 3.675 21.475 4.025C21.825 4.375 22 4.80258 22 5.30775V18.6923C22 19.1974 21.825 19.625 21.475 19.975C21.125 20.325 20.6974 20.5 20.1923 20.5H4.80775Z"
-            fill="white"
-          />
-        </svg>
-      ),
-    },
-    {
-      value: "pan",
-      label: "Pan Card",
-      color: "#9C2BAD",
-      icon: (
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M5.05775 19.5C4.55258 19.5 4.125 19.325 3.775 18.975C3.425 18.625 3.25 18.1974 3.25 17.6923V6.30775C3.25 5.80258 3.425 5.375 3.775 5.025C4.125 4.675 4.55258 4.5 5.05775 4.5H20.4423C20.9474 4.5 21.375 4.675 21.725 5.025C22.075 5.375 22.25 5.80258 22.25 6.30775V17.6923C22.25 18.1974 22.075 18.625 21.725 18.975C21.375 19.325 20.9474 19.5 20.4423 19.5H5.05775Z"
-            fill="white"
-          />
-        </svg>
-      ),
-    },
-  ].filter((option) => {
-    const isIncluded =
-      templateConfig.documentVerification.supportedDocuments.includes(
-        option.label,
-      );
-    console.log(`Document filtering - ${option.label}:`, {
-      isIncluded,
-      supportedDocuments:
-        templateConfig.documentVerification.supportedDocuments,
-      documentVerificationEnabled: templateConfig.documentVerification.enabled,
-    });
-    return isIncluded;
+  // ---- dynamic options from backend names, preserving the same card look ----
+  const slugifyLabel = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+
+  const getDocVisuals = (label: string) => {
+    const k = label.toLowerCase();
+    // Reuse the same four visuals you already had; add safe defaults for unknown types.
+    if (k.includes("passport") && !k.includes("internal")) {
+      return {
+        color: "#5A43D6",
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z" fill="white"/>
+          </svg>
+        ),
+      };
+    }
+    if (k.includes("aadhar") || k.includes("aadhaar") || k.includes("national id") || k === "national id" || k.includes("state id")) {
+      return {
+        color: "#00B499",
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.25 17.6923C11.2653 17.6923 10.316 17.8509 9.402 18.1683C8.48783 18.4856 7.64225 18.9679 6.86525 19.6152C6.87808 19.7064 6.91342 19.7882 6.97125 19.8605C7.02892 19.933 7.093 19.9795 7.1635 20H17.327C17.3975 19.9795 17.4616 19.933 17.5193 19.8605C17.5769 19.7882 17.6122 19.7064 17.625 19.6152C16.8608 18.9679 16.0218 18.4856 15.1077 18.1683C14.1936 17.8509 13.241 17.6923 12.25 17.6923Z" fill="white"/>
+          </svg>
+        ),
+      };
+    }
+    if (k.includes("driver") || k.includes("driving") || k === "license" || k.includes("licence")) {
+      return {
+        color: "#ED5F00",
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+           <path d="M4.80775 20.5C4.30258 20.5 3.875 20.325 3.525 19.975C3.175 19.625 3 19.1974 3 18.6923V5.30775C3 4.80258 3.175 4.375 3.525 4.025C3.875 3.675 4.30258 3.5 4.80775 3.5H20.1923C20.6974 3.5 21.125 3.675 21.475 4.025C21.825 4.375 22 4.80258 22 5.30775V18.6923C22 19.1974 21.825 19.625 21.475 19.975C21.125 20.325 20.6974 20.5 20.1923 20.5H4.80775Z" fill="white"/>
+          </svg>
+        ),
+      };
+    }
+    if (k.includes("pan") || k.includes("tax")) {
+      return {
+        color: "#9C2BAD",
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.05775 19.5C4.55258 19.5 4.125 19.325 3.775 18.975C3.425 18.625 3.25 18.1974 3.25 17.6923V6.30775C3.25 5.80258 3.425 5.375 3.775 5.025C4.125 4.675 4.55258 4.5 5.05775 4.5H20.4423C20.9474 4.5 21.375 4.675 21.725 5.025C22.075 5.375 22.25 5.80258 22.25 6.30775V17.6923C22.25 18.1974 22.075 18.625 21.725 18.975C21.375 19.325 20.9474 19.5 20.4423 19.5H5.05775Z" fill="white"/>
+          </svg>
+        ),
+      };
+    }
+    if (k.includes("internal passport")) {
+      return {
+        color: "#5A43D6",
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.5C10.6975 21.5 9.46833 21.2503 8.3125 20.751C7.15667 20.2517 6.14867 19.5718 5.2885 18.7115C4.42817 17.8513 3.74833 16.8433 3.249 15.6875C2.74967 14.5317 2.5 13.3025 2.5 12C2.5 10.6872 2.74967 9.45542 3.249 8.30475C3.74833 7.15408 4.42817 6.14867 5.2885 5.2885C6.14867 4.42817 7.15667 3.74833 8.3125 3.249C9.46833 2.74967 10.6975 2.5 12 2.5C13.3128 2.5 14.5446 2.74967 15.6953 3.249C16.8459 3.74833 17.8513 4.42817 18.7115 5.2885C19.5718 6.14867 20.2517 7.15408 20.751 8.30475C21.2503 9.45542 21.5 10.6872 21.5 12C21.5 13.3025 21.2503 14.5317 20.751 15.6875C20.2517 16.8433 19.5718 17.8513 18.7115 18.7115C17.8513 19.5718 16.8459 20.2517 15.6953 20.751C14.5446 21.2503 13.3128 21.5 12 21.5Z" fill="white"/>
+          </svg>
+        ),
+      };
+    }
+    if (k.includes("social security")) {
+      return {
+        color: "#00B499",
+        icon: (
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.25 17.6923C11.2653 17.6923 10.316 17.8509 9.402 18.1683C8.48783 18.4856 7.64225 18.9679 6.86525 19.6152C6.87808 19.7064 6.91342 19.7882 6.97125 19.8605C7.02892 19.933 7.093 19.9795 7.1635 20H17.327C17.3975 19.9795 17.4616 19.933 17.5193 19.8605C17.5769 19.7882 17.6122 19.7064 17.625 19.6152C16.8608 18.9679 16.0218 18.4856 15.1077 18.1683C14.1936 17.8509 13.241 17.6923 12.25 17.6923Z" fill="white"/>
+          </svg>
+        ),
+      };
+    }
+    // default fallback: same card style with a neutral color + file icon
+    return {
+      color: "#C3C6D4",
+      icon: <FileText className="w-4 h-4 text-white" />,
+    };
+  };
+
+  const idOptions = (allowedDocsForCountry ?? []).map((name) => {
+    const visuals = getDocVisuals(name);
+    return { value: slugifyLabel(name), label: name, ...visuals };
   });
 
-  console.log(
-    "Filtered idOptions:",
-    idOptions.map((opt) => opt.label),
-  );
+
+  console.log("Doc idOptions (backend-driven):", idOptions.map((opt) => opt.label));
+
 
   // Build sections in order based on template configuration
   const buildSections = () => {
@@ -850,31 +1111,24 @@ export default function ReceiverView() {
                 </Label>
               </div>
               <div className="flex gap-6">
-                <div className="h-[38px] px-3 py-[15px] flex items-center justify-between flex-1 border border-[#C3C6D4] rounded bg-white">
-                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">
-                    {templateConfig.documentVerification.countryName ?? "Country"}
-                  </span>
-                  <svg
-                    width="11"
-                    height="10"
-                    viewBox="0 0 11 10"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M1.5 3L5.5 7L9.5 3"
-                      stroke="#344563"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <div className="h-[38px] px-3 py-[15px] flex items-center justify-between flex-1 border border-[#C3C6D4] rounded bg-white">
-                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">
-                    Select
-                  </span>
-                </div>
+                <Select value={selectedCountry} onValueChange={onCountryChange}>
+                  <SelectTrigger className="h-[38px] px-3 flex-1 border border-[#C3C6D4] rounded bg-white">
+                    <SelectValue placeholder="Select country">
+                      {selectedCountry || ""}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allCountries.map((c) => (
+                      <SelectItem key={c.countryName} value={c.countryName}>
+                        {c.countryName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+
+                </Select>
+                {/* <div className="h-[38px] px-3 py-[15px] flex items-center justify-between flex-1 border border-[#C3C6D4] rounded bg-white opacity-50">
+                  <span className="text-[13px] text-[#676879] leading-5 font-roboto">Select</span>
+                </div> */}
               </div>
             </div>
 

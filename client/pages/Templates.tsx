@@ -538,7 +538,7 @@ export default function Templates() {
         await handlePreviewTemplate(templateId);
         break;
       case "edit":
-        navigate("/template-builder", { state: { templateId } });
+        navigate(`/template-editor/${templateId}`);
         break;
       case "sendInvite":
         setSendInviteTemplateId(templateId); // capture which template

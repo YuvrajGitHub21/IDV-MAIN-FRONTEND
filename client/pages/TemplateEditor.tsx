@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Button } from "@/components/ui/button";
@@ -867,14 +867,15 @@ const BiometricVerificationSection: React.FC<{
 export default function TemplateBuilder() {
   const navigate = useNavigate();
   const location = useLocation() as any;
-  const [templateName, setTemplateName] = useState<string>(
-    location?.state?.templateName || "New Template"
-  );
-  const [isLoadingTemplate, setIsLoadingTemplate] = useState<boolean>(false);
+  const params = useParams();
+  // Prefer route param, then location state, then localStorage
   const templateId: string =
+    params?.templateId ||
     location?.state?.templateId ||
     localStorage.getItem("arcon_current_template_id") ||
     "";
+  const [templateName, setTemplateName] = useState<string>("New Template");
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState<boolean>(false);
 
   // Template data from backend
   const [templateData, setTemplateData] = useState<TemplateData | null>(null);

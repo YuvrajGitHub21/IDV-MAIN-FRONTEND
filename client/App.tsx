@@ -13,6 +13,7 @@ import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Templates from "./pages/Templates";
 import TemplateBuilder from "./pages/TemplateBuilder";
+import TemplateEditor from "./pages/TemplateEditor";
 import DocumentVerification from "./pages/DocumentVerification";
 import BiometricVerification from "./pages/BiometricVerification";
 import Preview from "./pages/Preview";
@@ -56,6 +57,7 @@ const App = () => (
                 <Route path="/dashboard" element={<Protected><Templates /></Protected>} />
                 <Route path="/template-builder" element={<Protected><TemplateBuilder /></Protected>} />
                 <Route path="/TemplateBuilder" element={<Protected><TemplateBuilder /></Protected>} />
+                <Route path="/template-editor/:templateId" element={<Protected><TemplateEditor /></Protected>} />
 
                 <Route path="/preview" element={<Protected><Preview /></Protected>} />
                 <Route path="/Preview" element={<Protected><Preview /></Protected>} />

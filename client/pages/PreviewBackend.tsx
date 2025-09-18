@@ -164,6 +164,11 @@ export default function PreviewBackend() {
         });
       } else if (type === "documents") {
         const d = structure.documentVerification || structure.documents || {};
+        const countryName =
+          (Array.isArray(d?.supportedCountries) && d.supportedCountries[0]?.countryName) ||
+          (Array.isArray(d?.selectedCountries) && d.selectedCountries[0]) ||
+          undefined;
+
         // derive selected documents from either an array or an object of booleans
         let selectedDocuments: string[] = [];
         if (Array.isArray(d.selectedDocuments))
@@ -184,7 +189,8 @@ export default function PreviewBackend() {
             : d.documentHandlingAllowRetries
               ? "retry"
               : undefined,
-          selectedDocuments,
+          countryName,
+          selectedDocuments
         };
         out.push({
           id: "document-verification",
@@ -301,6 +307,10 @@ export default function PreviewBackend() {
         ),
         allowUploadFromDevice: !!docCfg.allowUploadFromDevice,
         allowCaptureWebcam: !!docCfg.allowCaptureWebcam,
+        countryName:
+          (Array.isArray(docCfg?.supportedCountries) && docCfg.supportedCountries[0]?.countryName) ||
+          (Array.isArray(docCfg?.selectedCountries) && docCfg.selectedCountries[0]) ||
+          undefined,
         supportedDocuments: docs,
       },
       biometricVerification: {
@@ -474,7 +484,7 @@ export default function PreviewBackend() {
             </div>
           </div>
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/dashboard")}
             className="absolute left-8 flex items-center gap-1 rounded hover:bg-gray-50 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
@@ -787,7 +797,7 @@ function DocumentVerificationSection({ config }: { config: any }) {
             <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
               <div className="h-[42px] flex items-center gap-6 w-full">
                 <span className="text-sm font-medium text-black leading-[22px] font-roboto">
-                  India
+                  {config.countryName ?? "Country"}
                 </span>
               </div>
               <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">

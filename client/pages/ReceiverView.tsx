@@ -26,6 +26,8 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SendInviteDialog from "@/components/arcon/SendInviteDialog";
 import { showSaveSuccessToast } from "@/lib/saveSuccessToast";
+import { config } from "node_modules/zod/v4/core/core";
+import DocumentVerification from "./DocumentVerification";
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
 const ENABLE_BACKEND_RECEIVER = false;
@@ -62,6 +64,7 @@ interface TemplateConfig {
     enabled: boolean;
     allowUploadFromDevice: boolean;
     allowCaptureWebcam: boolean;
+    countryName: string[];
     supportedDocuments: string[];
   };
   biometricVerification: {
@@ -149,6 +152,11 @@ export default function ReceiverView() {
       );
       console.log("Additional fields from snapshot:", snapshot.addedFields);
       console.log("Full snapshot for template", templateId, ":", snapshot);
+      const d = snapshot.documentVerification || snapshot.documents || {};
+      const countryName =
+        (Array.isArray(d?.supportedCountries) && d.supportedCountries[0]?.countryName) ||
+        (Array.isArray(d?.selectedCountries) && d.selectedCountries[0]) ||
+        undefined;
 
       const doc = snapshot.doc || {};
       const supportedDocuments: string[] = Array.isArray(doc.selectedDocuments)
@@ -179,6 +187,7 @@ export default function ReceiverView() {
           enabled: hasDoc,
           allowUploadFromDevice: !!doc.allowUploadFromDevice,
           allowCaptureWebcam: !!doc.allowCaptureWebcam,
+          countryName,
           supportedDocuments,
         },
         biometricVerification: {
@@ -843,7 +852,7 @@ export default function ReceiverView() {
               <div className="flex gap-6">
                 <div className="h-[38px] px-3 py-[15px] flex items-center justify-between flex-1 border border-[#C3C6D4] rounded bg-white">
                   <span className="text-[13px] text-[#676879] leading-5 font-roboto">
-                    India
+                    {templateConfig.documentVerification.countryName ?? "Country"}
                   </span>
                   <svg
                     width="11"
@@ -1351,10 +1360,12 @@ export default function ReceiverView() {
         <div className="w-full px-4 py-3 flex items-center justify-between border-b border-[#DEDEDD] bg-white">
           {/* Previous Button */}
           <div className="flex items-center gap-1">
-            <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
-            <span className="text-[13px] font-medium text-[#505258] font-roboto">
-              Previous
-            </span>
+            <button onClick={() => navigate(-1)} className="flex items-center gap-1">
+              <ChevronLeft className="w-4 h-4 text-[#676879]" strokeWidth={2} />
+              <span className="text-[13px] font-medium text-[#505258] font-roboto">
+                Previous
+              </span>
+            </button>
           </div>
 
           {/* Steps */}
@@ -1446,14 +1457,14 @@ export default function ReceiverView() {
                       }
 
                       navigate(
-                        templateId ? `/preview/${templateId}` : "/preview",
+                        templateId ? `/preview-backend/${templateId}` : "/preview",
                         { state: previewState },
                       );
                     } catch (error) {
                       console.error("Error navigating to admin view:", error);
                       // Fallback navigation without state
                       navigate(
-                        templateId ? `/preview/${templateId}` : "/preview",
+                        templateId ? `/preview-backend/${templateId}` : "/preview",
                       );
                     }
                   }}

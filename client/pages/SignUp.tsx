@@ -32,11 +32,10 @@ export default function SignUp() {
       newErrors.lastName = "Enter at least 2 valid letters.";
     }
 
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    } else if (formData.email.length > 320) {
+    const emailTrimmed = formData.email.trim();
+    if (!emailTrimmed || !/^\S+@\S+\.\S+$/.test(emailTrimmed)) {
+      newErrors.email = "Please enter a valid email address.";
+    } else if (emailTrimmed.length > 320) {
       newErrors.email = "Email must be 320 characters or less";
     }
 
@@ -112,10 +111,20 @@ export default function SignUp() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    // Allow users to enter whatever they want - no real-time filtering
+
+    // Allow users to enter whatever they want - no intrusive filtering while typing
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Validation messages will only show after clicking "Sign Up"
+    // Validation messages will only show after clicking "Sign up"
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === "email") {
+      const trimmed = value.trim();
+      if (trimmed !== value) {
+        setFormData((prev) => ({ ...prev, email: trimmed }));
+      }
+    }
   };
 
   return (
@@ -344,19 +353,24 @@ export default function SignUp() {
               </label>
               <div className="relative">
                 <input
-                  id="email" 
+                  id="email"
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  onBlur={handleInputBlur}
                   placeholder="Enter your email address"
+                  pattern="^\S+@\S+\.\S+$"
+                  title="Please enter a valid email address."
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? "email-error" : undefined}
                   className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.email ? "border-red-500" : "border-arcon-gray-border"
                   } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                 />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p id="email-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.email}
                 </p>
               )}

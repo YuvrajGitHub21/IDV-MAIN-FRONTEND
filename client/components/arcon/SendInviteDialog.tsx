@@ -259,9 +259,20 @@ export default function SendInviteDialog({
     if (!file) return;
 
     const name = file.name.toLowerCase();
-    const ok = name.endsWith(".csv") || name.endsWith(".xlsx") || name.endsWith(".dbf");
-    if (!ok) {
-      toast.error("Only CSV, XLSX, and DBF files are supported.");
+    const ext = name.slice(name.lastIndexOf(".") + 1);
+    const limits: Record<string, number> = {
+      csv: 10 * 1024 * 1024, // 10 MB
+      xls:  5 * 1024 * 1024, // 5 MB
+      xlsx: 10 * 1024 * 1024 // 10 MB
+    };
+    if (!limits[ext]) {
+      toast.error("Only CSV, XLS, and XLSX files are supported.");
+      event.currentTarget.value = "";
+      return;
+    }
+    if (file.size > limits[ext]) {
+      const mb = ext === "xls" ? 5 : 10;
+      toast.error(`${ext.toUpperCase()} files must be ≤ ${mb} MB.`);
       event.currentTarget.value = "";
       return;
     }
@@ -288,6 +299,31 @@ export default function SendInviteDialog({
     }, 200);
 
     uploadIntervalRef.current = id;
+  };
+
+  // CSV download: sample format (name, email, department)
+  const handleDownloadSample = () => {
+    // CSV utils
+    const escapeCsv = (v: string | number) =>
+      `"${String(v).replace(/"/g, '""')}"`;
+    const toRow = (cols: (string | number)[]) => cols.map(escapeCsv).join(',');
+
+    // Headers + a few sample rows (use your in-file SAMPLE_EMPLOYEES)
+    const headers = ['name', 'email'];
+    const rows = SAMPLE_EMPLOYEES.slice(0, 5).map(e => [e.name, e.email]);
+
+    // Prepend BOM so Excel opens UTF-8 correctly
+    const csvText = '\uFEFF' + [toRow(headers), ...rows.map(toRow)].join('\r\n');
+
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'invitees-sample.csv';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   };
 
   // API call to send invites
@@ -481,7 +517,7 @@ export default function SendInviteDialog({
             <div className="p-4 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div></div>
-                <Button variant="outline" className="text-[#0073EA] border-[#0073EA]">
+                <Button variant="outline"  onClick={handleDownloadSample} className="text-[#0073EA] border-[#0073EA]">
                   <Download className="w-4 h-4 mr-2" />
                   Download sample format
                 </Button>
@@ -499,7 +535,7 @@ export default function SendInviteDialog({
                       <input
                         type="file"
                         className="hidden"
-                        accept=".csv,.xlsx,.dbf"
+                        accept=".csv,.xls,.xlsx"
                         onChange={handleFileUpload}
                       />
                     </label>
@@ -508,8 +544,8 @@ export default function SendInviteDialog({
               </div>
 
               <div className="flex justify-between text-xs text-[#505258] mb-4">
-                <span>Supported Formats: CSV, XLSX, DBF</span>
-                <span>Maximum Size: 25MB</span>
+                <span>Supported Formats: CSV (≤10MB), XLS (≤5MB), XLSX (≤10MB)</span>
+                <span>Max: CSV 10MB · XLS 5MB · XLSX 10MB</span>
               </div>
 
               {uploadedFile && (

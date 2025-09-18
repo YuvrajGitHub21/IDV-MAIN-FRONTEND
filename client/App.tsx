@@ -62,14 +62,10 @@ const App = () => (
                 <Route path="/preview" element={<Protected><Preview /></Protected>} />
                 <Route path="/Preview" element={<Protected><Preview /></Protected>} />
                 <Route path="/preview/:templateId" element={<Protected><Preview /></Protected>} />
-
                 <Route path="/preview-backend/:id" element={<Protected><PreviewBackend /></Protected>} />
-
                 <Route path="/receiver-view" element={<Protected><ReceiverView /></Protected>} />
                 <Route path="/ReceiverView" element={<Protected><ReceiverView /></Protected>} />
-                <Route path="/receiver-view/:templateId" element={<Protected><ReceiverView /></Protected>}
-                />
-
+                <Route path="/receiver-view/:templateId" element={<Protected><ReceiverView /></Protected>}/>
                 <Route path="/home" element={<Protected><Home /></Protected>} />
                 <Route path="/choose-template" element={<Protected><ChooseTemplate /></Protected>} />
                 <Route path="/debug" element={<Protected><Debug /></Protected>} />

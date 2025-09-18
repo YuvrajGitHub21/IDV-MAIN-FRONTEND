@@ -1165,10 +1165,9 @@ export default function Templates() {
                             </td>
                             <td className="px-2 py-2 text-sm text-gray-900">
                               {/* <InviteesAvatarGroup /> */}
-                              <InviteesAvatarGroup
-                                invitees={template.invitees ?? []}
-                                maxVisible={2}
-                              />
+                              {template.invitees?.length
+                                ? <InviteesAvatarGroup invitees={template.invitees} maxVisible={2} />
+                                : <span className="text-xs text-gray-500">No invitees yet</span>}
                             </td>
                             <td className="px-2 py-2 text-sm text-gray-900">
                               {formatDate(template.createdAtUtc)}
@@ -1258,10 +1257,9 @@ export default function Templates() {
                             </p>
                             <div className="mt-2 flex items-center gap-3">
                               {/* <InviteesAvatarGroup /> */}
-                              <InviteesAvatarGroup
-                                invitees={template.invitees ?? []}
-                                maxVisible={2}
-                              />
+                              {template.invitees?.length
+                                ? <InviteesAvatarGroup invitees={template.invitees} maxVisible={2} />
+                                : <span className="text-xs text-gray-500">No invitees yet</span>}
                               {getStatusBadge(template.isActive)}
                             </div>
                           </div>
@@ -1440,12 +1438,13 @@ export default function Templates() {
             {/* Rename Dialog */}
             {renameDialogOpen && (
               <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-                <div className="bg-white p-6 rounded-lg w-96">
+                <div role="dialog" aria-label="Rename Template" className="bg-white p-6 rounded-lg w-96">
                   <h2 className="text-lg font-semibold mb-4">
                     Rename Template
                   </h2>
 
                   <input
+                    id="rename-template-input"
                     type="text"
                     className={cn(
                       "w-full p-2 border rounded mb-1",

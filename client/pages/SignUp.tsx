@@ -1,18 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { storeAuthData, isAuthenticated, type RegisterRequest, type AuthResponse } from "@/lib/auth";
+import {
+  storeAuthData,
+  isAuthenticated,
+  type RegisterRequest,
+  type AuthResponse,
+} from "@/lib/auth";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    countryCode: "",
     phone: "", // Added phone field to match backend
     password: "",
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,44 +29,82 @@ export default function SignUp() {
     }
   }, [navigate]);
 
+  // Country code metadata: display code with country in brackets and expected lengths
+  const countryCodes = [
+    { code: "+91", name: "India", lengths: [10] },
+    { code: "+1", name: "United States", lengths: [10] },
+    { code: "+44", name: "United Kingdom", lengths: [10, 11] },
+    { code: "+61", name: "Australia", lengths: [9] },
+    { code: "+234", name: "Nigeria", lengths: [10] },
+  ];
+
+  const isValidPhoneLength = (countryCode: string, phoneDigits: string) => {
+    const entry = countryCodes.find((c) => c.code === countryCode);
+    if (!entry) {
+      // Fallback: accept 6-15 digits
+      return phoneDigits.length >= 6 && phoneDigits.length <= 15;
+    }
+    return entry.lengths.includes(phoneDigits.length);
+  };
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
-    } else if (!/^[A-Za-z\s]+$/.test(formData.firstName.trim())) {
-      newErrors.firstName = "First name can only contain alphabets and spaces";
-    } else if (formData.firstName.length > 100) {
-      newErrors.firstName = "First name must be 100 characters or less";
+    if (!/^[A-Za-z]{2,}$/.test(formData.firstName.trim())) {
+      newErrors.firstName = "Enter at least 2 valid letters.";
     }
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
-    } else if (!/^[A-Za-z\s]+$/.test(formData.lastName.trim())) {
-      newErrors.lastName = "Last name can only contain alphabets and spaces";
-    } else if (formData.lastName.length > 100) {
-      newErrors.lastName = "Last name must be 100 characters or less";
+    if (!/^[A-Za-z]{2,}$/.test(formData.lastName.trim())) {
+      newErrors.lastName = "Enter at least 2 valid letters.";
     }
 
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
-    } else if (formData.email.length > 320) {
+    const emailTrimmed = formData.email.trim();
+    if (!emailTrimmed || !/^\S+@\S+\.\S+$/.test(emailTrimmed)) {
+      newErrors.email = "Please enter a valid email address.";
+    } else if (emailTrimmed.length > 320) {
       newErrors.email = "Email must be 320 characters or less";
     }
 
+    // Country code must be selected
+    if (!formData.countryCode) {
+      newErrors.countryCode = "Please select a country code.";
+    }
+
     // Phone is optional, but validate if provided
-    if (formData.phone && formData.phone.length > 40) {
-      newErrors.phone = "Phone number must be 40 characters or less";
+    const phoneTrimmed = formData.phone.trim();
+    if (phoneTrimmed) {
+      if (!/^\d+$/.test(phoneTrimmed)) {
+        newErrors.phone = "Please enter a valid phone number.";
+      } else if (!isValidPhoneLength(formData.countryCode, phoneTrimmed)) {
+        newErrors.phone = "Please enter a valid phone number.";
+      }
     }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    // Password validations
+    const pwd = formData.password || "";
+    if (!pwd) {
+      newErrors.password = "Password is required.";
+    } else if (pwd.length < 8) {
+      newErrors.password = "Password must be at least 8 characters long.";
+    } else {
+      // Disallow unsupported characters (basic approach: allow printable ASCII)
+      if (!/^[\x20-\x7E]+$/.test(pwd)) {
+        newErrors.password =
+          "Password must include uppercase, lowercase, number, and special character.";
+      }
+
+      const hasUpper = /[A-Z]/.test(pwd);
+      const hasLower = /[a-z]/.test(pwd);
+      const hasNumber = /[0-9]/.test(pwd);
+      const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(pwd);
+
+      if (!(hasUpper && hasLower && hasNumber && hasSpecial)) {
+        newErrors.password =
+          "Password must include uppercase, lowercase, number, and special character.";
+      }
     }
 
+    // Confirm password
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.confirmPassword !== formData.password) {
@@ -75,8 +121,11 @@ export default function SignUp() {
     setIsLoading(true);
     setErrors({});
     // Use direct connection (bypass proxy since backend has CORS configured)
-    const API = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
-    
+    const API =
+      import.meta.env.VITE_API_BASE ||
+      import.meta.env.VITE_API_URL ||
+      "http://10.10.2.133:8080";
+
     try {
       const registerData: RegisterRequest = {
         firstName: formData.firstName.trim(),
@@ -85,14 +134,17 @@ export default function SignUp() {
         password: formData.password,
       };
 
-      // Only include phone if it's provided
+      // Only include phone if it's provided. Prefix with country code when present
       if (formData.phone.trim()) {
-        registerData.phone = formData.phone.trim();
+        const phoneValue = formData.countryCode
+          ? `${formData.countryCode}${formData.phone.trim()}`
+          : formData.phone.trim();
+        registerData.phone = phoneValue;
       }
 
       const response = await fetch(`${API}/api/auth/register`, {
         method: "POST",
-        mode: 'cors',
+        mode: "cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(registerData),
       });
@@ -118,12 +170,38 @@ export default function SignUp() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    // Allow users to enter whatever they want - no real-time filtering
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target as HTMLInputElement | HTMLSelectElement;
+
+    // For phone input, allow only digits in real-time
+    if (name === "phone") {
+      const digitsOnly = value.replace(/\D/g, "");
+      setFormData((prev) => ({ ...prev, phone: digitsOnly }));
+      return;
+    }
+
+    // For other inputs (including countryCode select), just set the value
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Validation messages will only show after clicking "Sign Up"
+    // Validation messages will only show after clicking "Sign up"
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === "email") {
+      const trimmed = value.trim();
+      if (trimmed !== value) {
+        setFormData((prev) => ({ ...prev, email: trimmed }));
+      }
+    }
+
+    if (name === "phone") {
+      const trimmed = value.trim().replace(/\D/g, "");
+      if (trimmed !== value) {
+        setFormData((prev) => ({ ...prev, phone: trimmed }));
+      }
+    }
   };
 
   return (
@@ -287,17 +365,26 @@ export default function SignUp() {
           {/* Form Content */}
           <div className="space-y-5 sm:space-y-6 md:space-y-7">
             <div>
-              <label htmlFor="firstName" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="firstName"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 First Name
               </label>
               <div className="relative">
                 <input
-                  id="firstName" 
+                  id="firstName"
                   type="text"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
                   placeholder="Enter your first name"
+                  pattern="[A-Za-z]{2,}"
+                  title="Enter at least 2 valid letters."
+                  aria-invalid={!!errors.firstName}
+                  aria-describedby={
+                    errors.firstName ? "firstName-error" : undefined
+                  }
                   className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.firstName
                       ? "border-red-500"
@@ -306,14 +393,21 @@ export default function SignUp() {
                 />
               </div>
               {errors.firstName && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p
+                  id="firstName-error"
+                  role="alert"
+                  className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                >
                   {errors.firstName}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="lastName" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="lastName"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 Last Name
               </label>
               <div className="relative">
@@ -324,6 +418,12 @@ export default function SignUp() {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   placeholder="Enter your last name"
+                  pattern="[A-Za-z]{2,}"
+                  title="Enter at least 2 valid letters."
+                  aria-invalid={!!errors.lastName}
+                  aria-describedby={
+                    errors.lastName ? "lastName-error" : undefined
+                  }
                   className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.lastName
                       ? "border-red-500"
@@ -332,78 +432,221 @@ export default function SignUp() {
                 />
               </div>
               {errors.lastName && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p
+                  id="lastName-error"
+                  role="alert"
+                  className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                >
                   {errors.lastName}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="email"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 Email Address
               </label>
               <div className="relative">
                 <input
-                  id="email" 
+                  id="email"
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  onBlur={handleInputBlur}
                   placeholder="Enter your email address"
+                  pattern="^\S+@\S+\.\S+$"
+                  title="Please enter a valid email address."
+                  aria-invalid={!!errors.email}
+                  aria-describedby={errors.email ? "email-error" : undefined}
                   className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.email ? "border-red-500" : "border-arcon-gray-border"
                   } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                 />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p
+                  id="email-error"
+                  role="alert"
+                  className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                >
                   {errors.email}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Phone Number (Optional)
               </label>
-              <div className="relative">
-                <input
-                  id="phone" 
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter your phone number"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.phone ? "border-red-500" : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
+              <div className="flex gap-3 items-start">
+                <div className="w-36">
+                  <label htmlFor="countryCode" className="sr-only">
+                    Country code
+                  </label>
+                  <select
+                    id="countryCode"
+                    name="countryCode"
+                    value={formData.countryCode}
+                    onChange={handleInputChange}
+                    className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base ${
+                      errors.countryCode
+                        ? "border-red-500"
+                        : "border-arcon-gray-border"
+                    } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                  >
+                    <option value="">Select code</option>
+                    {countryCodes.map((c) => (
+                      <option
+                        key={c.code}
+                        value={c.code}
+                      >{`${c.code} (${c.name})`}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      id="phone"
+                      type="tel"
+                      inputMode="numeric"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      onBlur={handleInputBlur}
+                      placeholder="Enter your phone number"
+                      pattern="^\d+$"
+                      title="Please enter a valid phone number."
+                      aria-invalid={!!errors.phone}
+                      aria-describedby={
+                        errors.phone ? "phone-error" : undefined
+                      }
+                      className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                        errors.phone
+                          ? "border-red-500"
+                          : "border-arcon-gray-border"
+                      } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p
+                      id="phone-error"
+                      role="alert"
+                      className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                    >
+                      {errors.phone}
+                    </p>
+                  )}
+                </div>
               </div>
-              {errors.phone && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.phone}
+              {errors.countryCode && (
+                <p
+                  id="countryCode-error"
+                  role="alert"
+                  className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                >
+                  {errors.countryCode}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="password"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 Password
               </label>
               <div className="relative">
-                <input
-                  id="password" 
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Enter your password"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.password
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Enter your password"
+                    aria-invalid={!!errors.password}
+                    aria-describedby={
+                      errors.password ? "password-error" : undefined
+                    }
+                    className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 pr-10 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                      errors.password
+                        ? "border-red-500"
+                        : "border-arcon-gray-border"
+                    } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3 3L21 21"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M10.58 10.58a3 3 0 104.24 4.24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="3"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
               {errors.password && (
                 <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
@@ -413,23 +656,102 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 Confirm Password
               </label>
               <div className="relative">
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  placeholder="Re-enter your password"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.confirmPassword
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="Re-enter your password"
+                    aria-invalid={!!errors.confirmPassword}
+                    aria-describedby={
+                      errors.confirmPassword
+                        ? "confirmPassword-error"
+                        : undefined
+                    }
+                    className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 pr-10 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                      errors.confirmPassword
+                        ? "border-red-500"
+                        : "border-arcon-gray-border"
+                    } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((s) => !s)}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3 3L21 21"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M10.58 10.58a3 3 0 104.24 4.24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="3"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
               {errors.confirmPassword && (
                 <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">

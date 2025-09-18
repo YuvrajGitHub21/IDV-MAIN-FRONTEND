@@ -47,6 +47,20 @@ interface SectionConfig {
   enabled: boolean;
 }
 
+type CountryDocs = { countryName: string; documents: string[] };
+
+type DocConfig = {
+  allowUploadFromDevice?: boolean;
+  allowCaptureWebcam?: boolean;
+  documentHandling?: "retry" | "reject";
+  // NEW multi-country shape
+  countries?: CountryDocs[];
+
+  // Legacy single-country shape (back-compat)
+  countryName?: string;
+  selectedDocuments?: string[];
+};
+
 export default function Preview() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -245,6 +259,74 @@ export default function Preview() {
   const isValidKey = (k: string): k is SectionKey =>
     (DEFAULT_SECTION_ORDER as readonly string[]).includes(k);
 
+  // ---- helper: normalize per-country docs from many possible shapes ----
+  type CountryDocs = { countryName: string; documents: string[] };
+
+  function normalizeCountriesFromDocCfg(d: any): CountryDocs[] {
+    if (!d) return [];
+
+    const countries: CountryDocs[] = [];
+
+    // .NET shape: [{ countryName, documents: [] }]
+    if (Array.isArray(d.supportedCountries)) {
+      for (const c of d.supportedCountries) {
+        const name = c?.countryName ?? c?.country ?? c?.name;
+        const docs = Array.isArray(c?.documents) ? c.documents.filter(Boolean) : [];
+        if (name) countries.push({ countryName: name, documents: docs });
+      }
+    }
+
+    // Mongo/legacy shape: [{ country_name, listOfdocs: { [doc]: true } }]
+    if (!countries.length && Array.isArray(d.Countries_array)) {
+      for (const c of d.Countries_array) {
+        const name = c?.country_name ?? c?.countryName ?? c?.name;
+        const listObj = c?.listOfdocs && typeof c.listOfdocs === "object" ? c.listOfdocs : {};
+        const docs = Object.entries(listObj)
+          .filter(([, v]) => Boolean(v))
+          .map(([k]) => k);
+        if (name) countries.push({ countryName: name, documents: docs });
+      }
+    }
+
+    // Builder snapshot (IDs) → use mapping to names when available
+    if (
+      !countries.length &&
+      Array.isArray(d.selectedCountryIds) &&
+      d.selectedDocumentIds &&
+      d.countryDocuments
+    ) {
+      const selectedDocIdsByCountry = d.selectedDocumentIds; // { [countryId]: number[] }
+      const docsByCountry = d.countryDocuments;              // { [countryId]: {id,name,code}[] }
+      const toNum = (x: string | number) => (typeof x === "string" ? parseInt(x, 10) : x);
+
+      for (const [countryIdStr, docIds] of Object.entries(selectedDocIdsByCountry)) {
+        const cid = toNum(countryIdStr);
+        const docDefs: Array<{ id: number; name: string }> = (docsByCountry[cid] || []) as any[];
+        const names = (docIds as number[])
+          .map((id) => docDefs.find((d) => d.id === id)?.name)
+          .filter(Boolean) as string[];
+
+        // if we also stored country names inline (rare), grab them; else fallback label
+        const countryName =
+          (d.availableCountries || []).find?.((c: any) => c.id === cid)?.name ||
+          (d.selectedCountries || [])[d.selectedCountryIds.indexOf(cid)] ||
+          `Country_${cid}`;
+
+        countries.push({ countryName, documents: names });
+      }
+    }
+
+    // Old builder fallback: selectedCountries[] + selectedDocuments[] (flat)
+    // As a last resort, show the same selectedDocuments under each selected country.
+    if (!countries.length && Array.isArray(d.selectedCountries) && Array.isArray(d.selectedDocuments)) {
+      for (const name of d.selectedCountries) {
+        countries.push({ countryName: name, documents: [...d.selectedDocuments] });
+      }
+    }
+
+    return countries;
+  }
+
   // Build sections from the .NET Template API response
   function buildSectionsFromApiTemplate(apiData: any): SectionConfig[] {
     if (!apiData) return [];
@@ -325,23 +407,17 @@ export default function Preview() {
           ),
         });
       } else if (type === "documents") {
-        const d = structure.documentVerification || {};
-        const countryName =
-          (Array.isArray(d?.supportedCountries) && d.supportedCountries[0]?.countryName) ||
-          (Array.isArray(d?.selectedCountries) && d.selectedCountries[0]) || undefined;
-
-        const config = {
+        const d = structure.documentVerification || structure.documents || {};
+        const countries = normalizeCountriesFromDocCfg(d);
+        const config : DocConfig = {
           allowUploadFromDevice: !!d.allowUploadFromDevice,
           allowCaptureWebcam: !!d.allowCaptureWebcam,
           documentHandling: d.documentHandlingRejectImmediately
             ? "reject"
             : d.documentHandlingAllowRetries
-              ? "retry"
-              : undefined,
-          countryName,
-          selectedDocuments: Array.isArray(d.selectedDocuments)
-            ? d.selectedDocuments
-            : [],
+            ? "retry"
+            : undefined,
+          countries, // ← multi-country
         };
         out.push({
           id: "document-verification",
@@ -490,18 +566,13 @@ export default function Preview() {
     return out;
   };
 
-  const getDocConfigFromDb = (tpl: any) => {
+  const getDocConfigFromDb = (tpl: any) : DocConfig => {
     const v = tpl?.Doc_verification || {};
     const uploads = v.user_uploads || {};
     const unreadable = v.Unreadable_docs || {};
-    // flatten all enabled docs across countries
-    const countries = Array.isArray(v.Countries_array) ? v.Countries_array : [];
-    const selectedDocuments: string[] = [];
-    countries.forEach((c: any) => {
-      const list = c?.listOfdocs || {};
-      Object.entries(list).forEach(([k, val]) => {
-        if (val) selectedDocuments.push(k);
-      });
+    // build per-country list
+    const countriesArr: CountryDocs[] = normalizeCountriesFromDocCfg({
+      Countries_array: v.Countries_array,
     });
 
     return {
@@ -512,7 +583,7 @@ export default function Preview() {
         : unreadable.reject_immediately
           ? "reject"
           : undefined,
-      selectedDocuments,
+      countries: countriesArr,
     };
   };
 
@@ -742,7 +813,7 @@ export default function Preview() {
     const docEnabled = docFromState || docFlag || !!docVerificationConfig;
     const bioEnabled = bioFromState || bioFlag || !!biometricConfig;
 
-    const defaultDoc = {
+    const defaultDoc : DocConfig = {
       allowUploadFromDevice: false,
       allowCaptureWebcam: false,
       documentHandling: undefined,
@@ -778,7 +849,10 @@ export default function Preview() {
         enabled: docEnabled,
         component: (
           <DocumentVerificationSection
-            config={docVerificationConfig ?? defaultDoc}
+            config={{
+              ...(docVerificationConfig ?? defaultDoc),
+              countries: normalizeCountriesFromDocCfg(docVerificationConfig ?? defaultDoc),
+            }}
           />
         ),
       },
@@ -838,6 +912,7 @@ export default function Preview() {
       const personalAddedFields = getPersonalAddedFields(dbTemplate);
       const personalShowBase = getPersonalShowBase(dbTemplate);
       const docConfig = getDocConfigFromDb(dbTemplate);
+      const flattenedDocs = (docConfig.countries ?? []).flatMap((c) => c.documents).filter(Boolean);
 
       return {
         templateName: dbTemplate.nameOfTemplate || "New Template",
@@ -857,7 +932,13 @@ export default function Preview() {
             : !!dbTemplate.Doc_verification,
           allowUploadFromDevice: docConfig.allowUploadFromDevice,
           allowCaptureWebcam: docConfig.allowCaptureWebcam,
-          supportedDocuments: docConfig.selectedDocuments,
+          // Prefer multi-country docs; fallback to legacy if present
+          supportedDocuments:
+            flattenedDocs.length
+              ? flattenedDocs
+              : (docConfig.selectedDocuments ?? []),
+          // If your ReceiverView can consume per-country, also pass it through:
+          countries: docConfig.countries ?? [],
         },
         biometricVerification: {
           enabled: sectionStatus
@@ -1402,7 +1483,7 @@ const PersonalInformationSection = ({
   );
 };
 
-const DocumentVerificationSection = ({ config }: { config: any }) => {
+const DocumentVerificationSection = ({ config }: { config: DocConfig }) => {
   if (!config) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -1496,8 +1577,8 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
         </div>
       )}
 
-      {/* Supported Documents */}
-      {config.selectedDocuments && config.selectedDocuments.length > 0 && (
+      {/* Supported Documents — multi-country */}
+      {Array.isArray(config.countries) && config.countries.length > 0 ? (
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex gap-6 w-full">
             <div className="flex flex-col gap-2 flex-1">
@@ -1511,33 +1592,83 @@ const DocumentVerificationSection = ({ config }: { config: any }) => {
                   Only these document types are accepted.
                 </p>
               </div>
-            </div>
+           </div>
           </div>
-          <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
-            <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
-              <div className="h-[42px] flex items-center gap-6 w-full">
-                <span className="text-sm font-medium text-black leading-[22px] font-roboto">
-                  {config.countryName ?? "Country"}
-                </span>
-              </div>
-              <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
-                {config.selectedDocuments.map((doc: string) => (
-                  <div
-                    key={doc}
-                    className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]"
-                  >
-                    <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-[13px] font-medium text-[#505258] font-roboto">
-                      {doc}
+
+          {config.countries.map(
+            ({ countryName, documents }: CountryDocs, idx: number) => (
+              <div key={`${countryName}-${idx}`} className="pt-6 px-6 pb-0 w-full rounded bg-[#F6F7FB]">
+                <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
+                  <div className="h-[42px] flex items-center gap-6 w-full">
+                    <span className="text-sm font-medium text-black leading-[22px] font-roboto">
+                      {countryName || "Country"}
                     </span>
                   </div>
-                ))}
+                  <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
+                    {Array.isArray(documents) && documents.length ? (
+                      documents.map((doc: string) => (
+                        <div
+                          key={doc}
+                          className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]"
+                        >
+                          <div className="w-5 h-5 flex items-center justify-center rounded-full bg-[#258750]">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-[13px] font-medium text-[#505258] font-roboto">
+                            {doc}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-[13px] text-[#676879]">
+                        No documents configured for this country
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ),
+          )}
+        </div>
+      ) : (
+        /* Back-compat: single-country rendering if only old props exist */
+        // Back-compat: only render this branch if the legacy props exist
+        "selectedDocuments" in config &&
+        Array.isArray(config.selectedDocuments) &&
+        config.selectedDocuments.length > 0 && (
+          <div className="flex flex-col items-center gap-4 w-full">
+            <div className="flex gap-6 w-full">
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
+                    Supported Documents for Identity Verification
+                  </h3>
+                </div>
+              </div>
+            </div>
+           <div className="pt-6 px-6 pb-0 w-full rounded bg-[#F6F7FB]">
+              <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
+                <div className="h-[42px] flex items-center gap-6 w-full">
+                  <span className="text-sm font-medium text-black leading-[22px] font-roboto">
+                    {config.countryName ?? "Country"}
+                  </span>
+                </div>
+                <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
+                  {config.selectedDocuments.map((doc: string) => (
+                    <div key={doc} className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
+                      <div className="w-5 h-5 flex items-center justify-center rounded-full bg-[#258750]">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-[13px] font-medium text-[#505258] font-roboto">
+                        {doc}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )
       )}
     </div>
   );

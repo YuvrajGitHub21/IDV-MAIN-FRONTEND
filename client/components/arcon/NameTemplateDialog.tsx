@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createTemplateMin } from "@/hooks/useTemplates";
+import { createTemplateMin, useTemplates } from "@/hooks/useTemplates";
 
 interface NameTemplateDialogProps {
   open: boolean;
@@ -27,19 +27,50 @@ export function NameTemplateDialog({
   onSave,
   onCancel,
 }: NameTemplateDialogProps) {
-  const MAX_LEN = 30;
+  const MIN_LEN = 3;
+  const MAX_LEN = 100;
 
   const [templateName, setTemplateName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
+  const { allTemplates, fetchTemplates } = useTemplates();
+
   const handleSave = async () => {
     const name = templateName.trim();
-    if (!name) return;
+    // Required
+    if (!name) {
+      setErrorMessage("Template name is required.");
+      return;
+    }
 
-    // Length constraint check (server-guard too)
-    if (name.length > MAX_LEN) {
-      setErrorMessage("Max length is 30 characters.");
+    // Character whitelist: alphanumeric, spaces, underscores, hyphens
+    if (!/^[A-Za-z0-9 _-]+$/.test(name)) {
+      setErrorMessage("Template name contains invalid characters.");
+      return;
+    }
+
+    // Length checks
+    if (name.length < MIN_LEN || name.length > MAX_LEN) {
+      setErrorMessage("Template name must be between 3 and 100 characters.");
+      return;
+    }
+
+    // Ensure we have a fresh list of templates for uniqueness check
+    try {
+      await fetchTemplates();
+    } catch (e) {
+      // ignore fetch errors — server will handle duplicates
+    }
+
+    const duplicate = (allTemplates || []).some(
+      (t) => (t.name || "").trim().toLowerCase() === name.toLowerCase(),
+    );
+
+    if (duplicate) {
+      setErrorMessage(
+        "Template name already exists. Please choose a different name.",
+      );
       return;
     }
 
@@ -57,7 +88,14 @@ export function NameTemplateDialog({
       });
     } catch (err: any) {
       const msg = (err?.message || "Failed to create template").toString();
-      setErrorMessage(msg);
+      // If backend complains about duplicates, show friendly message
+      if (/duplicate|already exists|unique/i.test(msg)) {
+        setErrorMessage(
+          "Template name already exists. Please choose a different name.",
+        );
+      } else {
+        setErrorMessage(msg);
+      }
     }
   };
 
@@ -121,9 +159,13 @@ export function NameTemplateDialog({
                   }
                 }}
                 placeholder="Enter Template Name"
+                pattern="^[A-Za-z0-9 _-]{3,100}$"
+                title="Template name must be 3-100 characters; only letters, numbers, spaces, underscores and hyphens are allowed."
                 className={cn(
                   "h-[38px]",
-                  errorMessage ? "border-red-500 focus-visible:ring-red-500" : "",
+                  errorMessage
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : "",
                   "placeholder:text-gray-500",
                 )}
                 aria-invalid={errorMessage ? "true" : "false"}

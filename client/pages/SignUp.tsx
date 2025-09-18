@@ -7,6 +7,7 @@ export default function SignUp() {
     firstName: "",
     lastName: "",
     email: "",
+    countryCode: "",
     phone: "", // Added phone field to match backend
     password: "",
     confirmPassword: "",
@@ -20,6 +21,24 @@ export default function SignUp() {
       navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
+
+  // Country code metadata: display code with country in brackets and expected lengths
+  const countryCodes = [
+    { code: "+91", name: "India", lengths: [10] },
+    { code: "+1", name: "United States", lengths: [10] },
+    { code: "+44", name: "United Kingdom", lengths: [10, 11] },
+    { code: "+61", name: "Australia", lengths: [9] },
+    { code: "+234", name: "Nigeria", lengths: [10] },
+  ];
+
+  const isValidPhoneLength = (countryCode: string, phoneDigits: string) => {
+    const entry = countryCodes.find((c) => c.code === countryCode);
+    if (!entry) {
+      // Fallback: accept 6-15 digits
+      return phoneDigits.length >= 6 && phoneDigits.length <= 15;
+    }
+    return entry.lengths.includes(phoneDigits.length);
+  };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -39,9 +58,19 @@ export default function SignUp() {
       newErrors.email = "Email must be 320 characters or less";
     }
 
+    // Country code must be selected
+    if (!formData.countryCode) {
+      newErrors.countryCode = "Please select a country code.";
+    }
+
     // Phone is optional, but validate if provided
-    if (formData.phone && formData.phone.length > 40) {
-      newErrors.phone = "Phone number must be 40 characters or less";
+    const phoneTrimmed = formData.phone.trim();
+    if (phoneTrimmed) {
+      if (!/^\d+$/.test(phoneTrimmed)) {
+        newErrors.phone = "Please enter a valid phone number.";
+      } else if (!isValidPhoneLength(formData.countryCode, phoneTrimmed)) {
+        newErrors.phone = "Please enter a valid phone number.";
+      }
     }
 
     if (!formData.password) {
@@ -76,9 +105,10 @@ export default function SignUp() {
         password: formData.password,
       };
 
-      // Only include phone if it's provided
+      // Only include phone if it's provided. Prefix with country code when present
       if (formData.phone.trim()) {
-        registerData.phone = formData.phone.trim();
+        const phoneValue = formData.countryCode ? `${formData.countryCode}${formData.phone.trim()}` : formData.phone.trim();
+        registerData.phone = phoneValue;
       }
 
       const response = await fetch(`${API}/api/auth/register`, {
@@ -109,10 +139,17 @@ export default function SignUp() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target as HTMLInputElement | HTMLSelectElement;
 
-    // Allow users to enter whatever they want - no intrusive filtering while typing
+    // For phone input, allow only digits in real-time
+    if (name === "phone") {
+      const digitsOnly = value.replace(/\D/g, "");
+      setFormData((prev) => ({ ...prev, phone: digitsOnly }));
+      return;
+    }
+
+    // For other inputs (including countryCode select), just set the value
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Validation messages will only show after clicking "Sign up"
   };
@@ -123,6 +160,13 @@ export default function SignUp() {
       const trimmed = value.trim();
       if (trimmed !== value) {
         setFormData((prev) => ({ ...prev, email: trimmed }));
+      }
+    }
+
+    if (name === "phone") {
+      const trimmed = value.trim().replace(/\D/g, "");
+      if (trimmed !== value) {
+        setFormData((prev) => ({ ...prev, phone: trimmed }));
       }
     }
   };
@@ -377,25 +421,58 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
                 Phone Number (Optional)
               </label>
-              <div className="relative">
-                <input
-                  id="phone" 
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter your phone number"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.phone ? "border-red-500" : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
+              <div className="flex gap-3 items-start">
+                <div className="w-36">
+                  <label htmlFor="countryCode" className="sr-only">Country code</label>
+                  <select
+                    id="countryCode"
+                    name="countryCode"
+                    value={formData.countryCode}
+                    onChange={handleInputChange}
+                    className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base ${
+                      errors.countryCode ? "border-red-500" : "border-arcon-gray-border"
+                    } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                  >
+                    <option value="">Select code</option>
+                    {countryCodes.map((c) => (
+                      <option key={c.code} value={c.code}>{`${c.code} (${c.name})`}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex-1">
+                  <div className="relative">
+                    <input
+                      id="phone"
+                      type="tel"
+                      inputMode="numeric"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      onBlur={handleInputBlur}
+                      placeholder="Enter your phone number"
+                      pattern="^\d+$"
+                      title="Please enter a valid phone number."
+                      aria-invalid={!!errors.phone}
+                      aria-describedby={errors.phone ? "phone-error" : undefined}
+                      className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                        errors.phone ? "border-red-500" : "border-arcon-gray-border"
+                      } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                    />
+                  </div>
+                  {errors.phone && (
+                    <p id="phone-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                      {errors.phone}
+                    </p>
+                  )}
+                </div>
               </div>
-              {errors.phone && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
-                  {errors.phone}
+              {errors.countryCode && (
+                <p id="countryCode-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                  {errors.countryCode}
                 </p>
               )}
             </div>

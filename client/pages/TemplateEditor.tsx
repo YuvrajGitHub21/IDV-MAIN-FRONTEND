@@ -1286,12 +1286,8 @@ export default function TemplateBuilder() {
       return;
     }
 
-    // 2) If we have a templateId, try per-template snapshot
-    if (templateId) {
-      try {
-        localStorage.setItem("arcon_current_template_id", templateId);
-      } catch {}
-
+    // 2) If we do NOT have a templateId, fallback to localStorage snapshot
+    if (!templateId) {
       try {
         const raw = localStorage.getItem(templateStorageKey(templateId));
         if (raw) {
@@ -1300,51 +1296,51 @@ export default function TemplateBuilder() {
           return;
         }
       } catch {}
+
+      // Fallback to global keys to preserve current builder state even for new templates
+      try {
+        const stepsRaw = localStorage.getItem("arcon_verification_steps");
+        const docRaw = localStorage.getItem("arcon_doc_verification_form");
+        const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
+
+        const s: any = {};
+        if (stepsRaw) {
+          const steps = JSON.parse(stepsRaw);
+          if (Array.isArray(steps)) s.verificationSteps = steps;
+        }
+        if (docRaw) s.doc = JSON.parse(docRaw);
+        if (bioRaw) s.biometric = JSON.parse(bioRaw);
+
+        if (s.verificationSteps || s.doc || s.biometric) {
+          applySnapshot({
+            verificationSteps: s.verificationSteps || verificationSteps,
+            addedFields,
+            optionalFields,
+            personalInfoExpanded,
+            documentVerificationExpanded,
+            biometricVerificationExpanded,
+            currentSectionId,
+            doc: s.doc || {
+              allowUploadFromDevice,
+              allowCaptureWebcam,
+              documentHandling,
+              selectedCountries,
+              selectedDocuments,
+            },
+            biometric: s.biometric || {
+              maxRetries,
+              askUserRetry,
+              blockAfterRetries,
+              dataRetention,
+            },
+          });
+          return;
+        }
+      } catch {}
+
+      // Nothing found -> defaults
+      resetToDefaults();
     }
-
-    // 3) Fallback to global keys to preserve current builder state even for new templates
-    try {
-      const stepsRaw = localStorage.getItem("arcon_verification_steps");
-      const docRaw = localStorage.getItem("arcon_doc_verification_form");
-      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
-
-      const s: any = {};
-      if (stepsRaw) {
-        const steps = JSON.parse(stepsRaw);
-        if (Array.isArray(steps)) s.verificationSteps = steps;
-      }
-      if (docRaw) s.doc = JSON.parse(docRaw);
-      if (bioRaw) s.biometric = JSON.parse(bioRaw);
-
-      if (s.verificationSteps || s.doc || s.biometric) {
-        applySnapshot({
-          verificationSteps: s.verificationSteps || verificationSteps,
-          addedFields,
-          optionalFields,
-          personalInfoExpanded,
-          documentVerificationExpanded,
-          biometricVerificationExpanded,
-          currentSectionId,
-          doc: s.doc || {
-            allowUploadFromDevice,
-            allowCaptureWebcam,
-            documentHandling,
-            selectedCountries,
-            selectedDocuments,
-          },
-          biometric: s.biometric || {
-            maxRetries,
-            askUserRetry,
-            blockAfterRetries,
-            dataRetention,
-          },
-        });
-        return;
-      }
-    } catch {}
-
-    // 4) Nothing found -> defaults
-    resetToDefaults();
   }, [templateId, (location as any)?.state?.snapshot]);
 
   // Persist snapshot whenever relevant state changes (scoped by templateId)
@@ -1489,6 +1485,53 @@ export default function TemplateBuilder() {
         const templateResponse: TemplateData = await apiGet(`/api/Template/${templateId}`);
         console.log('🔍 Template response received:', templateResponse);
         setTemplateData(templateResponse);
+        // ✅ NEW DYNAMIC SECTION SETUP
+        const activeVersion = getActiveVersion(templateResponse);
+        const enabledSteps: VerificationStep[] = [];
+
+        activeVersion?.sections?.forEach((section) => {
+          if (!section.isActive) return;
+          switch (section.sectionType) {
+            case "personalInformation":
+              enabledSteps.push({
+                id: "personal-info",
+                title: "Personal Information",
+                description: "Set up fields to collect basic user details like name, contact.",
+                isRequired: true,
+                isEnabled: true,
+              });
+              break;
+            case "documents":
+              enabledSteps.push({
+                id: "document-verification",
+                title: "Document Verification",
+                description: "Set ID submission rules and handling for unclear files.",
+                isRequired: false,
+                isEnabled: true,
+              });
+              break;
+            case "biometrics":
+              enabledSteps.push({
+                id: "biometric-verification",
+                title: "Biometric Verification",
+                description: "Set selfie retries, liveness threshold, and biometric storage",
+                isRequired: false,
+                isEnabled: true,
+              });
+              break;
+          }
+        });
+        // Always ensure personal-info is present even if not marked active (as a fallback)
+        if (!enabledSteps.some((s) => s.id === "personal-info")) {
+          enabledSteps.unshift({
+            id: "personal-info",
+            title: "Personal Information",
+            description: "Set up fields to collect basic user details like name, contact.",
+            isRequired: true,
+            isEnabled: true,
+          });
+        }
+        setVerificationSteps(enabledSteps);
         
         // Update template name from fetched data
         if (templateResponse.name) {
@@ -1496,9 +1539,8 @@ export default function TemplateBuilder() {
           console.log('📝 Template name updated to:', templateResponse.name);
         }
         
-        // Get active version using helper function
-        const activeVersion = getActiveVersion(templateResponse);
-        console.log('🔍 Active version found:', activeVersion);
+  // activeVersion already declared above, do not redeclare
+  console.log('🔍 Active version found:', activeVersion);
         
         // Hydrate personal info fields from template data if available
         const personalSection = activeVersion?.sections?.find(
@@ -1507,17 +1549,40 @@ export default function TemplateBuilder() {
         
         if (personalSection?.fieldMappings?.[0]?.structure?.personalInfo) {
           const personalInfo = personalSection.fieldMappings[0].structure.personalInfo;
-          
-          const isChecked = (id: string) => {
-            if (id === "date-of-birth") return !!personalInfo.dateOfBirth;
-            if (id === "current-address") return !!personalInfo.currentAddress;
-            if (id === "permanent-address") return !!personalInfo.permanentAddress;
-            if (id === "gender") return !!personalInfo.gender;
-            return false;
+          const optionalFieldDefinitions: Record<string, { name: string; placeholder: string }> = {
+            "date-of-birth": { name: "Date Of Birth", placeholder: "10/07/1997" },
+            "current-address": { name: "Current Address", placeholder: "Enter your current address" },
+            "permanent-address": { name: "Permanent Address", placeholder: "Enter your permanent address" },
+            "gender": { name: "Gender", placeholder: "Select gender" },
+          };
+          const idToApiKey: Record<string, string> = {
+            "date-of-birth": "dateOfBirth",
+            "current-address": "currentAddress",
+            "permanent-address": "permanentAddress",
+            "gender": "gender",
           };
 
-          setOptionalFields((prev) =>
-            prev.map((f) => ({ ...f, checked: isChecked(f.id) })),
+          setOptionalFields(
+            Object.entries(optionalFieldDefinitions).map(([id, { name, placeholder }]) => {
+              const apiKey = idToApiKey[id];
+              return {
+                id,
+                name,
+                placeholder,
+                checked: personalInfo?.[apiKey] === true,
+              };
+            })
+          );
+
+          setAddedFields(
+            Object.entries(optionalFieldDefinitions)
+              .filter(([id]) => personalInfo?.[idToApiKey[id]] === true)
+              .map(([id, { name, placeholder }]) => ({
+                id,
+                name,
+                placeholder,
+                value: "",
+              }))
           );
         }
 

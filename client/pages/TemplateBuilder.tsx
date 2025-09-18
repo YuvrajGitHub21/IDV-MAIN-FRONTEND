@@ -867,10 +867,7 @@ const BiometricVerificationSection: React.FC<{
 export default function TemplateBuilder() {
   const navigate = useNavigate();
   const location = useLocation() as any;
-  const [templateName, setTemplateName] = useState<string>(
-    location?.state?.templateName || "New Template"
-  );
-  const [isLoadingTemplate, setIsLoadingTemplate] = useState<boolean>(false);
+  const templateName = location?.state?.templateName || "New Template";
   const templateId: string =
     location?.state?.templateId ||
     localStorage.getItem("arcon_current_template_id") ||
@@ -1478,22 +1475,14 @@ export default function TemplateBuilder() {
   useEffect(() => {
     if (!templateId) {
       setTemplateData(null);
-      setTemplateName("New Template"); // Reset to default for new templates
       return;
     }
     
     (async () => {
       try {
-        setIsLoadingTemplate(true);
         const templateResponse: TemplateData = await apiGet(`/api/Template/${templateId}`);
         console.log('🔍 Template response received:', templateResponse);
         setTemplateData(templateResponse);
-        
-        // Update template name from fetched data
-        if (templateResponse.name) {
-          setTemplateName(templateResponse.name);
-          console.log('📝 Template name updated to:', templateResponse.name);
-        }
         
         // Get active version using helper function
         const activeVersion = getActiveVersion(templateResponse);
@@ -1562,12 +1551,6 @@ export default function TemplateBuilder() {
       } catch (e) {
         console.warn("Could not fetch template data:", e);
         setTemplateData(null);
-        // Keep the template name from location state or default if fetch fails
-        if (!location?.state?.templateName) {
-          setTemplateName("New Template");
-        }
-      } finally {
-        setIsLoadingTemplate(false);
       }
     })();
   }, [templateId]);
@@ -1841,28 +1824,64 @@ export default function TemplateBuilder() {
     },
   });
 
-  const buildDocsPayload = () => ({
-    section_id: 2,
-    user_uploads: {
-      Allow_uploads: allowUploadFromDevice,
-      allow_capture: allowCaptureWebcam,
-    },
-    Unreadable_docs: {
-      reject_immediately: documentHandling === "reject",
-      Allow_retries: documentHandling === "retry",
-    },
-    Countries_array: selectedCountries.map((country) => ({
-      country_name: country,
-      listOfdocs: selectedDocuments.reduce(
-        (acc: Record<string, boolean>, d) => {
-          acc[d] = true;
+  // const buildDocsPayload = () => ({
+  //   section_id: 2,
+  //   user_uploads: {
+  //     Allow_uploads: allowUploadFromDevice,
+  //     allow_capture: allowCaptureWebcam,
+  //   },
+  //   Unreadable_docs: {
+  //     reject_immediately: documentHandling === "reject",
+  //     Allow_retries: documentHandling === "retry",
+  //   },
+  //   Countries_array: selectedCountries.map((country) => ({
+  //     country_name: country,
+  //     listOfdocs: selectedDocuments.reduce(
+  //       (acc: Record<string, boolean>, d) => {
+  //         acc[d] = true;
+  //         return acc;
+  //       },
+  //       {},
+  //     ),
+  //   })),
+  // });
+
+  const buildDocsPayload = () => {
+    const Countries_array = selectedCountryIds.map((countryId) => {
+      const countryName =
+        availableCountries.find((c) => c.id === countryId)?.name ||
+        `Country_${countryId}`;
+
+      const docIdsForCountry = selectedDocumentIds.get(countryId) || [];
+      const docsForCountry = countryDocuments.get(countryId) || [];
+
+      const listOfdocs = docIdsForCountry.reduce(
+        (acc: Record<string, boolean>, docId) => {
+          const docName =
+            docsForCountry.find((d) => d.id === docId)?.name ||
+            `Document_${docId}`;
+          acc[docName] = true;
           return acc;
         },
         {},
-      ),
-    })),
-  });
+      );
 
+      return { country_name: countryName, listOfdocs };
+    });
+
+    return {
+      section_id: 2,
+      user_uploads: {
+        Allow_uploads: allowUploadFromDevice,
+        allow_capture: allowCaptureWebcam,
+      },
+      Unreadable_docs: {
+        reject_immediately: documentHandling === "reject",
+        Allow_retries: documentHandling === "retry",
+      },
+      Countries_array,
+    };
+  };
   const buildBiometricPayload = () => ({
     section_id: 3,
     number_of_retries: maxRetries ? [parseInt(maxRetries, 10)] : [],
@@ -1894,117 +1913,6 @@ export default function TemplateBuilder() {
       current_step: Math.max(1, Math.min(3, currentStep)),
     };
   };
-
-  /* ============ Persist to backend (section PUTs + order) - COMMENTED OUT ============ */
-  // Save only the current section, not all
-  // const saveCurrentSection = useCallback(
-  //   async (currentStepNumber: number, sectionName?: string) => {
-  //     if (!templateId) throw new Error("Missing template id");
-
-  //     setSaving(true);
-  //     setSaveError(null);
-  //     setSaveSuccess(null);
-
-  //     try {
-  //       if (sectionName === "personal-info") {
-  //         await apiPut(
-  //           `/api/templates/${templateId}/personal?currentStep=1`,
-  //           buildPersonalPayload(),
-  //         );
-  //       } else if (sectionName === "document-verification") {
-  //         await apiPut(
-  //           `/api/templates/${templateId}/docs?currentStep=2`,
-  //           buildDocsPayload(),
-  //         );
-  //       } else if (sectionName === "biometric-verification") {
-  //         await apiPut(
-  //           `/api/templates/${templateId}/biometric?currentStep=3`,
-  //           buildBiometricPayload(),
-  //         );
-  //       }
-
-  //       // Always update order + current_step
-  //       await apiPut(
-  //         `/api/templates/${templateId}/order`,
-  //         buildOrderPayload(currentStepNumber),
-  //       );
-
-  //       setSaveSuccess("Progress saved.");
-  //     } catch (e: any) {
-  //       setSaveError(e?.message || "Failed to save progress.");
-  //       throw e;
-  //     } finally {
-  //       setSaving(false);
-  //     }
-  //   },
-  //   [
-  //     templateId,
-  //     verificationSteps,
-  //     optionalFields,
-  //     allowUploadFromDevice,
-  //     allowCaptureWebcam,
-  //     documentHandling,
-  //     selectedCountries,
-  //     selectedDocuments,
-  //     maxRetries,
-  //     askUserRetry,
-  //     blockAfterRetries,
-  //     dataRetention,
-  //   ],
-  // );
-
-  /* ============ Original Next button with PUT requests - COMMENTED OUT ============ */
-  // const handleNext = async () => {
-  //   const sectionSetters: Record<
-  //     VerificationStep["id"],
-  //     React.Dispatch<React.SetStateAction<boolean>>
-  //   > = {
-  //     "personal-info": setPersonalInfoExpanded,
-  //     "document-verification": setDocumentVerificationExpanded,
-  //     "biometric-verification": setBiometricVerificationExpanded,
-  //   };
-
-  //   const activeSections = orderedSectionIds.map((id) => ({
-  //     name: id,
-  //     setExpanded: sectionSetters[id],
-  //   }));
-  //   const currentIndex = Math.max(
-  //     0,
-  //     activeSections.findIndex((s) => s.name === currentSectionId),
-  //   );
-
-  //   // step number we're leaving (1-based)
-  //   const currentStepNumber = Math.min(activeSections.length, currentIndex + 1);
-  //   const currentSectionName = activeSections[currentIndex]?.name as VerificationStep["id"] | undefined;
-
-  //   try {
-  //     await saveCurrentSection(currentStepNumber, currentSectionName);
-  //   } catch {
-  //     return; // stay on current page if save failed
-  //   }
-
-  //   if (currentIndex < activeSections.length) {
-  //     activeSections[currentIndex].setExpanded(false);
-  //     const nextIndex = currentIndex + 1;
-
-  //     if (nextIndex < activeSections.length) {
-  //       setCurrentSection(activeSections[nextIndex].name as VerificationStep["id"]);
-  //     } else {
-  //       navigate(templateId ? `/preview/${templateId}` : "/preview", {
-  //         state: {
-  //           templateName,
-  //           verificationSteps,
-  //           addedFields,
-  //           templateData: {
-  //             personalInfo: true,
-  //             documentVerification: verificationSteps.some((s) => s.id === "document-verification"),
-  //             biometricVerification: verificationSteps.some((s) => s.id === "biometric-verification"),
-  //           },
-  //         },
-  //       });
-  //     }
-  //   }
-  // };
 
   /* ============ Connection test helper ============ */
   const testConnection = async (): Promise<boolean> => {
@@ -2187,15 +2095,8 @@ export default function TemplateBuilder() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                {isLoadingTemplate && templateId ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                    Loading template...
-                  </>
-                ) : (
-                  templateName
-                )}
+              <h1 className="text-xl font-bold text-gray-900">
+                {templateName}
               </h1>
             </div>
           </div>

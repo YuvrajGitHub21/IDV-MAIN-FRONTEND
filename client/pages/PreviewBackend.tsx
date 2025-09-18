@@ -163,34 +163,45 @@ export default function PreviewBackend() {
           ),
         });
       } else if (type === "documents") {
-        const d = structure.documentVerification || structure.documents || {};
-        const countryName =
-          (Array.isArray(d?.supportedCountries) && d.supportedCountries[0]?.countryName) ||
-          (Array.isArray(d?.selectedCountries) && d.selectedCountries[0]) ||
-          undefined;
 
-        // derive selected documents from either an array or an object of booleans
-        let selectedDocuments: string[] = [];
-        if (Array.isArray(d.selectedDocuments))
-          selectedDocuments = d.selectedDocuments;
-        else if (
-          d.selectedDocuments &&
-          typeof d.selectedDocuments === "object"
-        ) {
-          selectedDocuments = Object.entries(d.selectedDocuments)
-            .filter(([, v]) => Boolean(v))
-            .map(([k]) => k as string);
+      const d = structure.documentVerification || structure.documents || {};
+        // Build an array of { countryName, documents[] }
+        const countries: Array<{ countryName: string; documents: string[] }> = [];
+
+        // .NET shape
+        if (Array.isArray(d.supportedCountries)) {
+          for (const c of d.supportedCountries) {
+            const name =
+              c?.countryName ?? c?.country ?? c?.name ?? undefined;
+            const docs = Array.isArray(c?.documents)
+              ? c.documents.filter(Boolean)
+              : [];
+            if (name) countries.push({ countryName: name, documents: docs });
+          }
         }
+
+        // Mongo/legacy shape
+        if (!countries.length && Array.isArray(d.Countries_array)) {
+          for (const c of d.Countries_array) {
+            const name = c?.country_name ?? c?.countryName ?? c?.name;
+            const list = c?.listOfdocs && typeof c.listOfdocs === "object"
+              ? Object.entries(c.listOfdocs)
+                  .filter(([, v]) => Boolean(v))
+                  .map(([k]) => k)
+              : [];
+            if (name) countries.push({ countryName: name, documents: list });
+          }
+        }
+
         const config = {
           allowUploadFromDevice: !!d.allowUploadFromDevice,
           allowCaptureWebcam: !!d.allowCaptureWebcam,
           documentHandling: d.documentHandlingRejectImmediately
             ? "reject"
             : d.documentHandlingAllowRetries
-              ? "retry"
-              : undefined,
-          countryName,
-          selectedDocuments
+            ? "retry"
+            : undefined,
+          countries, // ← NEW: pass all countries with docs
         };
         out.push({
           id: "document-verification",
@@ -776,8 +787,8 @@ function DocumentVerificationSection({ config }: { config: any }) {
           </div>
         </div>
       )}
-
-      {config.selectedDocuments && config.selectedDocuments.length > 0 && (
+ {/* Supported Documents — multi-country */}
+      {Array.isArray(config.countries) && config.countries.length > 0 ? (
         <div className="flex flex-col items-center gap-4 w-full">
           <div className="flex gap-6 w-full">
             <div className="flex flex-col gap-2 flex-1">
@@ -793,31 +804,75 @@ function DocumentVerificationSection({ config }: { config: any }) {
               </div>
             </div>
           </div>
-          <div className="h-[165px] pt-6 px-6 pb-0 flex flex-col gap-2 w-full rounded bg-[#F6F7FB]">
-            <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
-              <div className="h-[42px] flex items-center gap-6 w-full">
-                <span className="text-sm font-medium text-black leading-[22px] font-roboto">
-                  {config.countryName ?? "Country"}
-                </span>
-              </div>
-              <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
-                {config.selectedDocuments.map((doc: string) => (
-                  <div
-                    key={doc}
-                    className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]"
-                  >
-                    <div className="w-5 h-5 pt-[1.875px] pb-[1.875px] px-[9.375px] flex flex-col items-center gap-[5px] rounded-full bg-[#258750]">
-                      <Check className="w-3 h-3 text-white" />
-                    </div>
-                    <span className="text-[13px] font-medium text-[#505258] font-roboto">
-                      {doc}
+
+          {config.countries.map(
+            ({ countryName, documents }: { countryName: string; documents: string[] }, idx: number) => (
+              <div key={`${countryName}-${idx}`} className="pt-6 px-6 pb-0 w-full rounded bg-[#F6F7FB]">
+                <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
+                  <div className="h-[42px] flex items-center gap-6 w-full">
+                    <span className="text-sm font-medium text-black leading-[22px] font-roboto">
+                      {countryName || "Country"}
                     </span>
                   </div>
-                ))}
+                  <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
+                    {Array.isArray(documents) && documents.length ? (
+                      documents.map((doc: string) => (
+                        <div
+                          key={doc}
+                          className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]"
+                        >
+                          <div className="w-5 h-5 flex items-center justify-center rounded-full bg-[#258750]">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-[13px] font-medium text-[#505258] font-roboto">
+                            {doc}
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-[13px] text-[#676879]">No documents configured for this country</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ),
+          )}
+        </div>
+      ) : (
+        /* Back-compat: single country + flat selectedDocuments if older data */
+        Array.isArray(config.selectedDocuments) &&
+        config.selectedDocuments.length > 0 && (
+          <div className="flex flex-col items-center gap-4 w-full">
+            <div className="flex gap-6 w-full">
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[#172B4D] leading-3 font-roboto">
+                    Supported Documents for Identity Verification
+                  </h3>
+                </div>
+              </div>
+            </div>
+            <div className="pt-6 px-6 pb-0 w-full rounded bg-[#F6F7FB]">
+              <div className="px-3 pb-3 flex flex-col w-full rounded-lg bg-white">
+                <div className="h-[42px] flex items-center gap-6 w-full">
+                  <span className="text-sm font-medium text-black leading-[22px] font-roboto">
+                    {config.countryName ?? "Country"}
+                  </span>
+                </div>
+                <div className="p-3 flex items-start content-start gap-2 w-full flex-wrap rounded-lg bg-white">
+                  {config.selectedDocuments.map((doc: string) => (
+                    <div key={doc} className="h-8 px-2 py-2 flex items-center gap-2 rounded-full border border-[#C3C6D4] bg-[#FEFEFE]">
+                      <div className="w-5 h-5 flex items-center justify-center rounded-full bg-[#258750]">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-[13px] font-medium text-[#505258] font-roboto">{doc}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )
       )}
     </div>
   );

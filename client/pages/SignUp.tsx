@@ -14,6 +14,8 @@ export default function SignUp() {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -73,12 +75,29 @@ export default function SignUp() {
       }
     }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
+    // Password validations
+    const pwd = formData.password || "";
+    if (!pwd) {
+      newErrors.password = "Password is required.";
+    } else if (pwd.length < 8) {
+      newErrors.password = "Password must be at least 8 characters long.";
+    } else {
+      // Disallow unsupported characters (basic approach: allow printable ASCII)
+      if (!/^[\x20-\x7E]+$/.test(pwd)) {
+        newErrors.password = "Password must include uppercase, lowercase, number, and special character.";
+      }
+
+      const hasUpper = /[A-Z]/.test(pwd);
+      const hasLower = /[a-z]/.test(pwd);
+      const hasNumber = /[0-9]/.test(pwd);
+      const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(pwd);
+
+      if (!(hasUpper && hasLower && hasNumber && hasSpecial)) {
+        newErrors.password = "Password must include uppercase, lowercase, number, and special character.";
+      }
     }
 
+    // Confirm password
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.confirmPassword !== formData.password) {
@@ -482,19 +501,41 @@ export default function SignUp() {
                 Password
               </label>
               <div className="relative">
-                <input
-                  id="password" 
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Enter your password"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.password
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Enter your password"
+                    aria-invalid={!!errors.password}
+                    aria-describedby={errors.password ? "password-error" : undefined}
+                    className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 pr-10 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                      errors.password ? "border-red-500" : "border-arcon-gray-border"
+                    } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 3L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M10.58 10.58a3 3 0 104.24 4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
               {errors.password && (
                 <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
@@ -508,19 +549,41 @@ export default function SignUp() {
                 Confirm Password
               </label>
               <div className="relative">
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  placeholder="Re-enter your password"
-                  className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                    errors.confirmPassword
-                      ? "border-red-500"
-                      : "border-arcon-gray-border"
-                  } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="Re-enter your password"
+                    aria-invalid={!!errors.confirmPassword}
+                    aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
+                    className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 pr-10 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
+                      errors.confirmPassword ? "border-red-500" : "border-arcon-gray-border"
+                    } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((s) => !s)}
+                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 3L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M10.58 10.58a3 3 0 104.24 4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
               {errors.confirmPassword && (
                 <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">

@@ -24,20 +24,12 @@ export default function SignUp() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
-    } else if (!/^[A-Za-z\s]+$/.test(formData.firstName.trim())) {
-      newErrors.firstName = "First name can only contain alphabets and spaces";
-    } else if (formData.firstName.length > 100) {
-      newErrors.firstName = "First name must be 100 characters or less";
+    if (!/^[A-Za-z]{2,}$/.test(formData.firstName.trim())) {
+      newErrors.firstName = "Enter at least 2 valid letters.";
     }
 
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
-    } else if (!/^[A-Za-z\s]+$/.test(formData.lastName.trim())) {
-      newErrors.lastName = "Last name can only contain alphabets and spaces";
-    } else if (formData.lastName.length > 100) {
-      newErrors.lastName = "Last name must be 100 characters or less";
+    if (!/^[A-Za-z]{2,}$/.test(formData.lastName.trim())) {
+      newErrors.lastName = "Enter at least 2 valid letters.";
     }
 
     if (!formData.email) {
@@ -292,12 +284,16 @@ export default function SignUp() {
               </label>
               <div className="relative">
                 <input
-                  id="firstName" 
+                  id="firstName"
                   type="text"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleInputChange}
                   placeholder="Enter your first name"
+                  pattern="[A-Za-z]{2,}"
+                  title="Enter at least 2 valid letters."
+                  aria-invalid={!!errors.firstName}
+                  aria-describedby={errors.firstName ? "firstName-error" : undefined}
                   className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.firstName
                       ? "border-red-500"
@@ -306,7 +302,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.firstName && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p id="firstName-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.firstName}
                 </p>
               )}
@@ -324,6 +320,10 @@ export default function SignUp() {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   placeholder="Enter your last name"
+                  pattern="[A-Za-z]{2,}"
+                  title="Enter at least 2 valid letters."
+                  aria-invalid={!!errors.lastName}
+                  aria-describedby={errors.lastName ? "lastName-error" : undefined}
                   className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.lastName
                       ? "border-red-500"
@@ -332,7 +332,7 @@ export default function SignUp() {
                 />
               </div>
               {errors.lastName && (
-                <p className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p id="lastName-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
                   {errors.lastName}
                 </p>
               )}

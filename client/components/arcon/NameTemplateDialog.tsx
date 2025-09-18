@@ -68,7 +68,9 @@ export function NameTemplateDialog({
     );
 
     if (duplicate) {
-      setErrorMessage("Template name already exists. Please choose a different name.");
+      setErrorMessage(
+        "Template name already exists. Please choose a different name.",
+      );
       return;
     }
 
@@ -88,7 +90,9 @@ export function NameTemplateDialog({
       const msg = (err?.message || "Failed to create template").toString();
       // If backend complains about duplicates, show friendly message
       if (/duplicate|already exists|unique/i.test(msg)) {
-        setErrorMessage("Template name already exists. Please choose a different name.");
+        setErrorMessage(
+          "Template name already exists. Please choose a different name.",
+        );
       } else {
         setErrorMessage(msg);
       }
@@ -159,7 +163,9 @@ export function NameTemplateDialog({
                 title="Template name must be 3-100 characters; only letters, numbers, spaces, underscores and hyphens are allowed."
                 className={cn(
                   "h-[38px]",
-                  errorMessage ? "border-red-500 focus-visible:ring-red-500" : "",
+                  errorMessage
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : "",
                   "placeholder:text-gray-500",
                 )}
                 aria-invalid={errorMessage ? "true" : "false"}

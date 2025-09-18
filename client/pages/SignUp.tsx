@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { storeAuthData, isAuthenticated, type RegisterRequest, type AuthResponse } from "@/lib/auth";
+import {
+  storeAuthData,
+  isAuthenticated,
+  type RegisterRequest,
+  type AuthResponse,
+} from "@/lib/auth";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -84,7 +89,8 @@ export default function SignUp() {
     } else {
       // Disallow unsupported characters (basic approach: allow printable ASCII)
       if (!/^[\x20-\x7E]+$/.test(pwd)) {
-        newErrors.password = "Password must include uppercase, lowercase, number, and special character.";
+        newErrors.password =
+          "Password must include uppercase, lowercase, number, and special character.";
       }
 
       const hasUpper = /[A-Z]/.test(pwd);
@@ -93,7 +99,8 @@ export default function SignUp() {
       const hasSpecial = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/.test(pwd);
 
       if (!(hasUpper && hasLower && hasNumber && hasSpecial)) {
-        newErrors.password = "Password must include uppercase, lowercase, number, and special character.";
+        newErrors.password =
+          "Password must include uppercase, lowercase, number, and special character.";
       }
     }
 
@@ -114,8 +121,11 @@ export default function SignUp() {
     setIsLoading(true);
     setErrors({});
     // Use direct connection (bypass proxy since backend has CORS configured)
-    const API = import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
-    
+    const API =
+      import.meta.env.VITE_API_BASE ||
+      import.meta.env.VITE_API_URL ||
+      "http://10.10.2.133:8080";
+
     try {
       const registerData: RegisterRequest = {
         firstName: formData.firstName.trim(),
@@ -126,13 +136,15 @@ export default function SignUp() {
 
       // Only include phone if it's provided. Prefix with country code when present
       if (formData.phone.trim()) {
-        const phoneValue = formData.countryCode ? `${formData.countryCode}${formData.phone.trim()}` : formData.phone.trim();
+        const phoneValue = formData.countryCode
+          ? `${formData.countryCode}${formData.phone.trim()}`
+          : formData.phone.trim();
         registerData.phone = phoneValue;
       }
 
       const response = await fetch(`${API}/api/auth/register`, {
         method: "POST",
-        mode: 'cors',
+        mode: "cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(registerData),
       });
@@ -158,7 +170,9 @@ export default function SignUp() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target as HTMLInputElement | HTMLSelectElement;
 
     // For phone input, allow only digits in real-time
@@ -351,7 +365,10 @@ export default function SignUp() {
           {/* Form Content */}
           <div className="space-y-5 sm:space-y-6 md:space-y-7">
             <div>
-              <label htmlFor="firstName" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="firstName"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 First Name
               </label>
               <div className="relative">
@@ -365,7 +382,9 @@ export default function SignUp() {
                   pattern="[A-Za-z]{2,}"
                   title="Enter at least 2 valid letters."
                   aria-invalid={!!errors.firstName}
-                  aria-describedby={errors.firstName ? "firstName-error" : undefined}
+                  aria-describedby={
+                    errors.firstName ? "firstName-error" : undefined
+                  }
                   className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.firstName
                       ? "border-red-500"
@@ -374,14 +393,21 @@ export default function SignUp() {
                 />
               </div>
               {errors.firstName && (
-                <p id="firstName-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p
+                  id="firstName-error"
+                  role="alert"
+                  className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                >
                   {errors.firstName}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="lastName" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="lastName"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 Last Name
               </label>
               <div className="relative">
@@ -395,7 +421,9 @@ export default function SignUp() {
                   pattern="[A-Za-z]{2,}"
                   title="Enter at least 2 valid letters."
                   aria-invalid={!!errors.lastName}
-                  aria-describedby={errors.lastName ? "lastName-error" : undefined}
+                  aria-describedby={
+                    errors.lastName ? "lastName-error" : undefined
+                  }
                   className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
                     errors.lastName
                       ? "border-red-500"
@@ -404,14 +432,21 @@ export default function SignUp() {
                 />
               </div>
               {errors.lastName && (
-                <p id="lastName-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p
+                  id="lastName-error"
+                  role="alert"
+                  className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                >
                   {errors.lastName}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="email"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -433,7 +468,11 @@ export default function SignUp() {
                 />
               </div>
               {errors.email && (
-                <p id="email-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p
+                  id="email-error"
+                  role="alert"
+                  className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                >
                   {errors.email}
                 </p>
               )}
@@ -445,19 +484,26 @@ export default function SignUp() {
               </label>
               <div className="flex gap-3 items-start">
                 <div className="w-36">
-                  <label htmlFor="countryCode" className="sr-only">Country code</label>
+                  <label htmlFor="countryCode" className="sr-only">
+                    Country code
+                  </label>
                   <select
                     id="countryCode"
                     name="countryCode"
                     value={formData.countryCode}
                     onChange={handleInputChange}
                     className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base ${
-                      errors.countryCode ? "border-red-500" : "border-arcon-gray-border"
+                      errors.countryCode
+                        ? "border-red-500"
+                        : "border-arcon-gray-border"
                     } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                   >
                     <option value="">Select code</option>
                     {countryCodes.map((c) => (
-                      <option key={c.code} value={c.code}>{`${c.code} (${c.name})`}</option>
+                      <option
+                        key={c.code}
+                        value={c.code}
+                      >{`${c.code} (${c.name})`}</option>
                     ))}
                   </select>
                 </div>
@@ -476,28 +522,43 @@ export default function SignUp() {
                       pattern="^\d+$"
                       title="Please enter a valid phone number."
                       aria-invalid={!!errors.phone}
-                      aria-describedby={errors.phone ? "phone-error" : undefined}
+                      aria-describedby={
+                        errors.phone ? "phone-error" : undefined
+                      }
                       className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                        errors.phone ? "border-red-500" : "border-arcon-gray-border"
+                        errors.phone
+                          ? "border-red-500"
+                          : "border-arcon-gray-border"
                       } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                     />
                   </div>
                   {errors.phone && (
-                    <p id="phone-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                    <p
+                      id="phone-error"
+                      role="alert"
+                      className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                    >
                       {errors.phone}
                     </p>
                   )}
                 </div>
               </div>
               {errors.countryCode && (
-                <p id="countryCode-error" role="alert" className="text-red-500 text-xs sm:text-sm mt-1 font-roboto">
+                <p
+                  id="countryCode-error"
+                  role="alert"
+                  className="text-red-500 text-xs sm:text-sm mt-1 font-roboto"
+                >
                   {errors.countryCode}
                 </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="password"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 Password
               </label>
               <div className="relative">
@@ -510,28 +571,78 @@ export default function SignUp() {
                     onChange={handleInputChange}
                     placeholder="Enter your password"
                     aria-invalid={!!errors.password}
-                    aria-describedby={errors.password ? "password-error" : undefined}
+                    aria-describedby={
+                      errors.password ? "password-error" : undefined
+                    }
                     className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 pr-10 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                      errors.password ? "border-red-500" : "border-arcon-gray-border"
+                      errors.password
+                        ? "border-red-500"
+                        : "border-arcon-gray-border"
                     } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     {showPassword ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 3L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M10.58 10.58a3 3 0 104.24 4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3 3L21 21"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M10.58 10.58a3 3 0 104.24 4.24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="3"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     )}
                   </button>
@@ -545,7 +656,10 @@ export default function SignUp() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-arcon-gray-primary text-sm md:text-sm font-medium mb-2 font-roboto"
+              >
                 Confirm Password
               </label>
               <div className="relative">
@@ -558,28 +672,82 @@ export default function SignUp() {
                     onChange={handleInputChange}
                     placeholder="Re-enter your password"
                     aria-invalid={!!errors.confirmPassword}
-                    aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
+                    aria-describedby={
+                      errors.confirmPassword
+                        ? "confirmPassword-error"
+                        : undefined
+                    }
                     className={`w-full h-[48px] sm:h-[54px] px-3 sm:px-4 py-3 sm:py-4 pr-10 border rounded font-roboto text-sm sm:text-base placeholder-arcon-gray-secondary ${
-                      errors.confirmPassword ? "border-red-500" : "border-arcon-gray-border"
+                      errors.confirmPassword
+                        ? "border-red-500"
+                        : "border-arcon-gray-border"
                     } focus:outline-none focus:ring-2 focus:ring-arcon-blue focus:border-transparent`}
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword((s) => !s)}
-                    aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                    aria-label={
+                      showConfirmPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     {showConfirmPassword ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 3L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M10.58 10.58a3 3 0 104.24 4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M3 3L21 21"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M10.58 10.58a3 3 0 104.24 4.24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="3"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     )}
                   </button>

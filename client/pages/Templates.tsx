@@ -718,7 +718,7 @@ export default function Templates() {
         <aside
           ref={sidebarRef}
           className={cn(
-            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 lg:h-[calc(100vh-44px)]",
+            "fixed top-11 bottom-0 left-0 z-10 w-18 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-11 lg:h-[calc(100vh-44px)] flex flex-col justify-between",
             sidebarOpen
               ? "translate-x-0"
               : "-translate-x-full lg:translate-x-0",
@@ -732,7 +732,7 @@ export default function Templates() {
             />
           )}
 
-          <div className="relative flex flex-col h-full z-10">
+          <div className="relative flex flex-col h-full justify-between z-10">
             {/* Top Section */}
             <div className="flex-shrink-0">
               <nav className="px-0 space-y-0.5">
@@ -939,8 +939,6 @@ export default function Templates() {
               </nav>
             </div>
 
-            {/* 135px Gap */}
-            <div style={{ height: "135px" }}></div>
 
             {/* Bottom Section (Logout & Help) */}
             <div className="flex-shrink-0 px-2">

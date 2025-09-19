@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { storeAuthData, isAuthenticated, type LoginRequest, type AuthResponse } from "@/lib/auth";
+import {
+  storeAuthData,
+  isAuthenticated,
+  type LoginRequest,
+  type AuthResponse,
+} from "@/lib/auth";
 
 export default function Login() {
   const [formData, setFormData] = useState<LoginRequest>({
@@ -39,9 +44,13 @@ export default function Login() {
 
   // Force direct connection (bypass proxy for now since backend has CORS configured)
   const getApiUrl = () => {
-    return import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || "http://10.10.2.133:8080";
+    return (
+      import.meta.env.VITE_API_BASE ||
+      import.meta.env.VITE_API_URL ||
+      "http://10.10.2.133:8080"
+    );
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -52,11 +61,11 @@ export default function Login() {
 
     try {
       const apiUrl = getApiUrl();
-      console.log('Attempting login with API URL:', apiUrl);
-      
+      console.log("Attempting login with API URL:", apiUrl);
+
       const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: "POST",
-        mode: 'cors',
+        mode: "cors",
         headers: {
           "Content-Type": "application/json",
         },
@@ -283,9 +292,16 @@ export default function Login() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} noValidate className="space-y-5 md:space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="space-y-5 md:space-y-6"
+          >
             <div>
-              <label htmlFor="email" className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="email"
+                className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto"
+              >
                 Mobile Number Or Email Address
               </label>
               <div className="relative">
@@ -309,7 +325,10 @@ export default function Login() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto">
+              <label
+                htmlFor="password"
+                className="block text-arcon-gray-primary text-sm font-medium mb-2 font-roboto"
+              >
                 Password
               </label>
               <div className="relative">
@@ -333,15 +352,59 @@ export default function Login() {
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M3 3L21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M10.58 10.58a3 3 0 104.24 4.24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M3 3L21 21"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M10.58 10.58a3 3 0 104.24 4.24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M9.88 5.64C11.06 5.27 12.34 5 14 5c4 0 7 3.5 8 7-1 3.5-4 7-8 7-1.66 0-2.94-.27-4.12-.64"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="3"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   )}
                 </button>

@@ -19,14 +19,12 @@ import { toast } from "sonner";
 interface TemplateCreateDto {
   Name: string;
   Description?: string | null;
-  TemplateRuleId: number;
 }
 
 interface TemplateDto {
   Id: number;
   Name: string;
   Description?: string | null;
-  TemplateRuleId: number;
   TemplateRuleInfo: string;
   CreatedBy: number;
   CreatedByName: string;
@@ -71,7 +69,7 @@ export default function Templates() {
   );
   // Keep your existing states above…
 
-  const MAX_NAME_LEN = 30;
+  const MAX_NAME_LEN = 100;
 
   // Clone dialog state
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
@@ -186,8 +184,8 @@ export default function Templates() {
     const name = (newTemplateName ?? "").trim();
     if (!templateIdToRename || !name) return;
 
-    if (name.length > 30) {
-      setErrorMessage("Max length is 30 characters.");
+    if (name.length > 100) {
+      setErrorMessage("Max length is 100 characters.");
       return;
     }
 
@@ -214,8 +212,7 @@ export default function Templates() {
       }
 
       // Some backends return 204 No Content — that's fine. Just refetch.
-      // await fetchTemplates(buildCurrentFilters());
-      // ✅ First refetch all, then reapply filters
+      // First refetch all, then reapply filters
       await fetchTemplates();
       applyFilters(buildCurrentFilters());
 
@@ -227,6 +224,104 @@ export default function Templates() {
     }
   };
 
+  const authHeaders = () => ({
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+  });
+
+  type SectionType = "personalInformation" | "documents" | "biometrics";
+
+  const getActiveVersion = (tpl: any) =>
+    tpl?.activeVersion ??
+    (Array.isArray(tpl?.versions) ? (tpl.versions.find((v: any) => v.isActive) ?? tpl.versions[0]) : null);
+
+  const mapSectionsByType = (sections: any[] = []) => {
+    const map: Record<SectionType, any | undefined> = {
+      personalInformation: undefined,
+      documents: undefined,
+      biometrics: undefined,
+    };
+    sections.forEach((s) => {
+      if (s?.sectionType && s.fieldMappings?.length) {
+        // normalize to our 3 expected keys if needed
+        const key = String(s.sectionType) as SectionType;
+        if (key in map) map[key] = s;
+      }
+    });
+    return map;
+  };
+
+  // Patch field mapping structure for a destination section
+  async function patchDestMappingBySectionId(section: any, structure: any, captureAllowed?: boolean, uploadAllowed?: boolean) {
+    const mappingId = section?.fieldMappings?.[0]?.id;
+    if (!mappingId) throw new Error(`No fieldMapping found for sectionId=${section?.id}`);
+
+    const body = {
+      structure,
+      // keep these permissive; or read from source if available
+      captureAllowed: captureAllowed ?? true,
+      uploadAllowed: uploadAllowed ?? true,
+    };
+
+    const res = await fetch(`${API_BASE}/api/section-field-mappings/by-section/${mappingId}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`PATCH mapping failed (${mappingId}): ${res.status} ${res.statusText} — ${text}`);
+    }
+  }
+
+  // Update order & activation for a destination section
+  async function putDestSectionMeta(section: any, orderIndex: number, isActive: boolean) {
+    const res = await fetch(`${API_BASE}/api/sections/${section.id}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ orderIndex, isActive }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`PUT section failed (${section.id}): ${res.status} ${res.statusText} — ${text}`);
+    }
+  }
+
+  // Deep-clone core: copy structures + ordering from src -> dst
+  async function cloneSectionsAndMappings(srcTpl: any, dstTpl: any) {
+    const srcActive = getActiveVersion(srcTpl);
+    const dstActive = getActiveVersion(dstTpl);
+    if (!srcActive || !dstActive) throw new Error("Active version missing on source or destination.");
+
+    const srcByType = mapSectionsByType(srcActive.sections);
+    const dstByType = mapSectionsByType(dstActive.sections);
+
+    const types: SectionType[] = ["personalInformation", "documents", "biometrics"];
+
+    for (const type of types) {
+      const srcSec = srcByType[type];
+      const dstSec = dstByType[type];
+      if (!srcSec || !dstSec) continue; // in case a section doesn't exist
+
+      const srcMap = srcSec.fieldMappings?.[0];
+      const structure = srcMap?.structure ?? {}; // your backend already stores the merged structure
+
+      // Prefer reading source flags if present (keeps parity)
+      const captureAllowed = srcMap?.captureAllowed ?? true;
+      const uploadAllowed = srcMap?.uploadAllowed ?? true;
+
+      // 1) Copy structure
+      await patchDestMappingBySectionId(dstSec, structure, captureAllowed, uploadAllowed);
+
+      // 2) Copy ordering + activation
+      const orderIndex = Number.isFinite(srcSec.orderIndex) ? srcSec.orderIndex : 1;
+      const isActive = srcSec.isActive !== false;
+      await putDestSectionMeta(dstSec, orderIndex, isActive);
+    }
+  }
+
+  // ---- REPLACE your handleCloneSubmit with this one:
   const handleCloneSubmit = async () => {
     const token = getToken();
     if (!token) {
@@ -241,47 +336,59 @@ export default function Templates() {
       return;
     }
 
-    // If user cleared the input, fall back to default "(Copy)" name
     const chosen = (cloneTemplateName ?? "").trim() || cloneDefaultName;
-
     if (chosen.length > MAX_NAME_LEN) {
       setCloneErrorMessage(`Max length is ${MAX_NAME_LEN} characters.`);
       return;
     }
 
-    const payload = {
-      name: chosen,
-      description: `${src.description ?? ""}`,
-      templateRuleId: src.templateRuleId || 1,
-    };
-
     try {
-      const response = await fetch(`${API_BASE}/api/Template`, {
+      // 1) Fetch full source template (to get active version + sections + mappings)
+      const srcRes = await fetch(`${API_BASE}/api/Template/${src.id}`, { headers: authHeaders() });
+      if (!srcRes.ok) throw new Error(await srcRes.text());
+      const srcTpl = await srcRes.json();
+
+      // 2) Create destination template (server will create a fresh active version, with empty invitees)
+      const createPayload = {
+        name: chosen,
+        description: `${src.description ?? ""}`,
+      };
+      const createRes = await fetch(`${API_BASE}/api/Template`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+        headers: authHeaders(),
+        body: JSON.stringify(createPayload),
       });
+      if (!createRes.ok) throw new Error(await createRes.text());
+      const created = await createRes.json(); // expect { id: number, ... }
 
-      if (!response.ok) {
-        const text = await response.text().catch(() => "");
-        throw new Error(text || "Failed to clone template.");
-      }
+      // 3) Fetch the freshly created template so we can get its section/mapping IDs
+      const dstRes = await fetch(`${API_BASE}/api/Template/${created.id}`, { headers: authHeaders() });
+      if (!dstRes.ok) throw new Error(await dstRes.text());
+      const dstTpl = await dstRes.json();
 
+      // 4) Deep-copy section structures + ordering (no invitees touched)
+      await cloneSectionsAndMappings(srcTpl, dstTpl);
+
+      // 5) Refresh UI
       await fetchTemplates();
       applyFilters(buildCurrentFilters());
 
       setCloneDialogOpen(false);
-      toast.success(`Template cloned as "${payload.name}".`);
+      toast.success(`Template cloned as "${createPayload.name}".`);
     } catch (error: any) {
       console.error("Error cloning template:", error);
       toast.error(error?.message || "Failed to clone template.");
     }
   };
 
-  
+
+
+
+
+
+
+
+
   
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1455,8 +1562,8 @@ export default function Templates() {
                     onChange={(e) => {
                       const v = e.target.value;
                       setNewTemplateName(v);
-                      if (v.trim().length > 30) {
-                        setErrorMessage("Max length is 30 characters.");
+                      if (v.trim().length > 100) {
+                        setErrorMessage("Max length is 100 characters.");
                       } else {
                         setErrorMessage("");
                       }
@@ -1469,7 +1576,7 @@ export default function Templates() {
                     aria-describedby={errorMessage ? "rename-error" : undefined}
                   />
 
-                  {/* Only show when it exceeds 30 */}
+                  {/* Only show when it exceeds 100 */}
                   {errorMessage && (
                     <p id="rename-error" className="text-xs text-red-600 mb-3">
                       {errorMessage}

@@ -1399,52 +1399,106 @@ export default function ReceiverView() {
         <div className="p-4 border-t border-[#DEDEDD] bg-white">
           <div className="w-full max-w-full p-2 flex items-center gap-6 overflow-hidden">
             {/* Camera Section */}
-            <div className="h-[428px] flex flex-col flex-1 min-w-0">
-              <div className="h-[380px] pt-4 flex flex-col items-center gap-2 border-t-2 border-r-2 border-l-2 border-dashed border-[#C3C6D4] rounded-t-lg bg-white">
-                <div className="flex flex-col items-center justify-center gap-7 flex-1 border-2 border-dashed border-[#C3C6D4] rounded-lg bg-white">
-                  <div className="flex flex-col items-center justify-center gap-2 flex-1 rounded-lg bg-white">
-                    <div className="w-full max-w-[412px] flex flex-col items-center gap-2">
-                      <div className="w-[126px] h-[52px] relative">
-                        <svg
-                          width="33"
-                          height="32"
-                          viewBox="0 0 33 32"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="absolute left-[49px] top-0"
-                        >
-                          <path
-                            d="M16.4974 10.668V16.0013M16.4974 21.3346H16.5107M29.8307 16.0013C29.8307 23.365 23.8611 29.3346 16.4974 29.3346C9.1336 29.3346 3.16406 23.365 3.16406 16.0013C3.16406 8.6375 9.1336 2.66797 16.4974 2.66797C23.8611 2.66797 29.8307 8.6375 29.8307 16.0013Z"
-                            stroke="#676879"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                        <span className="absolute left-0 top-8 w-[126px] text-[13px] font-medium text-[#172B4D] text-center leading-5 font-roboto">
-                          Camera not detected.
-                        </span>
-                      </div>
-                      <p className="w-full max-w-[284px] text-[13px] text-[#676879] text-center leading-5 font-roboto">
-                        Please check your device or close other apps using the
-                        camera.
-                      </p>
+            
+            {/* Upload Methods (Biometric) */}
+            <div className="flex flex-col gap-4">
+            <h3 className="text-base font-bold text-[#172B4D] leading-[26px] font-roboto">
+                Take a live selfie
+            </h3>
+
+            <div className="flex gap-6 h-[334px]">
+                {/* Camera Option */}
+                <div className="flex-1 flex flex-col">
+                <div
+                    className="h-full flex flex-col items-center justify-center gap-6 border-2 border-dashed border-[#C3C6D4] rounded-lg cursor-pointer hover:border-[#0073EA] bg-white p-8"
+                    onClick={openCamera}
+                >
+                    <div className="w-[64px] h-[64px] p-3 flex items-center justify-center rounded-full bg-[#F6F7FB]">
+                    <Camera className="w-8 h-8 text-[#676879]" strokeWidth={1.35} />
                     </div>
-                  </div>
+                    <div className="text-center max-w-sm">
+                    <h4 className="text-base font-semibold text-[#323238] leading-normal font-figtree mb-3">
+                        Camera
+                    </h4>
+                    <p className="text-sm text-[#676879] leading-relaxed font-roboto">
+                        Take a clear selfie using your device’s camera. Make sure your face
+                        is well-lit and fully visible.
+                    </p>
+                    </div>
                 </div>
-              </div>
-              <div className="w-full max-w-[440px] h-12 px-4 py-2 flex items-end justify-end gap-2 rounded-b bg-[#F6F7FB]">
-                <div className="h-8 px-3 py-[9px] flex items-center gap-1 rounded bg-[#0073EA]">
-                  <RefreshCw
-                    className="w-[18px] h-[18px] text-white transform -rotate-90"
-                    strokeWidth={1.5}
-                  />
-                  <span className="text-[13px] font-medium text-white font-roboto">
-                    Retry
-                  </span>
                 </div>
-              </div>
             </div>
+            </div>
+
+            {/* Camera Modal (same as Doc Verification) */}
+            {showCamera && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold">Capture Selfie</h3>
+                    <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                        setShowCamera(false);
+                        if (stream) {
+                        stream.getTracks().forEach((track) => track.stop());
+                        setStream(null);
+                        }
+                    }}
+                    >
+                    <X className="w-4 h-4" />
+                    </Button>
+                </div>
+
+                <div className="space-y-4">
+                    {!capturedDataUrl && !cameraError && (
+                    <>
+                        <video
+                        ref={videoRef}
+                        className="w-full rounded"
+                        playsInline
+                        muted
+                        />
+                        <Button onClick={capturePhoto} className="w-full">
+                        Capture Selfie
+                        </Button>
+                    </>
+                    )}
+
+                    {capturedDataUrl && (
+                    <>
+                        <img
+                        src={capturedDataUrl}
+                        alt="Selfie"
+                        className="w-full rounded"
+                        />
+                        <div className="flex gap-2">
+                        <Button variant="outline" onClick={retakePhoto} className="flex-1">
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Retake
+                        </Button>
+                        <Button onClick={() => setShowCamera(false)} className="flex-1">
+                            Use Photo
+                        </Button>
+                        </div>
+                    </>
+                    )}
+
+                    {cameraError && (
+                    <div className="text-center space-y-2">
+                        <p className="text-red-600">{cameraError}</p>
+                        <Button onClick={() => setCameraError(null)} variant="outline">
+                        Try Again
+                        </Button>
+                    </div>
+                    )}
+                </div>
+
+                <canvas ref={canvasRef} className="hidden" />
+                </div>
+            </div>
+            )}
 
             {/* Divider */}
             <svg

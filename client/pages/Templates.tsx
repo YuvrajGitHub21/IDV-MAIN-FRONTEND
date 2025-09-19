@@ -19,14 +19,12 @@ import { toast } from "sonner";
 interface TemplateCreateDto {
   Name: string;
   Description?: string | null;
-  // TemplateRuleId: number;
 }
 
 interface TemplateDto {
   Id: number;
   Name: string;
   Description?: string | null;
-  // TemplateRuleId: number;
   TemplateRuleInfo: string;
   CreatedBy: number;
   CreatedByName: string;
@@ -71,7 +69,7 @@ export default function Templates() {
   );
   // Keep your existing states above…
 
-  const MAX_NAME_LEN = 30;
+  const MAX_NAME_LEN = 100;
 
   // Clone dialog state
   const [cloneDialogOpen, setCloneDialogOpen] = useState(false);
@@ -186,8 +184,8 @@ export default function Templates() {
     const name = (newTemplateName ?? "").trim();
     if (!templateIdToRename || !name) return;
 
-    if (name.length > 30) {
-      setErrorMessage("Max length is 30 characters.");
+    if (name.length > 100) {
+      setErrorMessage("Max length is 100 characters.");
       return;
     }
 
@@ -354,7 +352,6 @@ export default function Templates() {
       const createPayload = {
         name: chosen,
         description: `${src.description ?? ""}`,
-        templateRuleId: src.templateRuleId || 1,
       };
       const createRes = await fetch(`${API_BASE}/api/Template`, {
         method: "POST",
@@ -1565,8 +1562,8 @@ export default function Templates() {
                     onChange={(e) => {
                       const v = e.target.value;
                       setNewTemplateName(v);
-                      if (v.trim().length > 30) {
-                        setErrorMessage("Max length is 30 characters.");
+                      if (v.trim().length > 100) {
+                        setErrorMessage("Max length is 100 characters.");
                       } else {
                         setErrorMessage("");
                       }
@@ -1579,7 +1576,7 @@ export default function Templates() {
                     aria-describedby={errorMessage ? "rename-error" : undefined}
                   />
 
-                  {/* Only show when it exceeds 30 */}
+                  {/* Only show when it exceeds 100 */}
                   {errorMessage && (
                     <p id="rename-error" className="text-xs text-red-600 mb-3">
                       {errorMessage}

@@ -994,31 +994,7 @@ export default function ReceiverView() {
                   </div>
                 </div>
               )}
-
-              {templateConfig.personalInfo.fields.dateOfBirth && (
-                <div className="flex-1 sm:max-w-md flex flex-col group">
-                  <div className="pb-3">
-                    <Label className="text-sm font-semibold text-[#172B4D] leading-5 font-roboto">
-                      Date Of Birth
-                    </Label>
-                  </div>
-                  <div className="relative">
-                    <div className="h-12 px-4 py-3 flex items-center justify-between border-2 border-[#DFE1E6] rounded-lg bg-white hover:border-blue-300 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-100 transition-all duration-200">
-                      <Input
-                        type="date"
-                        value={formData.dateOfBirth}
-                        onChange={(e) =>
-                          handleInputChange("dateOfBirth", e.target.value)
-                        }
-                        placeholder="DD/MM/YYYY"
-                        className="border-0 p-0 h-auto text-sm text-[#172B4D] bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 font-roboto placeholder:text-[#8993A4] w-full"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
-
             {/* Additional Fields from Admin Configuration */}
             {templateConfig.personalInfo.additionalFields &&
               templateConfig.personalInfo.additionalFields.length > 0 &&

@@ -13,6 +13,9 @@ import { getAccessToken } from "@/lib/auth";
 const API_BASE = "http://10.10.2.133:8080";
 const ENABLE_BACKEND_RECEIVER = false;
 
+// Allow fallback to snapshot from localStorage if backend fails
+const ALLOW_SNAPSHOT_FALLBACK = true;
+
 type CountryDocs = { countryName: string; documents: string[] };
 
 type DocConfig = {
@@ -131,361 +134,168 @@ export default function ReceiverView() {
 
   // Get template configuration from location state or build from dbTemplate or use defaults
   const templateConfig: TemplateConfig = React.useMemo(() => {
-    console.log("Building templateConfig with:", {
-      dbTemplate,
-      snapshot,
-      locationState: location.state,
-    });
-
-    if (location.state?.templateConfig) {
-      return location.state.templateConfig;
-    }
-
-    // 1) Prefer the new .NET GET /api/Template/{id}
+    // ✅ PREFERRED: Use apiTemplate from backend
     if (apiTemplate) {
-      const active =
-        Array.isArray(apiTemplate.versions)
-          ? (apiTemplate.versions.find((v: any) => v.isActive) ?? apiTemplate.versions[0])
+      try {
+        const activeVersion = Array.isArray(apiTemplate.versions)
+          ? apiTemplate.versions.find((v) => v.isActive) ?? apiTemplate.versions[0]
           : apiTemplate.activeVersion;
 
-      const sections: any[] = Array.isArray(active?.sections) ? active.sections : [];
+        const sections = activeVersion?.sections ?? [];
 
-      // defaults
-      let personalEnabled = true;
-      let showBase = { firstName: true, lastName: true, email: true, dateOfBirth: false };
-      const additionalFields: NonNullable<TemplateConfig["personalInfo"]["additionalFields"]> = [];
+        // Sort by orderIndex
+        const sortedSections = [...sections]
+          .filter((s) => s.isActive)
+          .sort((a, b) => a.orderIndex - b.orderIndex);
 
-      let docEnabled = false;
-      let docCfg: DocConfig = {};
-      let bioEnabled = false;
+        const sectionMap: Record<string, any> = {};
 
-      for (const sec of sections) {
-        if (sec?.isActive === false) continue;
-        const type = String(sec?.sectionType || "");
-        const mapping = Array.isArray(sec?.fieldMappings) && sec.fieldMappings.length ? sec.fieldMappings[0] : null;
-        const structure = mapping?.structure || {};
+        for (const section of sortedSections) {
+          const type = section.sectionType;
+          const mapping = section.fieldMappings?.[0]?.structure ?? {};
 
-        if (type === "personalInformation") {
-          personalEnabled = true;
-          const s = structure.personalInfo || {};
-          showBase = {
-            firstName: !!s?.firstName,
-            lastName: !!s?.lastName,
-            email: !!s?.email,
-            dateOfBirth: !!s?.dateOfBirth,
-          };
-          if (s?.currentAddress) additionalFields.push({ id: "currentAddress", name: "Current Address", placeholder: "Enter your current address" });
-          if (s?.permanentAddress) additionalFields.push({ id: "permanentAddress", name: "Permanent Address", placeholder: "Enter your permanent address" });
-          if (s?.gender) additionalFields.push({ id: "gender", name: "Gender", placeholder: "Select gender" });
+          sectionMap[type] = mapping;
+          sectionMap[`${type}_upload`] = section.fieldMappings?.[0]?.uploadAllowed ?? false;
+          sectionMap[`${type}_capture`] = section.fieldMappings?.[0]?.captureAllowed ?? false;
         }
 
-        if (type === "documents") {
-          docEnabled = true;
-          const d = structure.documentVerification || structure.documents || {};
+        const personalInfoStruct = sectionMap["personalInformation"]?.personalInfo ?? {};
 
-          type SupportedCountry = {
-            countryName?: string;
-            country?: string;
-            name?: string;
-            documents?: string[];
-          };
+        const additionalFields = [];
+        if (personalInfoStruct.gender) additionalFields.push({ id: "gender", name: "Gender", placeholder: "Select gender" });
+        if (personalInfoStruct.currentAddress) additionalFields.push({ id: "currentAddress", name: "Current Address", placeholder: "Enter your current address" });
+        if (personalInfoStruct.permanentAddress) additionalFields.push({ id: "permanentAddress", name: "Permanent Address", placeholder: "Enter your permanent address" });
 
-          const supported: SupportedCountry[] = Array.isArray(d.supportedCountries)
-            ? (d.supportedCountries as SupportedCountry[])
-            : [];
+        const docStruct = sectionMap["documents"]?.documentVerification ?? {};
 
-          // Normalize -> CountryDocs[]
-          const normalized: CountryDocs[] = supported
-            .map((c) => ({
-              countryName: String(c.countryName ?? c.country ?? c.name ?? "").trim(),
-              documents: Array.isArray(c.documents) ? c.documents.filter(Boolean) : [],
+        // Normalize countries
+        const countries: CountryDocs[] = Array.isArray(docStruct.supportedCountries)
+          ? docStruct.supportedCountries.map((c: any) => ({
+              countryName: c.countryName,
+              documents: Array.isArray(c.documents) ? c.documents : [],
             }))
-            .filter((c) => c.countryName.length > 0);
+          : [];
 
-          // Dedupe by name
-          const seen = new Set<string>();
-          let countries: CountryDocs[] = normalized.filter((c) => {
-            const valid =
-              typeof c.countryName === "string" && c.countryName.trim().length > 0;
-            if (!valid) {
-              console.warn("⚠️ Invalid country in normalized list:", c);
-              return false;
-            }
-            if (seen.has(c.countryName)) return false;
-            seen.add(c.countryName);
-            return true;
-          });
+        // If selectedCountries exist, filter the normalized countries
+        const selectedCountries = new Set((docStruct.selectedCountries ?? []).map((c: string) => c.toLowerCase()));
+        const filteredCountries = countries.filter((c) =>
+          selectedCountries.has(c.countryName.toLowerCase())
+        );
 
-          // NEW: get preferred country list from API (selectedCountries) as a string[]
-          const selectedCountryNames = extractSupportedCountries(d);
-
-          // NEW: if API provided selectedCountries, filter the CountryDocs[] to only those
-          if (selectedCountryNames.length) {
-            const want = new Set(
-              selectedCountryNames.map((s) => s.trim().toLowerCase()),
-            );
-            countries = countries.filter((c) =>
-              want.has(c.countryName.trim().toLowerCase()),
-            );
-          }
-
-          docCfg = {
-            allowUploadFromDevice: !!d.allowUploadFromDevice,
-            allowCaptureWebcam: !!d.allowCaptureWebcam,
-            documentHandling: d.documentHandlingRejectImmediately
-              ? "reject"
-              : d.documentHandlingAllowRetries
-              ? "retry"
-              : undefined,
-            countries, // used by the dropdown + docs UI
-          };
-
-          // OPTIONAL: if you also want a simple string[] of country names available:
-          console.log("✅ Country names array:", countries.map((c) => c.countryName));
-        }
-      // Right after computing allCountries
-      const countryNamesArray: string[] = allCountries.map((c) => c.countryName);
-      console.log("🌍 countryNamesArray:", countryNamesArray);
-
-
-
-
-
-        if (type === "biometrics") {
-          bioEnabled = true;
-        }
-      }
-
-      const countries = docCfg.countries ?? [];
-
-      return {
-        templateName: apiTemplate?.templateName || apiTemplate?.name || "New Template",
-        personalInfo: {
-          enabled: personalEnabled,
-          fields: showBase,
-          additionalFields,
-        },
-        documentVerification: {
-          enabled: docEnabled,
-          allowUploadFromDevice: !!docCfg.allowUploadFromDevice,
-          allowCaptureWebcam: !!docCfg.allowCaptureWebcam,
-          countries,
-          // only include supportedDocuments when we DON'T have per-country lists
-          ...(countries.length ? {} : { supportedDocuments: [] }),
-        },
-        biometricVerification: { enabled: bioEnabled },
-      };
-    }
-
-    // Build from local snapshot (no backend)
-    if (snapshot) {
-      console.log("Using snapshot data:", snapshot);
-      const steps = Array.isArray(snapshot.verificationSteps)
-        ? snapshot.verificationSteps
-        : [];
-      const hasDoc = steps.some(
-        (s: any) => s.id === "document-verification" && (s.isEnabled ?? true),
-      );
-      const hasBio = steps.some(
-        (s: any) => s.id === "biometric-verification" && (s.isEnabled ?? true),
-      );
-
-      const opt: any[] = Array.isArray(snapshot.optionalFields)
-        ? snapshot.optionalFields
-        : [];
-      const dob = !!opt.find((f: any) => f.id === "date-of-birth" && f.checked);
-      console.log(
-        "Optional fields from snapshot:",
-        opt,
-        "Date of birth enabled:",
-        dob,
-      );
-      console.log("Additional fields from snapshot:", snapshot.addedFields);
-      console.log("Full snapshot for template", templateId, ":", snapshot);
-
-      const d = snapshot.documentVerification || snapshot.documents || {};
-
-      const doc = snapshot.doc || {};
-      const supportedDocuments: string[] = Array.isArray(doc.selectedDocuments)
-        ? doc.selectedDocuments
-        : [];
-
-      console.log("Document configuration from snapshot:", {
-        doc,
-        selectedDocuments: doc.selectedDocuments,
-        supportedDocuments,
-      });
-      
-      // Use the same robust normalizer used in the API path:
-      const normalizedCountries = normalizeCountriesFromDocCfg({
-        ...d,
-        // provide a fallback so each selected country at least gets *some* docs
-        selectedDocuments: supportedDocuments,
-      });
-
-
-      return {
-        templateName: snapshot.templateName || "New Template",
-        personalInfo: {
-          enabled: true,
-          fields: {
-            firstName: true,
-            lastName: true,
-            email: true,
-            dateOfBirth: dob,
-          },
-          additionalFields: Array.isArray(snapshot.addedFields)
-            ? snapshot.addedFields
-            : [],
-        },
-        documentVerification: {
-          enabled: hasDoc,
-          allowUploadFromDevice: !!doc.allowUploadFromDevice,
-          allowCaptureWebcam: !!doc.allowCaptureWebcam,
-          // If we have selected countries in the snapshot, expose a proper multi-country array.
-          ...(normalizedCountries.length
-            ? { countries: normalizedCountries }
-            : {
-                // legacy single-country fallback
-                countryName:
-                  (Array.isArray(d?.supportedCountries) && d.supportedCountries[0]?.countryName) ||
-                  undefined,
-                supportedDocuments,
-              }),
+        return {
+          templateName: apiTemplate.name || "New Template",
+          personalInfo: {
+            enabled: !!sectionMap["personalInformation"],
+            fields: {
+              firstName: !!personalInfoStruct.firstName,
+              lastName: !!personalInfoStruct.lastName,
+              email: !!personalInfoStruct.email,
+              dateOfBirth: !!personalInfoStruct.dateOfBirth,
             },
-        biometricVerification: {
-          enabled: hasBio,
-        },
-      };
+            additionalFields,
+          },
+          documentVerification: {
+            enabled: !!sectionMap["documents"],
+            allowUploadFromDevice: !!sectionMap["documents_upload"],
+            allowCaptureWebcam: !!sectionMap["documents_capture"],
+            countries: filteredCountries,
+          },
+          biometricVerification: {
+            enabled: !!sectionMap["biometrics"],
+          },
+        };
+      } catch (e) {
+        console.error("❌ Failed to parse backend template, falling back to snapshot/localStorage:", e);
+        setTplError("Failed to parse backend template structure.");
+      }
     }
 
-    if (ENABLE_BACKEND_RECEIVER && dbTemplate) {
-      const sectionStatus = dbTemplate.Section_status || {};
-      const personalInfo = dbTemplate.Personal_info || {};
-      const docVerification = dbTemplate.Doc_verification || {};
-      const biometricVerification = dbTemplate.Biometric_verification || {};
-
-      return {
-        templateName: dbTemplate.nameOfTemplate || "New Template",
-        personalInfo: {
-          enabled: sectionStatus.persoanl_info !== false,
-          fields: {
-            firstName: personalInfo.firstName !== false,
-            lastName: personalInfo.LastName !== false,
-            email: personalInfo.Email !== false,
-            dateOfBirth: !!personalInfo.Added_fields?.dob,
+    // 🟡 Fallback: Use snapshot (localStorage)
+    if (ALLOW_SNAPSHOT_FALLBACK && snapshot) {
+      console.log("📦 Using snapshot fallback from localStorage...");
+      try {
+        // Map snapshot to TemplateConfig interface
+        const personalFields = snapshot.addedFields || [];
+        const optionalFields = snapshot.optionalFields || [];
+        const fieldSet = new Set(personalFields.map((f: any) => f.id));
+        const additionalFields = [];
+        if (optionalFields.includes("gender"))
+          additionalFields.push({
+            id: "gender",
+            name: "Gender",
+            placeholder: "Select gender",
+          });
+        if (optionalFields.includes("currentAddress"))
+          additionalFields.push({
+            id: "currentAddress",
+            name: "Current Address",
+            placeholder: "Enter your current address",
+          });
+        if (optionalFields.includes("permanentAddress"))
+          additionalFields.push({
+            id: "permanentAddress",
+            name: "Permanent Address",
+            placeholder: "Enter your permanent address",
+          });
+        return {
+          templateName: snapshot.templateName || "Snapshot Template",
+          personalInfo: {
+            enabled: snapshot.personalInfoExpanded ?? true,
+            fields: {
+              firstName: fieldSet.has("firstName"),
+              lastName: fieldSet.has("lastName"),
+              email: fieldSet.has("email"),
+              dateOfBirth: fieldSet.has("dateOfBirth"),
+            },
+            additionalFields,
           },
-          additionalFields: Array.isArray(
-            dbTemplate.Personal_info?.additionalFields,
-          )
-            ? dbTemplate.Personal_info.additionalFields
-            : Array.isArray(snapshot?.addedFields)
-              ? snapshot.addedFields
-              : [],
-        },
-        documentVerification: {
-          enabled:
-            sectionStatus.doc_verification !== false &&
-            !!docVerification.user_uploads,
-          allowUploadFromDevice: !!docVerification.user_uploads?.Allow_uploads,
-          allowCaptureWebcam: !!docVerification.user_uploads?.allow_capture,
-          supportedDocuments: extractSupportedDocuments(docVerification),
-        },
-        biometricVerification: {
-          enabled:
-            sectionStatus.Biometric_verification !== false &&
-            !!biometricVerification.number_of_retries,
-        },
-      };
+          documentVerification: {
+            enabled: snapshot.documentVerificationExpanded ?? false,
+            allowUploadFromDevice: true,
+            allowCaptureWebcam: true,
+            countries: [], // can't be derived from snapshot unless you stored them
+          },
+          biometricVerification: {
+            enabled: snapshot.biometricVerificationExpanded ?? false,
+          },
+        };
+      } catch (e) {
+        console.error("❌ Failed to parse snapshot fallback:", e);
+        setTplError("Failed to parse snapshot fallback.");
+      }
     }
 
-    // Build from localStorage (no backend)
-    try {
-      const hasDoc = JSON.parse(
-        localStorage.getItem("arcon_has_document_verification") || "false",
-      );
-      const hasBio = JSON.parse(
-        localStorage.getItem("arcon_has_biometric_verification") || "false",
-      );
-      const docRaw = localStorage.getItem("arcon_doc_verification_form");
-      const bioRaw = localStorage.getItem("arcon_biometric_verification_form");
-      const docCfg = docRaw ? JSON.parse(docRaw) : {};
-      const bioCfg = bioRaw ? JSON.parse(bioRaw) : {};
-
-      // Get optional fields configuration from localStorage or snapshot
-      const optionalFields = Array.isArray(snapshot?.optionalFields)
-        ? snapshot.optionalFields
-        : [];
-      const hasDateOfBirth = optionalFields.some(
-        (f: any) => f.id === "date-of-birth" && f.checked,
-      );
-      console.log(
-        "localStorage fallback - optionalFields:",
-        optionalFields,
-        "hasDateOfBirth:",
-        hasDateOfBirth,
-      );
-
-      return {
-        templateName:
-          location.state?.templateData?.templateName || "New Template",
-        personalInfo: {
-          enabled: true,
-          fields: {
-            firstName: true, // Always required
-            lastName: true, // Always required
-            email: true, // Always required
-            dateOfBirth: hasDateOfBirth,
-          },
-          additionalFields: Array.isArray(snapshot?.addedFields)
-            ? snapshot.addedFields
-            : [],
-        },
-        documentVerification: {
-          enabled: Boolean(hasDoc),
-          allowUploadFromDevice: Boolean(docCfg.allowUploadFromDevice),
-          allowCaptureWebcam: Boolean(docCfg.allowCaptureWebcam),
-          supportedDocuments: Array.isArray(docCfg.selectedDocuments)
-            ? docCfg.selectedDocuments
-            : ["Passport", "Aadhar Card", "Driving License", "Pan Card"],
-        },
-        biometricVerification: {
-          enabled: Boolean(hasBio),
-        },
-      };
-    } catch {}
-
-    // Default config
+    // 🔴 Final fallback (defaults)
+    console.warn("⚠️ Using fallback template config. API + snapshot both failed.");
     return {
-      templateName: "New Template",
+      templateName: "",
       personalInfo: {
-        enabled: true,
+        enabled: false,
         fields: {
-          firstName: true,
-          lastName: true,
-          email: true,
-          dateOfBirth: true,
+          firstName: false,
+          lastName: false,
+          email: false,
+          dateOfBirth: false,
         },
         additionalFields: [],
       },
       documentVerification: {
-        enabled: true,
-        allowUploadFromDevice: true,
-        allowCaptureWebcam: true,
-        supportedDocuments: [
-          "Passport",
-          "Aadhar Card",
-          "Driving License",
-          "Pan Card",
-        ],
+        enabled: false,
+        allowUploadFromDevice: false,
+        allowCaptureWebcam: false,
+        countries: [],
       },
       biometricVerification: {
-        enabled: true,
+        enabled: false,
       },
     };
-  }, [location.state, apiTemplate, dbTemplate, snapshot]);
+  }, [apiTemplate, snapshot]);
 
   console.log("Final template config:", templateConfig);
+  console.log("Loading state:", loadingTpl);
+  console.log("Error state:", tplError);
+  console.log("API Template:", apiTemplate);
+  console.log("Snapshot:", snapshot);
 
   function normalizeCountriesFromDocCfg(d: any): CountryDocs[] {
     if (!d) return [];
@@ -592,49 +402,45 @@ export default function ReceiverView() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Country -> docs mapping derived from templateConfig
-  
-// After templateConfig is computed
   const allCountries: CountryDocs[] =
-    templateConfig.documentVerification.countries ?? [];
+    templateConfig.documentVerification?.countries ?? [];
 
   const [selectedCountry, setSelectedCountry] = useState<string>("");
-
-  // when countries load/change, pick the first one and reset idType
-  useEffect(() => {
-    if (Array.isArray(allCountries) && allCountries.length > 0) {
-      const first = allCountries[0].countryName;
-      if (first && typeof first === "string" && first.trim().length > 0) {
-        setSelectedCountry(first);
-        setFormData((prev) => ({ ...prev, country: first, idType: "" }));
-      }
-    }
-  }, [JSON.stringify(allCountries)]); // <- ensures effect runs when country data updates
-
-
-
-  const onCountryChange = (value: string) => {
-    setSelectedCountry(value);
-    setFormData((prev) => ({ ...prev, country: value, idType: "" }));
-  };
-
 
   const hasMultiCountry = (allCountries?.length ?? 0) > 0;
   const allowedDocsForCountry = hasMultiCountry
     ? (allCountries.find(c => c.countryName === selectedCountry)?.documents ?? [])
-    : (templateConfig.documentVerification.supportedDocuments ?? []);
+    : (templateConfig.documentVerification?.supportedDocuments ?? []);
 
-  
-  // Select first doc type by default when list changes
+  // Initialize default country only once
   useEffect(() => {
-    if (allowedDocsForCountry && allowedDocsForCountry.length) {
-      const first = allowedDocsForCountry[0];
-      const v = slugifyLabel(first);
-      setFormData((prev) => (prev.idType ? prev : { ...prev, idType: v }));
-    } else {
-      // reset when no docs available
-      setFormData((prev) => ({ ...prev, idType: "" }));
+    if (!selectedCountry && allCountries.length > 0) {
+      setSelectedCountry(allCountries[0].countryName);
     }
-  }, [selectedCountry, allowedDocsForCountry]);
+  }, [allCountries]); // Only depend on allCountries, not selectedCountry
+
+  // Update idType when selectedCountry changes
+  useEffect(() => {
+    if (selectedCountry) {
+      const currentAllowedDocs = hasMultiCountry
+        ? (allCountries.find(c => c.countryName === selectedCountry)?.documents ?? [])
+        : (templateConfig.documentVerification?.supportedDocuments ?? []);
+      
+      if (currentAllowedDocs.length > 0) {
+        const firstSlug = slugifyLabel(currentAllowedDocs[0]);
+        setFormData(prev => ({ ...prev, idType: firstSlug }));
+      } else {
+        setFormData(prev => ({ ...prev, idType: "" }));
+      }
+    }
+  }, [selectedCountry, hasMultiCountry, allCountries, templateConfig.documentVerification?.supportedDocuments]); // Stable dependencies
+
+
+  const onCountryChange = (value: string) => {
+    setSelectedCountry(value);
+    setFormData((prev) => ({ ...prev, country: value }));
+    // idType will be updated automatically by useEffect
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -703,7 +509,8 @@ export default function ReceiverView() {
     s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 
   const getDocVisuals = (label: string) => {
-    const k = label.toLowerCase();
+    // 🔄 Improvement: Defensive programming
+    const k = (label ?? "").toLowerCase();
     // Reuse the same four visuals you already had; add safe defaults for unknown types.
     if (k.includes("passport") && !k.includes("internal")) {
       return {
@@ -784,9 +591,32 @@ export default function ReceiverView() {
   // Build sections in order based on template configuration
   const buildSections = () => {
     const sections = [];
-
-    // Get sections order from backend, or derive from per-template snapshot, or localStorage builder steps, else default
-    let sectionsOrder = dbTemplate?.sections_order;
+    
+    // 🧼 Defensive Guard
+    if (!templateConfig?.personalInfo || !templateConfig.documentVerification || !templateConfig.biometricVerification) {
+      console.warn("❌ Template config structure is incomplete. Skipping rendering.");
+      return [];
+    }
+    // Guard against missing apiTemplate.versions[0]
+    const versions = Array.isArray(apiTemplate?.versions) ? apiTemplate.versions : [];
+    let sectionsOrder = versions.length
+      ? versions[0].sections
+          ?.filter((s) => s.isActive)
+          ?.sort((a, b) => a.orderIndex - b.orderIndex)
+          ?.map((s) => {
+            switch (s.sectionType) {
+              case "personalInformation":
+                return "Personal_info";
+              case "documents":
+                return "Doc_verification";
+              case "biometrics":
+                return "Biometric_verification";
+              default:
+                return null;
+            }
+          })
+          ?.filter(Boolean)
+      : null;
     if (!sectionsOrder) {
       // First try to get order from the per-template snapshot
       if (snapshot && Array.isArray(snapshot.verificationSteps)) {
@@ -803,7 +633,6 @@ export default function ReceiverView() {
           .filter(Boolean);
       }
     }
-
     // Fallback to global localStorage arcon_verification_steps
     if (!sectionsOrder || !sectionsOrder.length) {
       try {
@@ -824,7 +653,6 @@ export default function ReceiverView() {
         }
       } catch {}
     }
-
     // Absolute fallback to default order
     if (!sectionsOrder || !sectionsOrder.length) {
       sectionsOrder = [
@@ -833,7 +661,6 @@ export default function ReceiverView() {
         "Biometric_verification",
       ];
     }
-
     // Ensure Personal_info is always included at the beginning if not present
     if (!sectionsOrder.includes("Personal_info")) {
       sectionsOrder.unshift("Personal_info");
@@ -1054,7 +881,8 @@ export default function ReceiverView() {
   };
 
   const renderDocumentVerification = () => {
-    if (!templateConfig.documentVerification.enabled) return null;
+    // 🧪 Fix: Add null checks in templateConfig.documentVerification
+    if (!templateConfig.documentVerification?.enabled) return null;
 
     return (
       <div className="border border-[#DEDEDD] rounded-lg bg-white shadow-sm">
@@ -1555,7 +1383,25 @@ export default function ReceiverView() {
     );
   }
 
+  if (tplError) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center text-red-500 font-semibold">
+        {tplError}
+      </div>
+    );
+  }
+
+  // Debug: Add safety check for templateConfig
+  if (!templateConfig) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-sm text-gray-600">Template config is undefined</div>
+      </div>
+    );
+  }
+
   const sections = buildSections();
+  console.log("Built sections:", sections);
 
   return (
     <div className="min-h-screen bg-white font-roboto">
@@ -1791,8 +1637,8 @@ export default function ReceiverView() {
               ))}
 
               {sections.length === 0 && (
-                <div className="text-sm text-gray-500 text-center py-8">
-                  No sections enabled for this template.
+                <div className="text-sm text-gray-500 text-center py-8 border border-dashed rounded-lg p-6">
+                  No enabled sections found in the template. Please check with the admin.
                 </div>
               )}
             </div>
